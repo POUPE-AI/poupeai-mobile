@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
 import { styles } from './styles';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface AddButtonMenuProps {
   onNewTransaction: () => void;
@@ -19,6 +20,7 @@ interface AddButtonMenuProps {
 export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddButtonMenuProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [animation] = useState(new Animated.Value(0));
+  const { theme } = useTheme();
 
   const openMenu = () => {
     setIsVisible(true);
@@ -58,10 +60,12 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
     },
   ];
 
+  const style = styles(theme);
+
   return (
     <>
       <TouchableOpacity
-        style={styles.addButton}
+        style={style.addButton}
         onPress={openMenu}
         activeOpacity={0.8}
       >
@@ -75,13 +79,13 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
         onRequestClose={closeMenu}
       >
         <TouchableOpacity
-          style={styles.overlay}
+          style={style.overlay}
           onPress={closeMenu}
           activeOpacity={1}
         >
           <Animated.View
             style={[
-              styles.menuContainer,
+              style.menuContainer,
               {
                 opacity: animation,
                 transform: [
@@ -99,7 +103,7 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
               <Animated.View
                 key={item.title}
                 style={[
-                  styles.menuItem,
+                  style.menuItem,
                   {
                     opacity: animation,
                     transform: [
@@ -114,12 +118,12 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
                 ]}
               >
                 <TouchableOpacity
-                  style={[styles.menuButton, { backgroundColor: item.color }]}
+                  style={[style.menuButton, { backgroundColor: item.color }]}
                   onPress={item.onPress}
                   activeOpacity={0.8}
                 >
                   <Ionicons name={item.icon as any} size={20} color="#fff" />
-                  <Text style={styles.menuButtonText}>{item.title}</Text>
+                  <Text style={style.menuButtonText}>{item.title}</Text>
                 </TouchableOpacity>
               </Animated.View>
             ))}

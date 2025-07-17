@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { colors } from '@/constants/theme';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const { colors: themeColors, toggleTheme, isDark } = useTheme();
 
   const handleLogout = () => {
     Alert.alert(
@@ -35,6 +37,13 @@ export default function Profile() {
       subtitle: 'Senha, autenticação',
       icon: 'shield-checkmark-outline',
       onPress: () => console.log('Segurança'),
+    },
+    {
+      id: 'theme',
+      title: 'Tema',
+      subtitle: isDark ? 'Modo escuro ativo' : 'Modo claro ativo',
+      icon: isDark ? 'moon' : 'sunny',
+      onPress: toggleTheme,
     },
     {
       id: 'notifications',

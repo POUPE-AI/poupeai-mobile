@@ -4,6 +4,7 @@ import { colors } from '@/constants/theme';
 import { styles } from './styles';
 import { TABS } from '@/constants/tabs';
 import { AddButtonMenu } from '@/components/atoms/AddButtonMenu';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface TabBarProps {
   state: any;
@@ -12,6 +13,8 @@ interface TabBarProps {
 }
 
 export function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
+  const { theme } = useTheme();
+  const style = styles(theme);
   const middleIndex = Math.floor(TABS.length / 2);
 
   const renderTab = (route: any, index: number) => {
@@ -49,20 +52,20 @@ export function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
         testID={options.tabBarTestID}
         onPress={onPress}
         onLongPress={onLongPress}
-        style={styles.tab}
+        style={style.tab}
       >
         <View style={[
-          styles.tabContent,
-          isFocused && styles.tabContentActive
+          style.tabContent,
+          isFocused && style.tabContentActive
         ]}>
           <Ionicons
             name={tabConfig.icon as any}
             size={20}
-            color={isFocused ? colors.primary[500] : colors.theme.light.textSecondary}
+            color={isFocused ? colors.primary[500] : colors.theme[theme].textSecondary}
           />
           <Text style={[
-            styles.tabLabel,
-            { color: isFocused ? colors.primary[500] : colors.theme.light.textSecondary }
+            style.tabLabel,
+            { color: isFocused ? colors.primary[500] : colors.theme[theme].textSecondary }
           ]}>
             {tabConfig.title}
           </Text>
@@ -72,12 +75,10 @@ export function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Renderizar as primeiras tabs */}
+    <View style={style.container}>
       {state.routes.slice(0, middleIndex).map((route: any, index: number) => renderTab(route, index))}
 
-      {/* Botão + no meio */}
-      <View style={styles.addButtonContainer}>
+      <View style={style.addButtonContainer}>
         <AddButtonMenu
           onNewTransaction={() => { /* lógica para nova transação */ }}
           onNewGoal={() => { /* lógica para nova meta */ }}
@@ -85,7 +86,6 @@ export function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
         />
       </View>
 
-      {/* Renderizar as últimas tabs com o índice correto */}
       {state.routes.slice(middleIndex).map((route: any, index: number) => renderTab(route, index + middleIndex))}
     </View>
   );

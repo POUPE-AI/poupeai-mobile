@@ -1,10 +1,11 @@
 import { colors } from '@/constants/theme';
+import { ThemeType } from '@/contexts/ThemeContext';
 import { Dimensions, StyleSheet } from "react-native";
 
 const { width } = Dimensions.get('window');
 const containerMargin = 8;
 
-export const styles = StyleSheet.create({
+export const styles = (theme: ThemeType) => StyleSheet.create({
   container: {
     position: 'absolute',
     left: 0,
@@ -15,7 +16,7 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
 
     flexDirection: 'row',
-    backgroundColor: colors.theme['light'].background,
+    backgroundColor: colors.theme[theme].surface,
     borderRadius: 16,
     paddingHorizontal: 8,
     height: 60,
