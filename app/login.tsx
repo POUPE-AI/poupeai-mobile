@@ -1,75 +1,62 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
-import { colors } from '@/constants/theme';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useAuth } from '../src/contexts/AuthContext';
+import { colors } from '../src/constants/theme';
+import { router } from 'expo-router';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
-  const router = useRouter();
+  const { signIn, isLoading } = useAuth();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
-      return;
-    }
-
-    setLoading(true);
     try {
-      const success = await signIn(email, password);
-      if (success) {
-        // O AuthGuard irá redirecionar automaticamente
-      } else {
-        Alert.alert('Erro', 'Credenciais inválidas');
+      const success = await signIn();
+      if (!success) {
+        Alert.alert(
+          'Erro na autenticação', 
+          'Não foi possível realizar o login. Tente novamente.',
+          [{ text: 'OK' }]
+        );
       }
+      // A navegação agora é tratada pelo AuthContext
     } catch (error) {
-      Alert.alert('Erro', 'Erro ao fazer login');
-    } finally {
-      setLoading(false);
+      Alert.alert(
+        'Erro', 
+        'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.loginContainer}>
-        <Text style={styles.title}>Bem-vindo ao PoupeAI</Text>
-        <Text style={styles.subtitle}>Faça login para continuar</Text>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>PoupeAI</Text>
+          <Text style={styles.subtitle}>
+            Gerencie suas finanças de forma inteligente
+          </Text>
+        </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={colors.theme.light.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Senha"
-            placeholderTextColor={colors.theme.light.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
+        <View style={styles.loginSection}>
+          <Text style={styles.loginText}>
+            Faça login para acessar sua conta
+          </Text>
+          
           <TouchableOpacity 
-            style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
+            style={[
+              styles.loginButton, 
+              isLoading && styles.loginButtonDisabled
+            ]}
             onPress={handleLogin}
-            disabled={loading}
+            disabled={isLoading}
           >
-            <Text style={styles.loginButtonText}>
-              {loading ? 'Entrando...' : 'Entrar'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.loginButtonText}>Conectando...</Text>
+              </View>
+            ) : (
+              <Text style={styles.loginButtonText}>Entrar com Keycloak</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -84,23 +71,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  loginContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+  content: {
+    alignItems: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: colors.theme.light.text,
+    color: colors.primary[500],
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -108,18 +89,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.theme.light.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 8,
   },
-  form: {
-    gap: 16,
+  loginSection: {
+    width: '100%',
+    alignItems: 'center',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.theme.light.border,
-    borderRadius: 8,
-    padding: 16,
+  loginText: {
     fontSize: 16,
-    backgroundColor: colors.theme.light.surface,
+    color: colors.theme.light.text,
+    textAlign: 'center',
+    marginBottom: 24,
   },
   loginButton: {
     backgroundColor: colors.primary[500],
@@ -127,6 +107,9 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+    width: '100%',
+    minHeight: 52,
+    justifyContent: 'center',
   },
   loginButtonDisabled: {
     backgroundColor: colors.primary[300],
@@ -137,12 +120,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  forgotPassword: {
+  loadingContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
-  },
-  forgotPasswordText: {
-    color: colors.primary[500],
-    fontSize: 14,
+    gap: 8,
   },
 });

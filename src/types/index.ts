@@ -2,13 +2,27 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
 }
 
 export interface AuthContextData {
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<boolean>;
+  signIn: () => Promise<boolean>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  isNavigationReady: boolean;
+}
+
+export interface TokenData {
+  access_token: string;
+  refresh_token?: string;
+  expires_in: number;
+  expiresAt: string;
+}
+
+export interface KeycloakUserInfo {
+  sub: string;
+  name?: string;
+  preferred_username?: string;
+  email: string;
 }
