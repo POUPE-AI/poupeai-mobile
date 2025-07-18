@@ -10,6 +10,7 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "src/types/svg.d.ts"
   ]
 }
