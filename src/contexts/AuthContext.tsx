@@ -71,10 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const code = authResponse.type === 'success' ? authResponse.params?.code : null;
     const responseId = `${authResponse.type}-${code || 'no-code'}`;
     
-    if (processedResponseRef.current === responseId) {
-      console.log('⚠️ Resposta já processada, ignorando...');
-      return;
-    }
+    if (processedResponseRef.current === responseId) { return; }
     
     if (authResponse.type === 'success' && code) {
       processedResponseRef.current = responseId;
@@ -115,10 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleAuthResponse = useCallback(async (code: string) => {
     try {
-      if (isLoading) {
-        console.log('⚠️ Autenticação já em andamento, ignorando...');
-        return;
-      }
+      if (isLoading) { return; }
       
       setIsLoading(true);
 
@@ -179,11 +173,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(userData);
       
-      // Limpa a referência após sucesso
       processedResponseRef.current = null;
-      
-      // A navegação será tratada pelo useEffect automaticamente
-      
+      router.replace('/(drawer)/(tabs)/');
     } catch (error) {
       console.log('❌ Erro ao processar autenticação:', error);
       await AsyncStorage.multiRemove([storageKeys.user, storageKeys.tokens]);
