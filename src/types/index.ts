@@ -26,3 +26,5 @@ export interface KeycloakUserInfo {
   preferred_username?: string;
   email: string;
 }
+
+export * from './categories';

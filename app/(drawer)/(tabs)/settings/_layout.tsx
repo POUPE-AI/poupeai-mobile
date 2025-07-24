@@ -13,6 +13,7 @@ export default function SettingsLayout() {
         },
         headerTintColor: colors.text,
         headerTitleStyle: {
+          fontSize: 18,
           fontWeight: 'bold',
         },
       }}

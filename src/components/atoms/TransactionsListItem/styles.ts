@@ -11,7 +11,7 @@ export const styles = (theme: ThemeType) => StyleSheet.create({
         paddingHorizontal: 16,
         backgroundColor: colors.theme[theme].surface,
         borderRadius: 8,
-        borderLeftWidth: 8,
+        borderLeftWidth: 6,
 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
