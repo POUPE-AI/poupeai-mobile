@@ -1,7 +1,5 @@
-import { View } from "react-native";
+import { CardsList } from "@/components/screens/CardsList";
 
 export default function Screen() {
-    return (
-        <View />
-    )
+    return <CardsList />;
 }
