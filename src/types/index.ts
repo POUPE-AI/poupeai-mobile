@@ -28,3 +28,4 @@ export interface KeycloakUserInfo {
 }
 
 export * from './categories';
+export * from './accounts';

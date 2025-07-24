@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/atoms/Text';
+import { ActionButton } from '@/components/atoms/ActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Category, CategoryType } from '@/types';
 import { styles } from './styles';
@@ -59,21 +60,19 @@ export const CategoryListItem = ({
       <View style={style.rightContainer}>
         <View style={style.actionsContainer}>
           {onEdit && (
-            <TouchableOpacity
-              style={style.actionButton}
+            <ActionButton
+              iconName="pencil"
               onPress={() => onEdit(category)}
-            >
-              <Ionicons name="pencil" size={18} color={colors.theme[theme].textSecondary} />
-            </TouchableOpacity>
+              size={18}
+            />
           )}
           
           {onDelete && (
-            <TouchableOpacity
-              style={style.actionButton}
+            <ActionButton
+              iconName="trash-outline"
               onPress={() => onDelete(category)}
-            >
-              <Ionicons name="trash-outline" size={18} color={colors.feedback.error} />
-            </TouchableOpacity>
+              size={18}
+            />
           )}
         </View>
       </View>
