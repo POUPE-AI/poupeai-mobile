@@ -48,7 +48,4 @@ export const styles = (theme: ThemeType) => StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  actionButton: {
-    padding: 4,
-  },
 });
