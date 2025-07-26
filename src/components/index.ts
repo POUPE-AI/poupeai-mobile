@@ -1,5 +1,6 @@
 // Atoms
 export { LineChart } from './atoms/LineChart';
+export { BarChart } from './atoms/BarChart';
 export { Button } from './atoms/Button';
 export { Text } from './atoms/Text';
 export { ThemeToggleButton } from './atoms/ThemeToggleButton';
@@ -16,6 +17,8 @@ export { TransactionsSeparator } from './atoms/TransactionsSeparator';
 
 // Molecules
 export { BalanceCard } from './molecules/BalanceCard';
+export { CategoriesCard } from './molecules/CategoriesCard';
+export { EstimatedSavingsCard } from './molecules/EstimatedSavingsCard';
 export { CustomDrawer } from './molecules/CustomDrawer';
 export { CustomTabBar } from './molecules/CustomTabBar';
 export { FAQItem } from './molecules/FAQItem';

@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { useState } from "react";
-import { View, Text, Dimensions } from "react-native";
+import React from "react";
+import { View, Text } from "react-native";
 import { LineChart, LineData } from "@/components/atoms/LineChart";
 import { styles } from "./styles";
 import { colors } from "@/constants/theme";
@@ -16,26 +16,20 @@ export const BalanceCard = ({data, title, percentage, amount}: BalanceCardProps)
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const [cardWidth, setCardWidth] = useState(Dimensions.get("window").width);
-
   // Obter cor da porcentagem baseada no valor
   const getPercentageColor = () => {
     return percentage >= 0 ? colors.feedback.success : colors.feedback.error;
   };
 
-  const onLayout = (event: any) => {
-    const { width } = event.nativeEvent.layout;
-    setCardWidth(width);
-  };
-
+  const chartWidth = 280;
   const chartHeight = 160;
 
   return (
-    <View onLayout={onLayout} style={style.card}>
+    <View style={style.card}>
       {/* Gráfico de fundo */}
       <LineChart
         lines={data}
-        width={cardWidth}
+        width={chartWidth}
         height={chartHeight}
         showArea={true}
         style={style.backgroundChart}
