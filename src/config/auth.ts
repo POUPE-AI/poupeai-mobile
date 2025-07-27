@@ -1,7 +1,3 @@
-import { validateEnvVariables } from '../utils/env';
-
-validateEnvVariables();
-
 export const keycloakConfig = {
   baseUrl: process.env.EXPO_PUBLIC_KEYCLOAK_BASE_URL!,
   realm: process.env.EXPO_PUBLIC_KEYCLOAK_REALM!,

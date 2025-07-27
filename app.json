@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "poupeai-mobile",
-    "slug": "poupeai-mobile",
+    "slug": "poupeai-mobile",  
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,26 +23,6 @@
       },
       "package": "ai.poupe.mobile",
       "intentFilters": [
-        {
-          "action": "VIEW",
-          "category": [
-            "DEFAULT",
-            "BROWSABLE"
-          ],
-          "data": {
-            "scheme": "ai.poupe"
-          }
-        },
-        {
-          "action": "VIEW",
-          "category": [
-            "DEFAULT",
-            "BROWSABLE"
-          ],
-          "data": {
-            "scheme": "exp"
-          }
-        },
         {
           "action": "VIEW",
           "category": [
