@@ -5,128 +5,105 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Text } from '@/components/atoms/Text';
 import { CategoryListItem } from '@/components/atoms/CategoryListItem';
 import { CategoryFilterTag } from '@/components/atoms/CategoryFilterTag';
+import { CategoryModal } from '@/components/molecules/CategoryModal';
+import { ConfirmDeleteModal } from '@/components/molecules/ConfirmDeleteModal';
 import { Category, CategoryType } from '@/types';
-import { colors } from '@/constants/theme';
 import { styles } from './styles';
-
-// Mock data - substituir por dados reais da API
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Salário',
-    color_hex: '#10B981',
-    type: 'income',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Freelance',
-    color_hex: '#059669',
-    type: 'income',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'Alimentação',
-    color_hex: '#FF9800',
-    type: 'expense',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Transporte',
-    color_hex: '#2196F3',
-    type: 'expense',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'Contas',
-    color_hex: '#9E9E9E',
-    type: 'expense',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Investimentos',
-    color_hex: '#8E24AA',
-    type: 'income',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '7',
-    name: 'Lazer',
-    color_hex: '#E91E63',
-    type: 'expense',
-    profile: 'user-1',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-  },
-];
+import { useCategories } from '@/hooks/useCategories';
+import { categoriesService, CreateCategoryRequest } from '@/services/categories';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const CategoriesList = () => {
-  const { theme } = useTheme();
+  const { theme, colors: themeColors } = useTheme();
   const style = styles(theme);
+  const queryClient = useQueryClient();
 
-  // Estado para controlar os filtros ativos
   const [activeFilters, setActiveFilters] = useState<CategoryType[]>(['income', 'expense']);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  
+  const { data: categoriesList, isLoading, error } = useCategories();
 
-  // Categorias filtradas baseadas nos filtros ativos
   const filteredCategories = useMemo(() => {
-    return mockCategories.filter(category => 
+    return categoriesList?.results.filter(category => 
       activeFilters.includes(category.type)
     );
-  }, [activeFilters]);
+  }, [activeFilters, categoriesList, isLoading]);
 
-  // Função para alternar filtros
   const toggleFilter = (type: CategoryType) => {
     setActiveFilters(prev => {
       if (prev.includes(type)) {
-        // Se já está ativo, remove (mas mantém pelo menos um ativo)
         return prev.length > 1 ? prev.filter(t => t !== type) : prev;
       } else {
-        // Se não está ativo, adiciona
         return [...prev, type];
       }
     });
   };
 
-  const handleCategoryPress = (category: Category) => {
-    // TODO: Implementar navegação para detalhes da categoria
-    console.log('Categoria selecionada:', category.name);
-  };
-
   const handleEditCategory = (category: Category) => {
-    // TODO: Implementar edição de categoria
-    console.log('Editar categoria:', category.name);
+    setSelectedCategory(category);
+    setModalMode('edit');
+    setModalVisible(true);
   };
 
   const handleDeleteCategory = (category: Category) => {
-    // TODO: Implementar exclusão de categoria
-    console.log('Excluir categoria:', category.name);
+    setCategoryToDelete(category);
+    setDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+    
+    await categoriesService.deleteCategory(categoryToDelete.id);
+    await queryClient.invalidateQueries({ queryKey: ['categories'] });
   };
 
   const handleAddCategory = () => {
-    // TODO: Implementar adição de categoria
-    console.log('Adicionar nova categoria');
+    setSelectedCategory(null);
+    setModalMode('create');
+    setModalVisible(true);
   };
+
+  const handleSaveCategory = async (data: CreateCategoryRequest) => {
+    try {
+      if (modalMode === 'create') {
+        await categoriesService.createCategory(data);
+      } else if (selectedCategory) {
+        await categoriesService.updateCategory({
+          id: selectedCategory.id,
+          ...data,
+        });
+      }
+      
+      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setModalVisible(false);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={style.emptyContainer}>
+        <Text style={style.emptyTitle}>Carregando categorias...</Text>
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={style.emptyContainer}>
+        <Text style={style.emptyTitle}>Erro ao carregar categorias</Text>
+      </View>
+    );
+  }
 
   const renderCategoryItem = ({ item }: { item: Category }) => (
     <CategoryListItem
       category={item}
-      onPress={handleCategoryPress}
       onEdit={handleEditCategory}
       onDelete={handleDeleteCategory}
     />
@@ -134,7 +111,7 @@ export const CategoriesList = () => {
 
   const renderEmptyState = () => (
     <View style={style.emptyContainer}>
-      <Ionicons name="folder-open-outline" size={64} color={colors.theme[theme].textSecondary} />
+      <Ionicons name="folder-open-outline" size={64} color={themeColors.textSecondary} />
       <Text style={style.emptyTitle}>Nenhuma categoria encontrada</Text>
       <Text style={style.emptySubtitle}>
         {activeFilters.length === 1 
@@ -179,6 +156,25 @@ export const CategoriesList = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={style.listContent}
         ListEmptyComponent={renderEmptyState}
+      />
+
+      {/* Modal de Criar/Editar Categoria */}
+      <CategoryModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveCategory}
+        category={selectedCategory}
+        mode={modalMode}
+      />
+
+      {/* Modal de Confirmar Exclusão */}
+      <ConfirmDeleteModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Categoria"
+        message="Tem certeza que deseja excluir esta categoria?"
+        itemName={categoryToDelete?.name}
       />
     </View>
   );

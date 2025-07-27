@@ -10,14 +10,12 @@ import { colors } from '@/constants/theme';
 
 interface CategoryListItemProps {
   category: Category;
-  onPress?: (category: Category) => void;
   onEdit?: (category: Category) => void;
   onDelete?: (category: Category) => void;
 }
 
 export const CategoryListItem = ({ 
   category, 
-  onPress, 
   onEdit, 
   onDelete 
 }: CategoryListItemProps) => {
@@ -33,10 +31,8 @@ export const CategoryListItem = ({
   };
 
   return (
-    <TouchableOpacity 
+    <View 
       style={[style.container, { borderLeftColor: category.color_hex }]}
-      onPress={() => onPress?.(category)}
-      activeOpacity={0.7}
     >
       <View style={style.leftContainer}>
         <View style={style.categoryInfo}>
@@ -76,6 +72,6 @@ export const CategoryListItem = ({
           )}
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };

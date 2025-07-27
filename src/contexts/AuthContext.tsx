@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { keycloakConfig, discoveryEndpoints, storageKeys, authConfig } from '../config/auth';
 import type { User, AuthContextData, TokenData, KeycloakUserInfo } from '../types';
+import { api } from '@/services/api';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -168,7 +169,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       await Promise.all([
         AsyncStorage.setItem(storageKeys.user, JSON.stringify(userData)),
-        AsyncStorage.setItem(storageKeys.tokens, JSON.stringify(tokenData))
+        AsyncStorage.setItem(storageKeys.tokens, JSON.stringify(tokenData)),
+        api.updateToken(tokenData.access_token)
       ]);
 
       setUser(userData);

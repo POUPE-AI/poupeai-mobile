@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "scheme": "ai.poupe",
     "splash": {
@@ -25,14 +25,40 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "category": ["DEFAULT", "BROWSABLE"],
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
           "data": {
             "scheme": "ai.poupe"
           }
         },
         {
           "action": "VIEW",
-          "category": ["DEFAULT", "BROWSABLE"],
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": {
+            "scheme": "exp"
+          }
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": {
+            "scheme": "ai.poupe"
+          }
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
           "data": {
             "scheme": "exp"
           }
@@ -44,6 +70,22 @@
       "bundler": "metro"
     },
     "plugins": [
-        "expo-router"    ]
+      "expo-router"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b5778dad-1362-4faa-b0e9-03881ccee202"
+      }
+    },
+    "owner": "eudivan",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b5778dad-1362-4faa-b0e9-03881ccee202"
+    }
   }
 }

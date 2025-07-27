@@ -23,6 +23,9 @@ export const storageKeys = {
 
 export const authConfig = {
   scopes: ['openid', 'profile', 'email'] as string[],
+  additionalParameters: {
+    audience: 'account',
+  },
   responseType: 'code' as const,
   usePKCE: true,
   tokenExpirationMarginMs: 5 * 60 * 1000,
