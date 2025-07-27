@@ -13,8 +13,9 @@ export default function Layout() {
                     header: (props) => <Header {...props} />,
                     headerShown: true,
                     swipeEnabled: true,
-                    swipeEdgeWidth: 50,
-                    swipeMinDistance: 10,
+                    swipeEdgeWidth: 16,
+                    swipeMinDistance: 16,
+                    
                 }}>
                 <Drawer.Screen name="(tabs)" options={{ title: 'Dashboard' }} />
             </Drawer>

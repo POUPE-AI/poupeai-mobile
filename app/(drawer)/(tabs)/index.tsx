@@ -1,8 +1,5 @@
-import { colors } from "@/constants/theme";
-import { View } from "react-native";
+import DashboardScreen from "@/components/screens/Dashboard";
 
 export default function Screen() {
-    return (
-        <View style={{ flex: 1, backgroundColor: colors.theme['dark'].background }} />
-    )
+    return <DashboardScreen />;
 }

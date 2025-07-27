@@ -8,7 +8,6 @@ export interface Transaction {
   amount: number;
   date: string;
   type: 'income' | 'expense';
-  icon: string;
 }
 
 export interface TransactionSection {
