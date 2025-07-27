@@ -9,6 +9,8 @@ import { TransactionsListItem } from "@/components/atoms/TransactionsListItem";
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
 import { Transaction } from "@/types/transactions";
+import { useAccessToken } from "@/hooks/useAccessToken";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock data para cada tipo de card
 const mockData = {
@@ -89,10 +91,12 @@ export default function DashboardScreen() {
   const { theme } = useTheme();
   const style = styles(theme);
 
+  const { user } = useAuth();
+
   return (
     <ScrollView style={style.container} contentContainerStyle={style.containerContent}>
       <View>
-        <Text style={style.greeting}>Olá, Jhon Doe</Text>
+        <Text style={style.greeting}>Olá, {user?.name || 'Desconhecido'}</Text>
         <Text style={style.subtitle}>Aqui está um resumo do seu mês</Text>
       </View>
 
