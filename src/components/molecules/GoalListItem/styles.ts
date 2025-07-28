@@ -2,13 +2,15 @@ import { colors } from "@/constants/theme";
 import { ThemeType } from "@/contexts/ThemeContext";
 import { StyleSheet } from "react-native";
 
-export const createGoalListItemStyles = (theme: ThemeType) =>
+export const createGoalListItemStyles = (theme: ThemeType, borderColor?: string) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.theme[theme].surface,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
+      borderLeftWidth: 6,
+      borderLeftColor: borderColor || colors.primary[500],
 
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
@@ -64,5 +66,24 @@ export const createGoalListItemStyles = (theme: ThemeType) =>
       fontSize: 12,
       color: colors.primary[500],
       fontWeight: "500",
+    },
+    actionFooter: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 12,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.theme[theme].border,
+    },
+    leftActions: {
+      flex: 1,
+    },
+    rightActions: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    depositButton: {
+      alignSelf: 'flex-start',
     },
   });

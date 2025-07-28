@@ -1,26 +1,9 @@
-import { colors } from '@/constants/theme';
-import { ThemeType } from '@/contexts/ThemeContext';
 import { StyleSheet } from 'react-native';
 
-export const styles = (theme: ThemeType) => {
-  const themeColors = colors.theme[theme];
-  
+export const styles = () => {
   return StyleSheet.create({
-    content: {
-      flex: 1,
-      paddingHorizontal: 16,
-      paddingTop: 16,
-    },
     switchContainer: {
       marginTop: 8,
-    },
-    footer: {
-      flexDirection: 'row',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      gap: 12,
-      borderTopWidth: 1,
-      borderTopColor: themeColors.border,
     },
     cancelButton: {
       flex: 1,

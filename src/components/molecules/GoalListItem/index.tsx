@@ -5,51 +5,105 @@ import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, View } from "react-native";
 import { createGoalListItemStyles } from "./styles";
 import { colors } from "@/constants/theme";
+import { formatCurrency } from "@/utils/currency";
+import { Button } from "@/components/atoms/Button";
+import { ActionButton } from "@/components/atoms/ActionButton";
 
-interface GoalListItemProps{
-    goal: Goal
+interface GoalListItemProps {
+  goal: Goal;
+  onDeposit?: (goal: Goal) => void;
+  onEdit?: (goal: Goal) => void;
+  onDelete?: (goal: Goal) => void;
 }
 
-export const GoalListItem = ({ goal }: GoalListItemProps) => {
-    const { theme } = useTheme();
-    const styles = createGoalListItemStyles(theme);
+export const GoalListItem = ({ goal, onDeposit, onEdit, onDelete }: GoalListItemProps) => {
+  const { theme } = useTheme();
+  const styles = createGoalListItemStyles(theme, goal.color_hex);
 
-    const progress = (goal.currentAmount / goal.targetAmount) * 100;
-    const remainingAmount = goal.targetAmount - goal.currentAmount;
-    const daysRemaining = Math.ceil(
-      (new Date(goal.targetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    );
+  const progress = goal.percentage_completed;
+  const goalAmount = parseFloat(goal.goal_amount);
+  const remainingAmount = goalAmount - goal.current_balance;
+  const daysRemaining = Math.ceil(
+    (new Date(goal.target_at).getTime() - new Date().getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
 
-    return (
-      <TouchableOpacity key={goal.id} style={styles.container}>
-        <View style={styles.goalHeader}>
-          <View style={styles.goalInfo}>
-            <Text variant="h3">{goal.title}</Text>
-            <Text variant="caption" color="textSecondary">{goal.description}</Text>
-          </View>
+  return (
+    <View key={goal.id} style={styles.container}>
+      <View style={styles.goalHeader}>
+        <View style={styles.goalInfo}>
+          <Text variant="h3">{goal.name}</Text>
+          {goal.description ?? (
+            <Text variant="caption" color="textSecondary">
+              {goal.description}
+            </Text>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.progressSection}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.progressText}>
+            {formatCurrency(goal.current_balance)} de{" "}
+            {formatCurrency(goalAmount)}
+          </Text>
+          <Text style={styles.progressPercentage}>
+            {Number.isInteger(progress) ? progress : progress.toFixed(2)}%
+          </Text>
         </View>
 
-        <View style={styles.progressSection}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressText}>
-              R$ {goal.currentAmount.toFixed(2).replace('.', ',')} de R$ {goal.targetAmount.toFixed(2).replace('.', ',')}
-            </Text>
-            <Text style={styles.progressPercentage}>{progress.toFixed(0)}%</Text>
+        <View style={styles.progressBar}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                width: `${Math.min(progress, 100)}%`,
+                backgroundColor: goal.color_hex,
+              },
+            ]}
+          />
+        </View>
+
+        <View style={styles.goalFooter}>
+          <Text style={styles.remainingAmount} color="textSecondary">
+            Faltam {formatCurrency(remainingAmount)}
+          </Text>
+          <Text style={styles.daysRemaining}>
+            {daysRemaining > 0 ? `${daysRemaining} dias` : "Vencido"}
+          </Text>
+        </View>
+
+        <View style={styles.actionFooter}>
+          <View style={styles.leftActions}>
+            {!goal.is_completed && onDeposit && (
+              <Button
+                title="Fazer Depósito"
+                onPress={() => onDeposit(goal)}
+                size="small"
+                style={styles.depositButton}
+              />
+            )}
           </View>
           
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${Math.min(progress, 100)}%` }]} />
-          </View>
-          
-          <View style={styles.goalFooter}>
-            <Text style={styles.remainingAmount} color="textSecondary">
-              Faltam R$ {remainingAmount.toFixed(2).replace('.', ',')}
-            </Text>
-            <Text style={styles.daysRemaining}>
-              {daysRemaining > 0 ? `${daysRemaining} dias` : 'Vencido'}
-            </Text>
+          <View style={styles.rightActions}>
+            {onEdit && (
+              <ActionButton
+                iconName="pencil"
+                onPress={() => onEdit(goal)}
+                size={18}
+              />
+            )}
+            
+            {onDelete && (
+              <ActionButton
+                iconName="trash-outline"
+                onPress={() => onDelete(goal)}
+                size={18}
+              />
+            )}
           </View>
         </View>
-      </TouchableOpacity>
-    );
-  };
+      </View>
+    </View>
+  );
+};

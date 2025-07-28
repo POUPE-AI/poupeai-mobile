@@ -5,7 +5,6 @@ import { Card, CreateCreditCardRequest } from '@/types';
 import { z } from 'zod';
 import { styles } from './styles';
 import { ModalContainer } from '@/components/atoms/ModalContainer';
-import { ModalHeader } from '@/components/atoms/ModalHeader';
 import { FormField } from '@/components/atoms/FormField';
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -168,13 +167,25 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
     <ModalContainer
       visible={visible}
       onClose={handleClose}
+      title={mode === 'edit' ? 'Editar Cartão' : 'Novo Cartão'}
+      footer={
+        <>
+          <Button
+            title="Cancelar"
+            onPress={onClose}
+            variant="outline"
+            style={style.cancelButton}
+          />
+          <Button
+            title={mode === 'create' ? 'Criar' : 'Salvar'}
+            onPress={handleSave}
+            loading={isLoading}
+            style={style.saveButton}
+          />
+        </>
+      }
     >
-      <ModalHeader
-        title={mode === 'edit' ? 'Editar Cartão' : 'Novo Cartão'}
-        onClose={onClose}
-      />
       
-      <ScrollView style={style.content} contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
         <FormField
           label="Nome do Cartão"
           value={formData.name}
@@ -257,22 +268,6 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
           numberOfLines={3}
         />
         {errors.additional_info && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.additional_info}</Text>}
-      </ScrollView>
-
-      <View style={style.footer}>
-        <Button
-          title="Cancelar"
-          onPress={onClose}
-          variant="outline"
-          style={style.cancelButton}
-        />
-        <Button
-          title={mode === 'create' ? 'Criar' : 'Salvar'}
-          onPress={handleSave}
-          loading={isLoading}
-          style={style.saveButton}
-        />
-      </View>
     </ModalContainer>
   );
 };

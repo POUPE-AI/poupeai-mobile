@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Switch } from 'react-native';
+import { View, Switch } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Account, CreateBankAccountRequest } from '@/types';
 import { z } from 'zod';
 import { styles } from './styles';
 import { ModalContainer } from '@/components/atoms/ModalContainer';
-import { ModalHeader } from '@/components/atoms/ModalHeader';
 import { FormField } from '@/components/atoms/FormField';
 import { Button } from '@/components/atoms/Button';
 import { Text } from '@/components/atoms/Text';
@@ -39,7 +38,7 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
   mode,
 }) => {
   const { theme } = useTheme();
-  const style = styles(theme);
+  const style = styles();
 
   const [formData, setFormData] = useState<BankAccountFormData>({
     name: '',
@@ -124,70 +123,62 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
     <ModalContainer
       visible={visible}
       onClose={handleClose}
+      title={mode === 'edit' ? 'Editar Conta' : 'Nova Conta'}
+      footer={
+        <>
+          <Button
+            title="Cancelar"
+            onPress={onClose}
+            variant="outline"
+            style={style.cancelButton}
+          />
+          <Button
+            title={mode === 'create' ? 'Criar' : 'Salvar'}
+            onPress={handleSave}
+            loading={isLoading}
+            style={style.saveButton}
+          />
+        </>
+      }
     >
-      <ModalHeader
-        title={mode === 'edit' ? 'Editar Conta' : 'Nova Conta'}
-        onClose={handleClose}
+      <FormField
+        label="Nome da Conta"
+        value={formData.name}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+        placeholder="Ex: Conta Corrente BB"
       />
-      
-      <ScrollView style={style.content} contentContainerStyle={{ paddingBottom: 16 }} showsVerticalScrollIndicator={false}>
-        <FormField
-          label="Nome da Conta"
-          value={formData.name}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-          placeholder="Ex: Conta Corrente BB"
-        />
-        {errors.name && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.name}</Text>}
-        
-        <FormField
-          label="Descrição"
-          value={formData.description}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
-          placeholder="Descrição opcional da conta..."
-          multiline
-          numberOfLines={3}
-        />
-        {errors.description && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.description}</Text>}
-        
-        <FormField
-          label="Saldo Inicial"
-          value={formData.initial_balance}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, initial_balance: text }))}
-          placeholder="0,00"
-          keyboardType="numeric"
-        />
-        {errors.initial_balance && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.initial_balance}</Text>}
-
-        <View style={style.switchContainer}>
-          <FormField label="Conta Padrão">
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-              <Text style={{ color: colors.theme[theme].textSecondary, fontSize: 14 }}>
-                Define esta conta como padrão para novas transações
-              </Text>
-              <Switch
-                value={formData.is_default}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, is_default: value }))}
-                trackColor={{ false: colors.theme[theme].border, true: colors.primary[500] }}
-                thumbColor={formData.is_default ? colors.primary[600] : colors.theme[theme].surface}
-              />
-            </View>
-          </FormField>
-        </View>
-      </ScrollView>
-
-      <View style={style.footer}>
-        <Button
-          title="Cancelar"
-          onPress={onClose}
-          variant="outline"
-          style={style.cancelButton}
-        />
-        <Button
-          title={mode === 'create' ? 'Criar' : 'Salvar'}
-          onPress={handleSave}
-          loading={isLoading}
-          style={style.saveButton}
-        />
+      {errors.name && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.name}</Text>}
+      <FormField
+        label="Descrição"
+        value={formData.description}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+        placeholder="Descrição opcional da conta..."
+        multiline
+        numberOfLines={3}
+      />
+      {errors.description && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.description}</Text>}
+      <FormField
+        label="Saldo Inicial"
+        value={formData.initial_balance}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, initial_balance: text }))}
+        placeholder="0,00"
+        keyboardType="numeric"
+      />
+      {errors.initial_balance && <Text style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}>{errors.initial_balance}</Text>}
+      <View style={style.switchContainer}>
+        <FormField label="Conta Padrão">
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+            <Text style={{ color: colors.theme[theme].textSecondary, fontSize: 14 }}>
+              Define esta conta como padrão para novas transações
+            </Text>
+            <Switch
+              value={formData.is_default}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, is_default: value }))}
+              trackColor={{ false: colors.theme[theme].border, true: colors.primary[500] }}
+              thumbColor={formData.is_default ? colors.primary[600] : colors.theme[theme].surface}
+            />
+          </View>
+        </FormField>
       </View>
     </ModalContainer>
   );
