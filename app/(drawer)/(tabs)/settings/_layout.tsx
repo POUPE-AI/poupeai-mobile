@@ -1,22 +1,15 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { useTheme } from '../../../../src/contexts/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { getHeaderStyles } from '@/constants/headerStyles';
 
 export default function SettingsLayout() {
-  const { colors } = useTheme();
+  const { theme } = useTheme();
+  const headerStyles = getHeaderStyles(theme);
 
   return (
     <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.background,
-        },
-        headerTintColor: colors.text,
-        headerTitleStyle: {
-          fontSize: 18,
-          fontWeight: 'bold',
-        },
-      }}
+      screenOptions={headerStyles}
     >
       <Stack.Screen
         name="index"

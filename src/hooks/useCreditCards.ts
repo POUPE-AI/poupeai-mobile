@@ -1,0 +1,74 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { creditCardsService, UpdateCreditCardRequest } from '../services/creditCards';
+import { CreateCreditCardRequest } from '../types/cards';
+
+export const creditCardsKeys = {
+  all: ['credit-cards'] as const,
+  lists: () => [...creditCardsKeys.all, 'list'] as const,
+  list: (filters: Record<string, any>) => [...creditCardsKeys.lists(), { filters }] as const,
+  details: () => [...creditCardsKeys.all, 'detail'] as const,
+  detail: (id: number) => [...creditCardsKeys.details(), id] as const,
+};
+
+export function useCreditCards(params?: {
+  search?: string;
+  page?: number;
+  page_size?: number;
+}) {
+  return useQuery({
+    queryKey: creditCardsKeys.list(params || {}),
+    queryFn: () => creditCardsService.getCreditCards(params),
+    enabled: true,
+  });
+}
+
+export function useCreditCard(id: number, enabled = true) {
+  return useQuery({
+    queryKey: creditCardsKeys.detail(id),
+    queryFn: () => creditCardsService.getCreditCardById(id),
+    enabled: enabled && !!id,
+  });
+}
+
+export function useCreateCreditCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateCreditCardRequest) => creditCardsService.createCreditCard(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: creditCardsKeys.lists(),
+      });
+    },
+  });
+}
+
+export function useUpdateCreditCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateCreditCardRequest) => creditCardsService.updateCreditCard(data),
+    onSuccess: (updatedCard) => {
+      queryClient.invalidateQueries({
+        queryKey: creditCardsKeys.lists(),
+      });
+      queryClient.setQueryData(
+        creditCardsKeys.detail(updatedCard.id),
+        updatedCard
+      );
+    },
+  });
+}
+
+export function useDeleteCreditCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => creditCardsService.deleteCreditCard(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: creditCardsKeys.lists(),
+      });
+    },
+  });
+}

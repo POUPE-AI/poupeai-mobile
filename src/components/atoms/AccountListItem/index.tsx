@@ -4,6 +4,7 @@ import { Text } from '@/components/atoms/Text';
 import { ActionButton } from '@/components/atoms/ActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Account } from '@/types';
+import { formatCurrencyWithThousands } from '@/utils/currency';
 import { styles } from './styles';
 
 interface AccountListItemProps {
@@ -19,10 +20,6 @@ export const AccountListItem = ({
 }: AccountListItemProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
-
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
-  };
 
   const getDisplayDescription = () => {
     if (account.description && account.description.trim()) {
@@ -53,7 +50,7 @@ export const AccountListItem = ({
             style.balanceText, 
             account.current_balance < 0 && style.negativeBalance
           ]}>
-            {formatCurrency(account.current_balance)}
+            {formatCurrencyWithThousands(account.current_balance)}
           </Text>
         </View>
 
