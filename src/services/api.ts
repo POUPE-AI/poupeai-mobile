@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { storageKeys } from '../config/auth';
-import { getApiBaseUrl } from '../utils/env';
 
 export interface ApiError {
   message: string;
@@ -11,7 +10,7 @@ export interface ApiError {
 
 class ApiService {
   private instance: AxiosInstance;
-  private baseURL = getApiBaseUrl();
+  private baseURL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
   constructor() {
     this.instance = axios.create({

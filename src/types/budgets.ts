@@ -1,16 +1,29 @@
 export interface Budget {
-  id: string;
-  category: string; // ID da categoria
-  profile: string; // ID do usuário
+  id: number;
+  category: number;
+  profile: string;
   name: string;
-  amount: number; // Valor limite do orçamento
-  actual_amount: number; // Valor atual gasto
+  amount: string;
+  actual_amount: number;
   created_at: string;
   updated_at: string;
 }
 
+export interface BudgetsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Budget[];
+}
+
+export interface CreateBudgetRequest {
+  category: number;
+  name: string;
+  amount: string;
+}
+
 export interface BudgetProgress {
   percentage: number;
-  status: 'safe' | 'warning' | 'danger'; // Para definir cores visuais
-  remaining: number; // Valor restante
+  status: 'safe' | 'warning' | 'danger';
+  remaining: number;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View } from 'react-native';
 import { Text } from '@/components/atoms/Text';
 import { ActionButton } from '@/components/atoms/ActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -12,7 +12,6 @@ interface BudgetListItemProps {
   categoryName: string;
   categoryColor: string;
   progress: BudgetProgress;
-  onPress?: (budget: Budget) => void;
   onEdit?: (budget: Budget) => void;
   onDelete?: (budget: Budget) => void;
 }
@@ -22,7 +21,6 @@ export const BudgetListItem = ({
   categoryName,
   categoryColor,
   progress,
-  onPress, 
   onEdit, 
   onDelete 
 }: BudgetListItemProps) => {
@@ -60,15 +58,13 @@ export const BudgetListItem = ({
   };
 
   return (
-    <TouchableOpacity 
+    <View 
       style={[style.container, { borderLeftColor: categoryColor }]}
-      onPress={() => onPress?.(budget)}
-      activeOpacity={0.7}
     >
       <View style={style.budgetInfo}>
         <View style={style.headerRow}>
           <Text style={style.nameText}>{budget.name}</Text>
-          <Text style={style.limitText}>{formatCurrency(budget.amount)}</Text>
+          <Text style={style.limitText}>{budget.amount}</Text>
         </View>
 
         <View style={style.categoryRow}>
@@ -130,6 +126,6 @@ export const BudgetListItem = ({
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };

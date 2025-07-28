@@ -14,7 +14,6 @@ export const categoriesKeys = {
 
 // Hook para buscar todas as categorias
 export function useCategories(params?: {
-  type?: CategoryType;
   search?: string;
   page?: number;
   page_size?: number;
