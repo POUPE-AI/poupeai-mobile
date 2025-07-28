@@ -1,5 +1,5 @@
 import { CardsList } from "@/components/screens/CardsList";
 
-export default function Screen() {
+export default function CardsIndexScreen() {
     return <CardsList />;
 }

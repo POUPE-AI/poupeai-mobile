@@ -5,6 +5,7 @@ import { ActionButton } from '@/components/atoms/ActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Card, CardProgress } from '@/types/cards';
 import { colors } from '@/constants/theme';
+import { formatCurrencySimple } from '@/utils/currency';
 import { styles } from './styles';
 
 interface CardListItemProps {
@@ -25,10 +26,6 @@ export const CardListItem = ({
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
-
   return (
     <TouchableOpacity 
       style={style.container}
@@ -38,13 +35,13 @@ export const CardListItem = ({
       <View style={style.cardInfo}>
         <View style={style.headerRow}>
           <Text style={style.nameText}>{card.name}</Text>
-          <Text style={style.limitText}>{formatCurrency(card.credit_limit)}</Text>
+          <Text style={style.limitText}>{formatCurrencySimple(card.credit_limit)}</Text>
         </View>
 
         <View style={style.brandRow}>
           <Text style={style.brandText}>{card.brand_display}</Text>
           <Text style={style.usedText}>
-            {formatCurrency(progress.used_amount)} usado
+            {formatCurrencySimple(progress.used_amount)} usado
           </Text>
         </View>
 
@@ -63,7 +60,7 @@ export const CardListItem = ({
           
           <View style={style.progressFooter}>
             <Text style={style.availableText}>
-              {formatCurrency(progress.available_amount)} disponível
+              {formatCurrencySimple(progress.available_amount)} disponível
             </Text>
             <Text style={style.percentageText}>
               {progress.percentage.toFixed(0)}%

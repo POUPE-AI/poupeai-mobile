@@ -4,6 +4,7 @@ import { Text } from '@/components/atoms/Text';
 import { ActionButton } from '@/components/atoms/ActionButton';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Budget, BudgetProgress } from '@/types';
+import { formatCurrencySimple } from '@/utils/currency';
 import { styles } from './styles';
 import { colors } from '@/constants/theme';
 
@@ -26,10 +27,6 @@ export const BudgetListItem = ({
 }: BudgetListItemProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
-
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
 
   const getProgressColor = (status: BudgetProgress['status']) => {
     switch (status) {
@@ -64,7 +61,7 @@ export const BudgetListItem = ({
       <View style={style.budgetInfo}>
         <View style={style.headerRow}>
           <Text style={style.nameText}>{budget.name}</Text>
-          <Text style={style.limitText}>{budget.amount}</Text>
+          <Text style={style.limitText}>{formatCurrencySimple(budget.amount)}</Text>
         </View>
 
         <View style={style.categoryRow}>
@@ -77,7 +74,7 @@ export const BudgetListItem = ({
         <View style={style.progressSection}>
           <View style={style.progressHeader}>
             <Text style={style.progressText}>
-              {formatCurrency(budget.actual_amount)} gastos
+              {formatCurrencySimple(budget.actual_amount)} gastos
             </Text>
             <Text style={[style.percentageText, { color: getProgressColor(progress.status) }]}>
               {progress.percentage.toFixed(0)}%
@@ -100,8 +97,8 @@ export const BudgetListItem = ({
             <View style={style.remainingContainer}>
               <Text style={style.remainingText}>
                 {progress.remaining >= 0 
-                  ? `${formatCurrency(progress.remaining)} restante`
-                  : `${formatCurrency(Math.abs(progress.remaining))} excedido`
+                  ? `${formatCurrencySimple(progress.remaining)} restante`
+                  : `${formatCurrencySimple(Math.abs(progress.remaining))} excedido`
                 }
               </Text>
             </View>
