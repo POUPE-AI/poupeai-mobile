@@ -9,14 +9,12 @@ import { CategoryModal } from '@/components/molecules/CategoryModal';
 import { ConfirmDeleteModal } from '@/components/molecules/ConfirmDeleteModal';
 import { Category, CategoryType } from '@/types';
 import { styles } from './styles';
-import { useCategories } from '@/hooks/useCategories';
-import { categoriesService, CreateCategoryRequest } from '@/services/categories';
-import { useQueryClient } from '@tanstack/react-query';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/hooks/useCategories';
+import { CreateCategoryRequest } from '@/services/categories';
 
 export const CategoriesList = () => {
   const { theme, colors: themeColors } = useTheme();
   const style = styles(theme);
-  const queryClient = useQueryClient();
 
   const [activeFilters, setActiveFilters] = useState<CategoryType[]>(['income', 'expense']);
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,6 +24,9 @@ export const CategoriesList = () => {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   
   const { data: categoriesList, isLoading, error } = useCategories();
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
 
   const filteredCategories = useMemo(() => {
     return categoriesList?.results.filter(category => 
@@ -57,8 +58,13 @@ export const CategoriesList = () => {
   const handleConfirmDelete = async () => {
     if (!categoryToDelete) return;
     
-    await categoriesService.deleteCategory(categoryToDelete.id);
-    await queryClient.invalidateQueries({ queryKey: ['categories'] });
+    try {
+      await deleteCategoryMutation.mutateAsync(categoryToDelete.id);
+      setDeleteModalVisible(false);
+      setCategoryToDelete(null);
+    } catch (error) {
+      console.error('Erro ao excluir categoria:', error);
+    }
   };
 
   const handleAddCategory = () => {
@@ -70,15 +76,14 @@ export const CategoriesList = () => {
   const handleSaveCategory = async (data: CreateCategoryRequest) => {
     try {
       if (modalMode === 'create') {
-        await categoriesService.createCategory(data);
+        await createCategoryMutation.mutateAsync(data);
       } else if (selectedCategory) {
-        await categoriesService.updateCategory({
+        await updateCategoryMutation.mutateAsync({
           id: selectedCategory.id,
           ...data,
         });
       }
       
-      await queryClient.invalidateQueries({ queryKey: ['categories'] });
       setModalVisible(false);
     } catch (error) {
       throw error;
