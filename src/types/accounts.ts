@@ -1,11 +1,24 @@
 export interface Account {
-  id: string;
+  id: number;
+  name: string;
+  description: string;
+  initial_balance: string;
+  current_balance: number;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BankAccountsResponse {
+  results: Account[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
+export interface CreateBankAccountRequest {
   name: string;
   description: string;
   initial_balance: number;
-  current_balance?: number; // Opcional, será calculado se não vier da API
   is_default: boolean;
-  profile: string;
-  created_at: string;
-  updated_at: string;
 }

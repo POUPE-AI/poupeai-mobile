@@ -8,14 +8,12 @@ import { styles } from './styles';
 
 interface AccountListItemProps {
   account: Account;
-  onPress?: (account: Account) => void;
   onEdit?: (account: Account) => void;
   onDelete?: (account: Account) => void;
 }
 
 export const AccountListItem = ({ 
   account, 
-  onPress, 
   onEdit, 
   onDelete 
 }: AccountListItemProps) => {
@@ -23,17 +21,24 @@ export const AccountListItem = ({
   const style = styles(theme);
 
   const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+    return `R$ ${value.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
   };
 
-  // TODO: Atualizar saldo com base na api
-  const currentBalance = account.current_balance ?? (account.initial_balance + (Math.random() * 1000 - 500));
+  const getDisplayDescription = () => {
+    if (account.description && account.description.trim()) {
+      return account.description;
+    }
+    
+    if (account.is_default) {
+      return 'Conta principal para movimentações financeiras';
+    }
+    
+    return 'Conta para organização das suas finanças';
+  };
 
   return (
-    <TouchableOpacity 
+    <View 
       style={[style.container, account.is_default && style.defaultContainer]}
-      onPress={() => onPress?.(account)}
-      activeOpacity={0.7}
     >
       {account.is_default && (
         <View style={style.defaultHeader}>
@@ -46,15 +51,15 @@ export const AccountListItem = ({
           <Text style={style.nameText}>{account.name}</Text>
           <Text style={[
             style.balanceText, 
-            currentBalance < 0 && style.negativeBalance
+            account.current_balance < 0 && style.negativeBalance
           ]}>
-            {formatCurrency(currentBalance)}
+            {formatCurrency(account.current_balance)}
           </Text>
         </View>
 
         <View style={style.bottomRow}>
           <Text style={style.descriptionText} numberOfLines={2}>
-            {account.description}
+            {getDisplayDescription()}
           </Text>
           <View style={style.actionsContainer}>
             {onEdit && (
@@ -73,6 +78,6 @@ export const AccountListItem = ({
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };

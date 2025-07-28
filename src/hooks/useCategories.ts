@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesService, CreateCategoryRequest, UpdateCategoryRequest } from '../services/categories';
 import { Category, CategoryType } from '../types/categories';
+import { budgetsKeys } from './useBudgets';
 
-// Query Keys - seguindo padrão de nomenclatura hierárquica
 export const categoriesKeys = {
   all: ['categories'] as const,
   lists: () => [...categoriesKeys.all, 'list'] as const,
@@ -12,7 +12,6 @@ export const categoriesKeys = {
   byType: (type: CategoryType) => [...categoriesKeys.all, 'byType', type] as const,
 };
 
-// Hook para buscar todas as categorias
 export function useCategories(params?: {
   search?: string;
   page?: number;
@@ -33,26 +32,21 @@ export function useCategory(id: string, enabled = true) {
   });
 }
 
-// Hook para buscar categorias por tipo (mais específico e otimizado)
 export function useCategoriesByType(type: CategoryType) {
   return useQuery({
     queryKey: categoriesKeys.byType(type),
     queryFn: () => categoriesService.getCategoriesByType(type),
-    staleTime: 10 * 60 * 1000, // 10 minutos - categorias não mudam com frequência
+    staleTime: 10 * 60 * 1000,
   });
 }
 
-// Hook para criar categoria
 export function useCreateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateCategoryRequest) => categoriesService.createCategory(data),
     onSuccess: (newCategory) => {
-      // Invalidar todas as listas de categorias
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
-      
-      // Adicionar a nova categoria ao cache específico por tipo
       queryClient.setQueryData(
         categoriesKeys.byType(newCategory.type),
         (oldData: Category[] | undefined) => {
@@ -67,20 +61,16 @@ export function useCreateCategory() {
   });
 }
 
-// Hook para atualizar categoria
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: UpdateCategoryRequest) => categoriesService.updateCategory(data),
     onSuccess: (updatedCategory, variables) => {
-      // Atualizar o cache da categoria específica
       queryClient.setQueryData(
         categoriesKeys.detail(variables.id),
         updatedCategory
       );
-
-      // Invalidar listas para garantir consistência
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoriesKeys.byType(updatedCategory.type) });
     },
@@ -90,19 +80,17 @@ export function useUpdateCategory() {
   });
 }
 
-// Hook para deletar categoria
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) => categoriesService.deleteCategory(id),
     onSuccess: (_, deletedId) => {
-      // Remover categoria do cache
       queryClient.removeQueries({ queryKey: categoriesKeys.detail(deletedId) });
-      
-      // Invalidar todas as listas
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoriesKeys.all });
+      queryClient.invalidateQueries({ queryKey: budgetsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
     },
     onError: (error) => {
       console.error('Erro ao deletar categoria:', error);
@@ -110,12 +98,10 @@ export function useDeleteCategory() {
   });
 }
 
-// Hook para categorias de receita (shortcut)
 export function useIncomeCategories() {
   return useCategoriesByType('income');
 }
 
-// Hook para categorias de despesa (shortcut)
 export function useExpenseCategories() {
   return useCategoriesByType('expense');
 }
