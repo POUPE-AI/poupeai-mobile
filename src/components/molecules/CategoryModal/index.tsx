@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  View,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from 'react-native';
+import { View, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { runOnJS } from 'react-native-reanimated';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Text } from '@/components/atoms/Text';
 import { Button } from '@/components/atoms/Button';
-import { Category, CategoryType } from '@/types';
+import { Text } from '@/components/atoms/Text';
+import { Category } from '@/types';
 import { z } from 'zod';
-import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
 import { styles } from './styles';
+import { TypeSelector } from '@/components/atoms/TypeSelector';
+import { ModalContainer } from '@/components/atoms/ModalContainer';
+import { ModalHeader } from '@/components/atoms/ModalHeader';
+import { FormField } from '@/components/atoms/FormField';
+import { ColorPickerModal } from '@/components/molecules/ColorPickerModal';
 
-// Schema de validação Zod
 const categorySchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(50, 'Nome deve ter no máximo 50 caracteres'),
   color_hex: z.string().regex(/^#[0-9A-F]{6}$/i, 'Cor deve estar no formato hexadecimal válido'),
@@ -118,52 +116,21 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     setFormData(prev => ({ ...prev, color_hex: color }));
   };
 
+  const updateColorFormData = (colorHex: string) => {
+    setFormData(prev => ({ ...prev, color_hex: colorHex }));
+  };
+
   const onColorSelect = (color: any) => {
-    setFormData(prev => ({ ...prev, color_hex: color.hex }));
+    'worklet';
+    runOnJS(updateColorFormData)(color.hex);
   };
 
   const renderTypeSelector = () => (
-    <View style={style.typeContainer}>
-      <Text style={style.label}>Tipo</Text>
-      <View style={style.typeButtonsContainer}>
-        <TouchableOpacity
-          style={[
-            style.typeButton,
-            formData.type === 'income' && style.typeButtonActive,
-          ]}
-          onPress={() => setFormData(prev => ({ ...prev, type: 'income' }))}
-        >
-          <Ionicons 
-            name="trending-up" 
-            size={20} 
-            color={formData.type === 'income' ? '#fff' : style.typeButtonText.color} 
-          />
-          <Text style={[
-            style.typeButtonText,
-            formData.type === 'income' && style.typeButtonTextActive,
-          ]}>Receita</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[
-            style.typeButton,
-            formData.type === 'expense' && style.typeButtonActive,
-          ]}
-          onPress={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
-        >
-          <Ionicons 
-            name="trending-down" 
-            size={20} 
-            color={formData.type === 'expense' ? '#fff' : style.typeButtonText.color} 
-          />
-          <Text style={[
-            style.typeButtonText,
-            formData.type === 'expense' && style.typeButtonTextActive,
-          ]}>Despesa</Text>
-        </TouchableOpacity>
-      </View>
-      {errors.type && <Text style={style.errorText}>{errors.type}</Text>}
-    </View>
+    <TypeSelector
+      selectedType={formData.type}
+      onTypeSelect={(type) => setFormData(prev => ({ ...prev, type }))}
+      error={errors.type}
+    />
   );
 
   const renderColorSelector = () => (
@@ -199,97 +166,51 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   return (
     <>
-      <Modal
-        visible={visible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={onClose}
-      >
-        <View style={style.container}>
-          <View style={style.header}>
-            <TouchableOpacity onPress={onClose} style={style.closeButton}>
-              <Ionicons name="close" size={24} color={themeColors.text} />
-            </TouchableOpacity>
-            <Text style={style.title}>
-              {mode === 'create' ? 'Nova Categoria' : 'Editar Categoria'}
-            </Text>
-            <View style={style.placeholder} />
-          </View>
+      <ModalContainer visible={visible} onClose={onClose}>
+        <ModalHeader 
+          title={mode === 'create' ? 'Nova Categoria' : 'Editar Categoria'}
+          onClose={onClose}
+          closeIcon="close"
+        />
 
-          <View style={style.content}>
-            <View style={style.fieldContainer}>
-              <Text style={style.label}>Nome</Text>
-              <TextInput
-                style={[style.input, errors.name && style.inputError]}
-                value={formData.name}
-                onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-                placeholder="Digite o nome da categoria"
-                placeholderTextColor={themeColors.textSecondary}
-                maxLength={50}
-              />
-              {errors.name && <Text style={style.errorText}>{errors.name}</Text>}
-            </View>
+        <View style={style.content}>
+          <FormField
+            label="Nome"
+            placeholder="Digite o nome da categoria"
+            value={formData.name}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, name: text }))}
+            maxLength={50}
+            error={errors.name}
+          />
 
-            {renderTypeSelector()}
+          {renderTypeSelector()}
 
-            {renderColorSelector()}
-          </View>
-
-          {/* Footer com botões */}
-          <View style={style.footer}>
-            <Button
-              title="Cancelar"
-              onPress={onClose}
-              variant="outline"
-              style={style.cancelButton}
-            />
-            <Button
-              title={mode === 'create' ? 'Criar' : 'Salvar'}
-              onPress={handleSave}
-              loading={isLoading}
-              style={style.saveButton}
-            />
-          </View>
+          {renderColorSelector()}
         </View>
-      </Modal>
 
-      {/* Modal do Color Picker */}
-      <Modal
+        {/* Footer com botões */}
+        <View style={style.footer}>
+          <Button
+            title="Cancelar"
+            onPress={onClose}
+            variant="outline"
+            style={style.cancelButton}
+          />
+          <Button
+            title={mode === 'create' ? 'Criar' : 'Salvar'}
+            onPress={handleSave}
+            loading={isLoading}
+            style={style.saveButton}
+          />
+        </View>
+      </ModalContainer>
+
+      <ColorPickerModal
         visible={showColorPicker}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowColorPicker(false)}
-      >
-        <View style={style.colorPickerContainer}>
-          <View style={style.colorPickerHeader}>
-            <TouchableOpacity onPress={() => setShowColorPicker(false)}>
-              <Text style={style.colorPickerCancel}>Cancelar</Text>
-            </TouchableOpacity>
-            <Text style={style.colorPickerTitle}>Escolher Cor</Text>
-            <TouchableOpacity onPress={() => setShowColorPicker(false)}>
-              <Text style={style.colorPickerDone}>Pronto</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={style.colorPickerContent}>
-            <ColorPicker 
-              style={style.colorPicker} 
-              value={formData.color_hex} 
-              onComplete={onColorSelect}
-            >
-              <Preview style={style.colorPickerPreview} />
-              <Panel1 style={style.colorPickerPanel} />
-              <HueSlider style={style.colorPickerSlider} />
-              <OpacitySlider style={style.colorPickerSlider} />
-              <Swatches 
-                style={style.colorPickerSwatches}
-                swatchStyle={style.colorPickerSwatch}
-                colors={predefinedColors}
-              />
-            </ColorPicker>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowColorPicker(false)}
+        currentColor={formData.color_hex}
+        onColorSelect={onColorSelect}
+      />
     </>
   );
 };

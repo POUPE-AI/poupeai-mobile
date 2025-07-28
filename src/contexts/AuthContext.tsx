@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const redirectUri = makeRedirectUri({
     scheme: keycloakConfig.appScheme,
+    queryParams: {
+      client_id: keycloakConfig.clientId,
+    }
   });
 
   const [request, response, promptAsync] = useAuthRequest(
