@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/atoms/Button';
 import { useCategories } from '@/hooks/useCategories';
@@ -7,7 +7,6 @@ import { Budget, CreateBudgetRequest } from '@/types';
 import { z } from 'zod';
 import { styles } from './styles';
 import { ModalContainer } from '@/components/atoms/ModalContainer';
-import { ModalHeader } from '@/components/atoms/ModalHeader';
 import { FormField } from '@/components/atoms/FormField';
 import { CategoryDropdown } from '@/components/molecules/CategoryDropdown';
 
@@ -133,58 +132,56 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   }, [categories, formData.category]);
 
   return (
-    <ModalContainer visible={visible} onClose={onClose}>
-      <ModalHeader 
-        title={mode === 'create' ? 'Novo Orçamento' : 'Editar Orçamento'}
-        onClose={onClose}
+    <ModalContainer 
+      visible={visible} 
+      onClose={onClose}
+      title={mode === 'create' ? 'Novo Orçamento' : 'Editar Orçamento'}
+      footer={
+        <>
+          <Button
+            title="Cancelar"
+            onPress={onClose}
+            variant="outline"
+            style={style.cancelButton}
+          />
+          <Button
+            title={mode === 'create' ? 'Criar' : 'Salvar'}
+            onPress={handleSave}
+            loading={isLoading}
+            style={style.saveButton}
+          />
+        </>
+      }
+    >
+      <FormField
+        label="Nome do Orçamento"
+        placeholder="Ex: Orçamento Alimentação"
+        value={formData.name}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+        maxLength={100}
+        error={errors.name}
       />
 
-      <ScrollView style={style.content} contentContainerStyle={{paddingBottom: 16}} showsVerticalScrollIndicator={false}>
-        <FormField
-          label="Nome do Orçamento"
-          placeholder="Ex: Orçamento Alimentação"
-          value={formData.name}
-          onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-          maxLength={100}
-          error={errors.name}
-        />
+      <CategoryDropdown
+        categories={categories}
+        selectedCategoryId={formData.category}
+        onSelect={(categoryId) => setFormData(prev => ({ ...prev, category: categoryId }))}
+        error={errors.category}
+        isLoading={categoriesLoading}
+        isOpen={showCategoryDropdown}
+        onToggle={() => setShowCategoryDropdown(!showCategoryDropdown)}
+        filterType="expense"
+        onCreateCategory={onCreateCategory}
+      />
 
-        <CategoryDropdown
-          categories={categories}
-          selectedCategoryId={formData.category}
-          onSelect={(categoryId) => setFormData(prev => ({ ...prev, category: categoryId }))}
-          error={errors.category}
-          isLoading={categoriesLoading}
-          isOpen={showCategoryDropdown}
-          onToggle={() => setShowCategoryDropdown(!showCategoryDropdown)}
-          filterType="expense"
-          onCreateCategory={onCreateCategory}
-        />
-
-        <FormField
-          label="Valor Limite (R$)"
-          placeholder="0,00"
-          value={formData.amount}
-          onChangeText={handleAmountChange}
-          keyboardType="numeric"
-          error={errors.amount}
-        />
-      </ScrollView>
-
-      <View style={style.footer}>
-        <Button
-          title="Cancelar"
-          onPress={onClose}
-          variant="outline"
-          style={style.cancelButton}
-        />
-        <Button
-          title={mode === 'create' ? 'Criar' : 'Salvar'}
-          onPress={handleSave}
-          loading={isLoading}
-          style={style.saveButton}
-        />
-      </View>
+      <FormField
+        label="Valor Limite (R$)"
+        placeholder="0,00"
+        value={formData.amount}
+        onChangeText={handleAmountChange}
+        keyboardType="numeric"
+        error={errors.amount}
+      />
     </ModalContainer>
   );
 };

@@ -2,11 +2,6 @@ import { StyleSheet } from 'react-native';
 import { colors } from '@/constants/theme';
 
 export const styles = (theme: 'light' | 'dark') => StyleSheet.create({
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
   previewContainer: {
     alignItems: 'center',
     marginBottom: 32,
@@ -42,16 +37,6 @@ export const styles = (theme: 'light' | 'dark') => StyleSheet.create({
   hueSlider: {
     height: 40,
     borderRadius: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 32,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.theme[theme].border,
-    backgroundColor: colors.theme[theme].background,
   },
   cancelButton: {
     flex: 1,

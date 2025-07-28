@@ -18,6 +18,7 @@ export const styles = (theme: ThemeType) => {
     predefinedColorsContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
+    justifyContent: 'space-between',
       gap: 12,
       marginBottom: 8,
     },
@@ -27,6 +28,8 @@ export const styles = (theme: ThemeType) => {
       borderRadius: 20,
       borderWidth: 3,
       borderColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     colorSwatchSelected: {
       borderColor: themeColors.text,
@@ -42,20 +45,6 @@ export const styles = (theme: ThemeType) => {
       fontSize: 14,
       color: colors.feedback.error,
       marginTop: 4,
-    },
-    footer: {
-      flexDirection: 'row',
-      paddingHorizontal: 20,
-      paddingVertical: 20,
-      gap: 12,
-      borderTopWidth: 1,
-      borderTopColor: themeColors.border,
-    },
-    cancelButton: {
-      flex: 1,
-    },
-    saveButton: {
-      flex: 1,
     },
   });
 };

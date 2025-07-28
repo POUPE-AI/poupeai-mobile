@@ -32,3 +32,4 @@ export * from './accounts';
 export * from './budgets';
 export * from './cards';
 export * from './invoices';
+export * from './goals';
