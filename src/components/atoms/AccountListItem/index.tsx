@@ -23,11 +23,8 @@ export const AccountListItem = ({
   const style = styles(theme);
 
   const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
+    return `R$ ${value.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
   };
-
-  // TODO: Atualizar saldo com base na api
-  const currentBalance = account.current_balance ?? (account.initial_balance + (Math.random() * 1000 - 500));
 
   return (
     <TouchableOpacity 
@@ -46,9 +43,9 @@ export const AccountListItem = ({
           <Text style={style.nameText}>{account.name}</Text>
           <Text style={[
             style.balanceText, 
-            currentBalance < 0 && style.negativeBalance
+            account.current_balance < 0 && style.negativeBalance
           ]}>
-            {formatCurrency(currentBalance)}
+            {formatCurrency(account.current_balance)}
           </Text>
         </View>
 
