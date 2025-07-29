@@ -1,16 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesService, CreateCategoryRequest, UpdateCategoryRequest } from '../services/categories';
-import { Category, CategoryType } from '../types/categories';
-import { budgetsKeys } from './useBudgets';
-
-export const categoriesKeys = {
-  all: ['categories'] as const,
-  lists: () => [...categoriesKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...categoriesKeys.lists(), { filters }] as const,
-  details: () => [...categoriesKeys.all, 'detail'] as const,
-  detail: (id: string) => [...categoriesKeys.details(), id] as const,
-  byType: (type: CategoryType) => [...categoriesKeys.all, 'byType', type] as const,
-};
+import { categoriesService, CreateCategoryRequest, UpdateCategoryRequest } from '@/services/categories';
+import { Category, CategoryType } from '@/types/categories';
+import { bankAccountsKeys, budgetsKeys, categoriesKeys, creditCardsKeys, transactionsKeys } from '@/constants/queryKeys';
 
 export function useCategories(params?: {
   search?: string;
@@ -91,6 +82,12 @@ export function useDeleteCategory() {
       queryClient.invalidateQueries({ queryKey: categoriesKeys.all });
       queryClient.invalidateQueries({ queryKey: budgetsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: bankAccountsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
+      queryClient.invalidateQueries({ queryKey: creditCardsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: creditCardsKeys.all });
     },
     onError: (error) => {
       console.error('Erro ao deletar categoria:', error);

@@ -1,14 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { creditCardsService, UpdateCreditCardRequest } from '../services/creditCards';
-import { CreateCreditCardRequest } from '../types/cards';
-
-export const creditCardsKeys = {
-  all: ['credit-cards'] as const,
-  lists: () => [...creditCardsKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...creditCardsKeys.lists(), { filters }] as const,
-  details: () => [...creditCardsKeys.all, 'detail'] as const,
-  detail: (id: number) => [...creditCardsKeys.details(), id] as const,
-};
+import { creditCardsService, UpdateCreditCardRequest } from '@/services/creditCards';
+import { CreateCreditCardRequest } from '@/types/cards';
+import { creditCardsKeys } from '@/constants/queryKeys';
 
 export function useCreditCards(params?: {
   search?: string;

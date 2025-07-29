@@ -55,8 +55,6 @@ class ApiService {
           code: error.code,
         };
 
-        console.log(error.response)
-
         if (error.response?.status === 401) {
           apiError.message = 'Token expirado ou inválido';
         } else if (error.response?.status === 403) {

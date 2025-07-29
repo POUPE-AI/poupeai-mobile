@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
-import { View, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ListRenderItem } from 'react-native';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useCreditCards } from '@/hooks/useCreditCards';
-import { useInvoices, usePayInvoice } from '@/hooks/useInvoices';
-import { styles } from './styles';
-import { Text } from '@/components/atoms/Text';
-import { PayInvoiceModal } from '@/components/molecules/PayInvoiceModal';
-import { CreditCardHeader } from '@/components/molecules/CreditCardHeader';
-import { InvoiceListItem } from '@/components/molecules/InvoiceListItem';
-import { EmptyInvoicesState } from '@/components/molecules/EmptyInvoicesState';
-import { Invoice } from '@/types/invoices';
+import React, { useState } from "react";
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  ListRenderItem,
+} from "react-native";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useCreditCards } from "@/hooks/useCreditCards";
+import { useInvoices, usePayInvoice } from "@/hooks/useInvoices";
+import { styles } from "./styles";
+import { Text } from "@/components/atoms/Text";
+import { PayInvoiceModal } from "@/components/molecules/PayInvoiceModal";
+import { CreditCardHeader } from "@/components/molecules/CreditCardHeader";
+import { InvoiceListItem } from "@/components/molecules/InvoiceListItem";
+import { EmptyInvoicesState } from "@/components/molecules/EmptyInvoicesState";
+import { Invoice } from "@/types/invoices";
+import { colors } from "@/constants/theme";
 
 export const CreditCardDetails: React.FC = () => {
   const { theme } = useTheme();
@@ -19,19 +25,32 @@ export const CreditCardDetails: React.FC = () => {
   const navigation = useNavigation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  
+
   const [refreshing, setRefreshing] = useState(false);
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  
-  const creditCardId = parseInt(id || '0');
-  
-  const { data: creditCardsData, isLoading: cardsLoading, refetch: refetchCards } = useCreditCards();
-  const { data: invoicesData, isLoading: invoicesLoading, refetch: refetchInvoices } = useInvoices(creditCardId);
+
+  const creditCardId = parseInt(id || "0");
+
+  const {
+    data: creditCardsData,
+    isLoading: cardsLoading,
+    refetch: refetchCards,
+  } = useCreditCards();
+  const {
+    data: invoicesData,
+    isLoading: invoicesLoading,
+    refetch: refetchInvoices,
+    fetchNextPage: fetchNextInvoices,
+    hasNextPage: hasNextInvoices,
+    isFetchingNextPage: isFetchingNextInvoices,
+  } = useInvoices(creditCardId);
   const payInvoiceMutation = usePayInvoice();
 
-  const creditCard = creditCardsData?.results.find(card => card.id === creditCardId);
-  const invoices = invoicesData?.results || [];
+  const creditCard = creditCardsData?.results.find(
+    (card) => card.id === creditCardId
+  );
+  const invoices = invoicesData?.pages.flatMap((page) => page.results) || [];
 
   React.useEffect(() => {
     if (creditCard) {
@@ -44,10 +63,7 @@ export const CreditCardDetails: React.FC = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([
-        refetchCards(),
-        refetchInvoices(),
-      ]);
+      await Promise.all([refetchCards(), refetchInvoices()]);
     } finally {
       setRefreshing(false);
     }
@@ -58,7 +74,10 @@ export const CreditCardDetails: React.FC = () => {
     setPayModalVisible(true);
   };
 
-  const handleConfirmPayment = async (paymentDate: string, bankAccountId: number) => {
+  const handleConfirmPayment = async (
+    paymentDate: string,
+    bankAccountId: number
+  ) => {
     if (!selectedInvoice) return;
 
     try {
@@ -73,21 +92,18 @@ export const CreditCardDetails: React.FC = () => {
       setPayModalVisible(false);
       setSelectedInvoice(null);
     } catch (error) {
-      console.error('Erro ao marcar fatura como paga:', error);
+      console.error("Erro ao marcar fatura como paga:", error);
       throw error;
     }
   };
 
   const renderInvoiceItem: ListRenderItem<Invoice> = ({ item }) => (
-    <InvoiceListItem
-      invoice={item}
-      onPayInvoice={handlePayInvoice}
-    />
+    <InvoiceListItem invoice={item} onPayInvoice={handlePayInvoice} />
   );
 
   const renderHeader = () => {
     if (!creditCard) return null;
-    
+
     return (
       <>
         <CreditCardHeader card={creditCard} />
@@ -124,11 +140,15 @@ export const CreditCardDetails: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={style.listContainer}
         showsVerticalScrollIndicator={false}
+        onEndReached={hasNextInvoices ? () => fetchNextInvoices() : undefined}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextInvoices ? (
+            <ActivityIndicator size="small" color={colors.primary[500]} />
+          ) : null
+        }
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={handleRefresh} 
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       />
 

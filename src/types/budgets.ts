@@ -3,7 +3,7 @@ export interface Budget {
   category: number;
   profile: string;
   name: string;
-  amount: string;
+  amount: number;
   actual_amount: number;
   created_at: string;
   updated_at: string;

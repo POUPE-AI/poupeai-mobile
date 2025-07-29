@@ -7,7 +7,7 @@ import { colors } from '@/constants/theme';
 import { styles } from './styles';
 
 interface DropdownItem {
-  id: string | number;
+  id: number;
   label: string;
   color?: string;
 }

@@ -11,6 +11,9 @@ import { styles } from "./styles";
 import { Transaction } from "@/types/transactions";
 import { useAccessToken } from "@/hooks/useAccessToken";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTransactions } from "@/hooks/useTransactions";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 
 // Mock data para cada tipo de card
 const mockData = {
@@ -43,60 +46,33 @@ const mockCategoriesData = [
   { value: 180, label: "Outros" },
 ];
 
-// Mock data para últimas transações
-const mockRecentTransactions: Transaction[] = [
-  {
-    id: "1",
-    title: "Supermercado Extra",
-    category: { name: "Alimentação", color: "#FF6B6B" },
-    amount: -156.80,
-    date: "2025-07-26",
-    type: "expense",
-  },
-  {
-    id: "2", 
-    title: "Salário",
-    category: { name: "Renda", color: "#4ECDC4" },
-    amount: 3500.00,
-    date: "2025-07-25",
-    type: "income",
-  },
-  {
-    id: "3",
-    title: "Uber",
-    category: { name: "Transporte", color: "#45B7D1" },
-    amount: -28.50,
-    date: "2025-07-24",
-    type: "expense", 
-  },
-  {
-    id: "4",
-    title: "Netflix",
-    category: { name: "Lazer", color: "#96CEB4" },
-    amount: -29.90,
-    date: "2025-07-23",
-    type: "expense",
-  },
-  {
-    id: "5",
-    title: "Freelance",
-    category: { name: "Renda Extra", color: "#FECA57" },
-    amount: 450.00,
-    date: "2025-07-22", 
-    type: "income",
-  }
-];
-
 export default function DashboardScreen() {
   const { theme } = useTheme();
   const style = styles(theme);
 
   const { user } = useAuth();
 
+  const {
+    data: transactions,
+    isLoading: transactionLoading,
+    error: transactionsError,
+  } = useTransactions({ issue_date_end: new Date().toISOString().split('T')[0] });
+  const lastTransactions =
+    transactions?.pages[0]?.results
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+      )
+      .slice(0, 5) || [];
+
   return (
-    <ScrollView style={style.container} contentContainerStyle={style.containerContent}>
+    <ScrollView
+      style={style.container}
+      contentContainerStyle={style.containerContent}
+    >
       <View>
-        <Text style={style.greeting}>Olá, {user?.name || 'Desconhecido'}</Text>
+        <Text style={style.greeting}>Olá, {user?.name || "Desconhecido"}</Text>
         <Text style={style.subtitle}>Aqui está um resumo do seu mês</Text>
       </View>
 
@@ -141,25 +117,24 @@ export default function DashboardScreen() {
         tip="Alimentação lidera seus gastos este mês"
       />
 
-      <EstimatedSavingsCard 
-        value={-150.25}
-        title="Economia Estimada"
-      />
+      <EstimatedSavingsCard value={-150.25} title="Economia Estimada" />
 
       {/* Seção de Últimas Transações */}
       <View style={style.sectionContainer}>
         <Text style={style.sectionTitle}>Últimas Transações</Text>
-        
-        {mockRecentTransactions.map((transaction) => (
-          <TransactionsListItem
-            key={transaction.id}
-            description={transaction.title}
-            amount={transaction.amount}
-            category={transaction.category.name}
-            date={transaction.date}
-            color={transaction.category.color}
-          />
-        ))}
+
+        {transactionLoading ? (
+          <LoadingContent text="transações" />
+        ) : transactionsError ? (
+          <ErrorContent text="Erro ao carregar transações" />
+        ) : (
+          lastTransactions.map((transaction) => (
+            <TransactionsListItem
+              key={transaction.id}
+              transaction={transaction}
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );
