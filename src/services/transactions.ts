@@ -3,6 +3,7 @@ import {
   Transaction,
   TransactionsResponse,
   CreateTransactionRequest,
+  TransactionDetail,
 } from "../types/transactions";
 import { UpdateGoalRequest } from "@/types";
 
@@ -13,8 +14,15 @@ export class TransactionsService {
     search?: string;
     page?: number;
     page_size?: number;
+    issue_date_end?: string;
+    purchase_group_uuid?: string;
   }): Promise<TransactionsResponse> {
     const response = await api.get(this.baseUrl, { ...params });
+    return response.data;
+  }
+
+  async getTransaction(id: number): Promise<TransactionDetail> {
+    const response = await api.get(`${this.baseUrl}${id}/`);
     return response.data;
   }
 

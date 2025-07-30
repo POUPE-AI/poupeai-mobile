@@ -2,6 +2,7 @@ import {
   useMutation,
   useQueryClient,
   useInfiniteQuery,
+  useQuery,
 } from "@tanstack/react-query";
 import { InvoicesService } from "@/services/invoices";
 import {
@@ -19,16 +20,25 @@ export const useInvoices = (
   return useInfiniteQuery({
     queryKey: invoicesKeys.list(creditCardId, params || {}),
     queryFn: ({ pageParam = 1 }: { pageParam?: number }) =>
-      InvoicesService.getInvoicesByCreditCard(
-        creditCardId,
-        { ...params, page: pageParam }
-      ),
+      InvoicesService.getInvoicesByCreditCard(creditCardId, {
+        ...params,
+        page: pageParam,
+      }),
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = Math.ceil(lastPage.count / (params?.page_size || 5));
       const nextPage = allPages.length + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
+  });
+};
+
+export const useInvoice = (creaditCardID: number, invoiceId: number) => {
+  return useQuery({
+    queryKey: invoicesKeys.detail(invoiceId),
+    queryFn: () =>
+      InvoicesService.getInvoicesByCreditCardAndId(creaditCardID, invoiceId),
+    enabled: !!creaditCardID && !!invoiceId,
   });
 };
 

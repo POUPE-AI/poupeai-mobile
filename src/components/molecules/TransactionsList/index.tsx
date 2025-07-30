@@ -17,9 +17,21 @@ const getGroupKey = (dateString: string): string => {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+  const dateOnly = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const todayOnly = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const yesterdayOnly = new Date(
+    yesterday.getFullYear(),
+    yesterday.getMonth(),
+    yesterday.getDate()
+  );
 
   if (
     dateOnly.getTime() === todayOnly.getTime() ||
@@ -35,12 +47,18 @@ const getGroupKey = (dateString: string): string => {
     return dateString;
   }
 
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-01`;
 };
 
-const groupTransactionsByDate = (transactions: Transaction[]): TransactionSection[] => {
+const groupTransactionsByDate = (
+  transactions: Transaction[]
+): TransactionSection[] => {
   const sortedTransactions = [...transactions].sort(
-    (a, b) => new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+    (a, b) =>
+      new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
   );
 
   const groupedByDate = sortedTransactions.reduce((groups, transaction) => {
@@ -84,10 +102,15 @@ export const TransactionsList = () => {
     [data]
   );
 
-  const sections = useMemo(() => groupTransactionsByDate(transactions), [transactions]);
+  const sections = useMemo(
+    () => groupTransactionsByDate(transactions),
+    [transactions]
+  );
 
   const renderTransaction = useCallback(
-    ({ item }: { item: Transaction }) => <TransactionsListItem transaction={item} />,
+    ({ item }: { item: Transaction }) => (
+      <TransactionsListItem transaction={item} />
+    ),
     []
   );
 

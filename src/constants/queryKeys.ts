@@ -44,8 +44,8 @@ export const budgetsKeys = {
 export const categoriesKeys = {
   all: ['categories'] as const,
   lists: () => [...categoriesKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...categoriesKeys.lists(), { filters }] as const,
+  list: (filters: Record<number, any>) => [...categoriesKeys.lists(), { filters }] as const,
   details: () => [...categoriesKeys.all, 'detail'] as const,
-  detail: (id: string) => [...categoriesKeys.details(), id] as const,
+  detail: (id: number) => [...categoriesKeys.details(), id] as const,
   byType: (type: CategoryType) => [...categoriesKeys.all, 'byType', type] as const,
 };

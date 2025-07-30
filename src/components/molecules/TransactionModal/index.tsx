@@ -6,7 +6,11 @@ import { z } from "zod";
 import { styles } from "./styles";
 import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
-import { CreateTransactionRequest, Transaction } from "@/types/transactions";
+import {
+  CreateTransactionRequest,
+  Transaction,
+  TransactionDetail,
+} from "@/types/transactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
 import { Masks } from "react-native-mask-input";
@@ -15,27 +19,41 @@ import { useCategories } from "@/hooks/useCategories";
 import { BankAccountDropDown } from "../BankAccountDropdown";
 import { CreditCardDropDown } from "../CreditCardDropdown";
 
-const transactionSchema = z.object({
-  description: z
-    .string()
-    .min(1, "Descrição é obrigatória")
-    .max(200, "Descrição deve ter no máximo 200 caracteres"),
-  amount: z
-    .number()
-    .nonoptional("Valor é obrigatório e diferente de zero")
-    .default(0.0),
-  issue_date: z.string().nonempty("Data de emissão é obrigatória"),
-  source_type: z
-    .enum(["CREDIT_CARD", "BANK_ACCOUNT"], {
-      message: "Tipo de transação é obrigatório",
-    })
-    .default("BANK_ACCOUNT"),
-  category: z.number().int().min(1, "Categoria é obrigatória"),
-  bank_account: z.number().int().optional(),
-  credit_card: z.number().int().optional(),
-  is_installment: z.boolean().optional(),
-  total_installments: z.number().int().optional(),
-});
+const transactionSchema = z
+  .object({
+    description: z
+      .string()
+      .min(1, "Descrição é obrigatória")
+      .max(200, "Descrição deve ter no máximo 200 caracteres"),
+    amount: z
+      .number()
+      .nonoptional("Valor é obrigatório e diferente de zero")
+      .default(0.0),
+    issue_date: z.string().nonempty("Data de emissão é obrigatória"),
+    source_type: z
+      .enum(["CREDIT_CARD", "BANK_ACCOUNT"], {
+        message: "Tipo de transação é obrigatório",
+      })
+      .default("BANK_ACCOUNT"),
+    category: z.number().int().min(1, "Categoria é obrigatória"),
+    bank_account: z.number().int().optional(),
+    credit_card: z.number().int().optional(),
+    is_installment: z.boolean().optional(),
+    installment_number: z.number().int().optional(),
+    total_installments: z.number().int().optional(),
+  })
+  .refine(
+    (data) =>
+      !data.is_installment ||
+      (data.installment_number &&
+        data.total_installments &&
+        data.installment_number <= data.total_installments),
+    {
+      message:
+        "O número da parcela e o total de parcelas devem ser preenchidos e o número da parcela não pode ser maior que o total de parcelas.",
+      path: ["installment_number", "total_installments"],
+    }
+  );
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
 
@@ -43,7 +61,7 @@ interface TransactionModalProps {
   visible: boolean;
   onClose: () => void;
   onSave: (data: CreateTransactionRequest) => Promise<void>;
-  transaction?: Transaction | null;
+  transaction?: TransactionDetail | null;
   mode: "create" | "edit";
   onCreateCategory?: () => void;
   onCreateBankAccount?: () => void;
@@ -108,6 +126,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         bank_account: transaction.bank_account,
         credit_card: transaction.credit_card,
         is_installment: transaction.is_installment,
+        installment_number: transaction.installment_number,
+        total_installments: transaction.total_installments,
       });
     } else {
       setFormData({
@@ -160,7 +180,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     try {
       const [day, month, year] = formData.issue_date.split("/");
       const formattedIssueDate =
-        year && month && day ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}` : formData.issue_date;
+        year && month && day
+          ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+          : formData.issue_date;
 
       const saveData: CreateTransactionRequest = {
         description: formData.description,
@@ -171,6 +193,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         bank_account: formData.bank_account,
         credit_card: formData.credit_card,
         is_installment: formData.is_installment,
+        installment_number: formData.installment_number,
         total_installments: formData.total_installments,
       };
 
@@ -282,9 +305,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
         <TransactionTypeSelector
           selectedType={formData.source_type}
-          onTypeSelect={(source_type) =>
-            setFormData((prev) => ({ ...prev, source_type }))
-          }
+          onTypeSelect={(source_type) => {
+            if (source_type === "BANK_ACCOUNT") {
+              setFormData((prev) => ({
+                ...prev,
+                bank_account: bankDefault?.id || undefined,
+                credit_card: undefined,
+                is_installment: false,
+                installment_number: undefined,
+                total_installments: undefined,
+              }));
+            } else if (source_type === "CREDIT_CARD") {
+              setFormData((prev) => ({
+                ...prev,
+                bank_account: undefined,
+                credit_card: undefined,
+              }));
+            }
+
+            setFormData((prev) => ({ ...prev, source_type }));
+          }}
           error={errors.source_type}
         />
 
@@ -314,6 +354,40 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               />
 
               <FormField
+                label="Número da Parcela"
+                placeholder="Número da parcela"
+                value={formData.installment_number?.toString() || ""}
+                keyboardType="numeric"
+                onChangeText={(text: string) => {
+                  const cleanedText = text.replace(/\D/g, "");
+                  const value = parseInt(cleanedText, 10);
+
+                  if (!isNaN(value) && value > 0) {
+                    setFormData((prev) => {
+                      let newTotal = prev.total_installments;
+                      if (!newTotal || value > newTotal) {
+                        newTotal = value;
+                      }
+                      return {
+                        ...prev,
+                        is_installment: true,
+                        installment_number: value,
+                        total_installments: newTotal,
+                      };
+                    });
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      is_installment: undefined,
+                      installment_number: undefined,
+                    }));
+                  }
+                }}
+                error={errors.installment_number}
+                maxLength={2}
+              />
+
+              <FormField
                 label="Parcelas"
                 placeholder="Número de parcelas"
                 value={formData.total_installments?.toString() || ""}
@@ -323,11 +397,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   const value = parseInt(cleanedText, 10);
 
                   if (!isNaN(value) && value > 0) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      is_installment: true,
-                      total_installments: value,
-                    }));
+                    setFormData((prev) => {
+                      let newInstallment = prev.installment_number;
+                      if (newInstallment && newInstallment > value) {
+                        newInstallment = value;
+                      }
+                      return {
+                        ...prev,
+                        is_installment: true,
+                        total_installments: value,
+                        installment_number: newInstallment,
+                      };
+                    });
                   } else {
                     setFormData((prev) => ({
                       ...prev,

@@ -1,7 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { creditCardsService, UpdateCreditCardRequest } from '@/services/creditCards';
-import { CreateCreditCardRequest } from '@/types/cards';
-import { creditCardsKeys } from '@/constants/queryKeys';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  creditCardsService,
+  UpdateCreditCardRequest,
+} from "@/services/creditCards";
+import { CreateCreditCardRequest } from "@/types/cards";
+import { creditCardsKeys } from "@/constants/queryKeys";
 
 export function useCreditCards(params?: {
   search?: string;
@@ -16,6 +19,13 @@ export function useCreditCards(params?: {
 }
 
 export function useCreditCard(id: number, enabled = true) {
+  if (id <= 0) {
+    return {
+      data: null,
+      isLoading: false,
+      error: { message: "Invalid credit card ID" },
+    };
+  }
   return useQuery({
     queryKey: creditCardsKeys.detail(id),
     queryFn: () => creditCardsService.getCreditCardById(id),
@@ -27,7 +37,8 @@ export function useCreateCreditCard() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCreditCardRequest) => creditCardsService.createCreditCard(data),
+    mutationFn: (data: CreateCreditCardRequest) =>
+      creditCardsService.createCreditCard(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: creditCardsKeys.lists(),
@@ -40,7 +51,8 @@ export function useUpdateCreditCard() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateCreditCardRequest) => creditCardsService.updateCreditCard(data),
+    mutationFn: (data: UpdateCreditCardRequest) =>
+      creditCardsService.updateCreditCard(data),
     onSuccess: (updatedCard) => {
       queryClient.invalidateQueries({
         queryKey: creditCardsKeys.lists(),

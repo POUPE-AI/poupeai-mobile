@@ -9,12 +9,20 @@ import {
   UpdateTransactionRequest,
 } from "@/types/transactions";
 import { transactionsService } from "@/services/transactions";
-import { bankAccountsKeys, budgetsKeys, creditCardsKeys, invoicesKeys, transactionsKeys } from "@/constants/queryKeys";
+import {
+  bankAccountsKeys,
+  budgetsKeys,
+  creditCardsKeys,
+  invoicesKeys,
+  transactionsKeys,
+} from "@/constants/queryKeys";
+import tr from "zod/v4/locales/tr.cjs";
 
 export function useTransactions(params?: {
   search?: string;
   page_size?: number;
   issue_date_end?: string;
+  purchase_group_uuid?: string;
 }) {
   return useInfiniteQuery({
     queryKey: transactionsKeys.list(params || {}),
@@ -26,6 +34,23 @@ export function useTransactions(params?: {
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
+  });
+}
+
+export function useTransaction(transactionId: number) {
+  if (transactionId <= 0) {
+    return {
+      data: null,
+      isLoading: false,
+      error: {
+        message: "Invalid transaction ID",
+      },
+    };
+  }
+  return useQuery({
+    queryKey: transactionsKeys.detail(transactionId),
+    queryFn: () => transactionsService.getTransaction(transactionId),
+    enabled: !!transactionId,
   });
 }
 

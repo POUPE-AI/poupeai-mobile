@@ -12,7 +12,18 @@ export class InvoicesService {
     }
   ): Promise<InvoicesResponse> {
     const response = await api.get<InvoicesResponse>(
-      `${this.baseUrl}${creditCardId}/invoices/?ordering=+due_date`, params
+      `${this.baseUrl}${creditCardId}/invoices/?ordering=+due_date`,
+      params
+    );
+    return response.data;
+  }
+
+  static async getInvoicesByCreditCardAndId(
+    creditCardId: number,
+    invoiceId: number
+  ): Promise<Invoice> {
+    const response = await api.get<Invoice>(
+      `${this.baseUrl}${creditCardId}/invoices/${invoiceId}/`
     );
     return response.data;
   }

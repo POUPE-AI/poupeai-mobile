@@ -23,7 +23,6 @@ export const CreditCardDetails: React.FC = () => {
   const { theme } = useTheme();
   const style = styles(theme);
   const navigation = useNavigation();
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [refreshing, setRefreshing] = useState(false);

@@ -59,7 +59,7 @@ export const CategoriesList = () => {
     if (!categoryToDelete) return;
     
     try {
-      await deleteCategoryMutation.mutateAsync(categoryToDelete.id);
+      await deleteCategoryMutation.mutateAsync(categoryToDelete.id.toString());
       setDeleteModalVisible(false);
       setCategoryToDelete(null);
     } catch (error) {

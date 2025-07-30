@@ -5,6 +5,7 @@ import { styles } from './styles';
 import { TABS } from '@/constants/tabs';
 import { AddButtonMenu } from '@/components/atoms/AddButtonMenu';
 import { useTheme } from '@/contexts/ThemeContext';
+import { router } from 'expo-router';
 
 interface TabBarProps {
   state: any;
@@ -32,7 +33,7 @@ export function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
       });
 
       if (!isFocused && !event.defaultPrevented) {
-        navigation.navigate(route.name);
+        router.navigate(route.name);
       }
     };
 
