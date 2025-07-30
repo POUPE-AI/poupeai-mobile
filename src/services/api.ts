@@ -56,7 +56,7 @@ class ApiService {
           code: error.code,
         };
 
-        console.log("❌ Erro na resposta da API:", error.response?.data);
+        console.log("❌ Erro na resposta da API:", error.response);
         if (
           error.response?.data &&
           typeof error.response.data === "object" &&
