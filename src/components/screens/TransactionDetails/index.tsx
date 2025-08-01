@@ -13,7 +13,11 @@ import { getContrastColor } from "@/utils/color";
 import { formatCurrencySimple } from "@/utils/currency";
 import { formatDate_DDMMYYYY, formatDateTime } from "@/utils/date";
 
-import { useDeleteTransaction, useTransaction } from "@/hooks/useTransactions";
+import {
+  useDeleteTransaction,
+  useTransaction,
+  useUpdateTransaction,
+} from "@/hooks/useTransactions";
 import { CategoryTag } from "@/components/atoms/CategoryTag";
 import { BankTransactionInfo } from "@/components/molecules/BankTransactionInfo";
 import { CreditCardTransactionInfo } from "@/components/molecules/CreditCardTransactionInfo";
@@ -21,10 +25,8 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { TransactionsGroupList } from "@/components/molecules/TransactionsGroupList";
 import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
-import { Transaction } from "@/types/transactions";
-import { useQueryClient } from "@tanstack/react-query";
-import tr from "zod/v4/locales/tr.cjs";
-import { transactionsKeys } from "@/constants/queryKeys";
+import { CreateTransactionRequest, Transaction } from "@/types/transactions";
+import { TransactionModal } from "@/components/molecules/TransactionModal";
 
 export const TransactionDetails: React.FC = () => {
   const { theme } = useTheme();
@@ -34,12 +36,29 @@ export const TransactionDetails: React.FC = () => {
   const transactionId = useMemo(() => parseInt(id, 10), [id]);
   const { data: transaction, isLoading, error } = useTransaction(transactionId);
   const deleteTransactionMutation = useDeleteTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
   const [transactionToDelete, setTransactionToDelete] =
     useState<Transaction | null>(null);
 
-  const queryClient = useQueryClient();
+  const handleSaveTransaction = async (data: CreateTransactionRequest) => {
+    if (!transaction) return;
+
+    try {
+      await updateTransactionMutation.mutateAsync({
+        id: transaction?.id,
+        ...data,
+      });
+
+      setEditModalVisible(false);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!transactionToDelete) return;
 
@@ -115,7 +134,11 @@ export const TransactionDetails: React.FC = () => {
               })}
             </Text>
             <View style={style.actionsContainer}>
-              <ActionButton iconName="pencil" onPress={() => null} size={18} />
+              <ActionButton
+                iconName="pencil"
+                onPress={() => setEditModalVisible(true)}
+                size={18}
+              />
               <ActionButton
                 iconName="trash-outline"
                 onPress={() => handleDeleteCategory(transaction)}
@@ -178,6 +201,14 @@ export const TransactionDetails: React.FC = () => {
           />
         )}
       </ScrollView>
+
+      <TransactionModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSaveTransaction}
+        transaction={transaction}
+        mode="edit"
+      />
 
       <ConfirmDeleteModal
         visible={deleteModalVisible}

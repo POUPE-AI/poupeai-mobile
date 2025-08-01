@@ -5,11 +5,19 @@ import { TransactionsList } from "../../molecules/TransactionsList";
 import { styles } from "./styles";
 import { Text } from "@/components/atoms/Text";
 import { Ionicons } from "@expo/vector-icons";
-import { useCreateTransaction, useTransactions, useUpdateTransaction } from "@/hooks/useTransactions";
+import {
+  useCreateTransaction,
+  useTransactions,
+  useUpdateTransaction,
+} from "@/hooks/useTransactions";
 import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useState } from "react";
-import { CreateTransactionRequest, Transaction } from "@/types/transactions";
+import {
+  CreateTransactionRequest,
+  Transaction,
+  TransactionDetail,
+} from "@/types/transactions";
 import { TransactionModal } from "@/components/molecules/TransactionModal";
 import { CategoryModal } from "@/components/molecules/CategoryModal";
 import { useCreateCategory } from "@/hooks/useCategories";
@@ -25,8 +33,7 @@ export const Transactions = () => {
   const style = styles(theme);
 
   const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+    useState<TransactionDetail | null>(null);
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [bankAccountModalVisible, setBankAccountModalVisible] = useState(false);
@@ -34,29 +41,20 @@ export const Transactions = () => {
 
   const handleAddTransaction = () => {
     setSelectedTransaction(null);
-    setModalMode("create");
     setTransactionModalVisible(true);
   };
 
-  const updateTransactionMutation = useUpdateTransaction();
   const createTransactionMutation = useCreateTransaction();
   const handledSaveTransaction = async (data: CreateTransactionRequest) => {
     try {
-      if (modalMode === 'edit' && selectedTransaction) {
-        await updateTransactionMutation.mutateAsync({
-          id: selectedTransaction.id,
-          ...data,
-        });
-      } else {
-        await createTransactionMutation.mutateAsync(data);
-      }
+      await createTransactionMutation.mutateAsync(data);
       setTransactionModalVisible(false);
       setSelectedTransaction(null);
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
-      console.error('Erro ao salvar transação:', error);
+      Alert.alert("Erro", "Ocorreu um erro. Tente novamente.");
+      console.error("Erro ao salvar transação:", error);
     }
-  }
+  };
 
   const createCategoryMutation = useCreateCategory();
   const handleSaveCategory = async (categoryData: CreateCategoryRequest) => {
@@ -73,7 +71,9 @@ export const Transactions = () => {
   };
 
   const createBankAccountMutation = useCreateBankAccount();
-  const handleSaveBankAccount = async (bankAccountData: CreateBankAccountRequest) => {
+  const handleSaveBankAccount = async (
+    bankAccountData: CreateBankAccountRequest
+  ) => {
     try {
       await createBankAccountMutation.mutateAsync(bankAccountData);
       setBankAccountModalVisible(false);
@@ -87,7 +87,9 @@ export const Transactions = () => {
   };
 
   const createCreditCardMutation = useCreateCreditCard();
-  const handleSaveCreditCard = async (creditCardData: CreateCreditCardRequest) => {
+  const handleSaveCreditCard = async (
+    creditCardData: CreateCreditCardRequest
+  ) => {
     try {
       await createCreditCardMutation.mutateAsync(creditCardData);
       setCreditCardModalVisible(false);
@@ -113,13 +115,13 @@ export const Transactions = () => {
       </View>
 
       <TransactionsList />
-      
+
       <TransactionModal
         visible={transactionModalVisible}
         onClose={() => setTransactionModalVisible(false)}
         onSave={handledSaveTransaction}
         transaction={selectedTransaction}
-        mode={modalMode}
+        mode={"create"}
         onCreateCategory={() => setCategoryModalVisible(true)}
         onCreateBankAccount={() => setBankAccountModalVisible(true)}
         onCreateCreditCard={() => setCreditCardModalVisible(true)}

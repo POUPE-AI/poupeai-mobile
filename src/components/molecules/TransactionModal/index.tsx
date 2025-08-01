@@ -25,10 +25,7 @@ const transactionSchema = z
       .string()
       .min(1, "Descrição é obrigatória")
       .max(200, "Descrição deve ter no máximo 200 caracteres"),
-    amount: z
-      .number()
-      .nonoptional("Valor é obrigatório e diferente de zero")
-      .default(0.0),
+    amount: z.number().nonoptional("Valor é obrigatório e diferente de zero"),
     issue_date: z.string().nonempty("Data de emissão é obrigatória"),
     source_type: z
       .enum(["CREDIT_CARD", "BANK_ACCOUNT"], {
@@ -123,12 +120,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         issue_date: transaction.issue_date,
         source_type: transaction.source_type,
         category: transaction.category,
-        bank_account: transaction.bank_account,
-        credit_card: transaction.credit_card,
+        bank_account: transaction.bank_account ?? undefined,
+        credit_card: transaction.credit_card ?? undefined,
         is_installment: transaction.is_installment,
-        installment_number: transaction.installment_number,
-        total_installments: transaction.total_installments,
+        installment_number: transaction.installment_number ?? undefined,
+        total_installments: transaction.total_installments ?? undefined,
       });
+      setAmmountInput(
+        `R$ ${transaction.amount
+          .toFixed(2)
+          .replace(".", ",")
+          .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.")}`
+      );
     } else {
       setFormData({
         description: "",
@@ -169,6 +172,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         });
         setErrors(newErrors);
       }
+
       return false;
     }
   };
@@ -354,40 +358,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               />
 
               <FormField
-                label="Número da Parcela"
-                placeholder="Número da parcela"
-                value={formData.installment_number?.toString() || ""}
-                keyboardType="numeric"
-                onChangeText={(text: string) => {
-                  const cleanedText = text.replace(/\D/g, "");
-                  const value = parseInt(cleanedText, 10);
-
-                  if (!isNaN(value) && value > 0) {
-                    setFormData((prev) => {
-                      let newTotal = prev.total_installments;
-                      if (!newTotal || value > newTotal) {
-                        newTotal = value;
-                      }
-                      return {
-                        ...prev,
-                        is_installment: true,
-                        installment_number: value,
-                        total_installments: newTotal,
-                      };
-                    });
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      is_installment: undefined,
-                      installment_number: undefined,
-                    }));
-                  }
-                }}
-                error={errors.installment_number}
-                maxLength={2}
-              />
-
-              <FormField
                 label="Parcelas"
                 placeholder="Número de parcelas"
                 value={formData.total_installments?.toString() || ""}
@@ -418,6 +388,40 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   }
                 }}
                 error={errors.total_installments}
+                maxLength={2}
+              />
+
+              <FormField
+                label="Número da Parcela"
+                placeholder="Número da parcela"
+                value={formData.installment_number?.toString() || ""}
+                keyboardType="numeric"
+                onChangeText={(text: string) => {
+                  const cleanedText = text.replace(/\D/g, "");
+                  const value = parseInt(cleanedText, 10);
+
+                  if (!isNaN(value) && value > 0) {
+                    setFormData((prev) => {
+                      let newTotal = prev.total_installments;
+                      if (!newTotal || value > newTotal) {
+                        newTotal = value;
+                      }
+                      return {
+                        ...prev,
+                        is_installment: true,
+                        installment_number: value,
+                        total_installments: newTotal,
+                      };
+                    });
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      is_installment: undefined,
+                      installment_number: undefined,
+                    }));
+                  }
+                }}
+                error={errors.installment_number}
                 maxLength={2}
               />
             </>

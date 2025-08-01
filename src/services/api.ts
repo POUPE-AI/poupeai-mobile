@@ -56,7 +56,7 @@ class ApiService {
           code: error.code,
         };
 
-        console.log("❌ Erro na resposta da API:", error.response);
+        /*         console.log("❌ Erro na resposta da API:", error.response);
         if (
           error.response?.data &&
           typeof error.response.data === "object" &&
@@ -69,7 +69,7 @@ class ApiService {
 
         Alert.alert("Erro", apiError.message, [{ text: "OK" }], {
           cancelable: true,
-        });
+        }); */
 
         if (error.response?.status === 401) {
           apiError.message = "Token expirado ou inválido";

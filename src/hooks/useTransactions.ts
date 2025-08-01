@@ -80,6 +80,7 @@ export function useUpdateTransaction() {
       transactionsService.updateTransaction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.details() });
       queryClient.invalidateQueries({ queryKey: bankAccountsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
       queryClient.invalidateQueries({ queryKey: creditCardsKeys.lists() });
