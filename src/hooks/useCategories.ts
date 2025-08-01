@@ -1,16 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesService, CreateCategoryRequest, UpdateCategoryRequest } from '../services/categories';
-import { Category, CategoryType } from '../types/categories';
-import { budgetsKeys } from './useBudgets';
-
-export const categoriesKeys = {
-  all: ['categories'] as const,
-  lists: () => [...categoriesKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...categoriesKeys.lists(), { filters }] as const,
-  details: () => [...categoriesKeys.all, 'detail'] as const,
-  detail: (id: string) => [...categoriesKeys.details(), id] as const,
-  byType: (type: CategoryType) => [...categoriesKeys.all, 'byType', type] as const,
-};
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  categoriesService,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+} from "@/services/categories";
+import { Category, CategoryType } from "@/types/categories";
+import {
+  bankAccountsKeys,
+  budgetsKeys,
+  categoriesKeys,
+  creditCardsKeys,
+  transactionsKeys,
+} from "@/constants/queryKeys";
 
 export function useCategories(params?: {
   search?: string;
@@ -24,7 +25,15 @@ export function useCategories(params?: {
   });
 }
 
-export function useCategory(id: string, enabled = true) {
+export function useCategory(id: number, enabled = true) {
+  if (id <= 0) {
+    return {
+      data: null,
+      isLoading: false,
+      error: { message: "Invalid category ID" },
+    };
+  }
+
   return useQuery({
     queryKey: categoriesKeys.detail(id),
     queryFn: () => categoriesService.getCategoryById(id),
@@ -44,7 +53,8 @@ export function useCreateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCategoryRequest) => categoriesService.createCategory(data),
+    mutationFn: (data: CreateCategoryRequest) =>
+      categoriesService.createCategory(data),
     onSuccess: (newCategory) => {
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
       queryClient.setQueryData(
@@ -56,7 +66,7 @@ export function useCreateCategory() {
       );
     },
     onError: (error) => {
-      console.error('Erro ao criar categoria:', error);
+      console.error("Erro ao criar categoria:", error);
     },
   });
 }
@@ -65,17 +75,20 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateCategoryRequest) => categoriesService.updateCategory(data),
+    mutationFn: (data: UpdateCategoryRequest) =>
+      categoriesService.updateCategory(data),
     onSuccess: (updatedCategory, variables) => {
       queryClient.setQueryData(
         categoriesKeys.detail(variables.id),
         updatedCategory
       );
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: categoriesKeys.byType(updatedCategory.type) });
+      queryClient.invalidateQueries({
+        queryKey: categoriesKeys.byType(updatedCategory.type),
+      });
     },
     onError: (error) => {
-      console.error('Erro ao atualizar categoria:', error);
+      console.error("Erro ao atualizar categoria:", error);
     },
   });
 }
@@ -84,24 +97,30 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => categoriesService.deleteCategory(id),
+    mutationFn: (id: number) => categoriesService.deleteCategory(id),
     onSuccess: (_, deletedId) => {
       queryClient.removeQueries({ queryKey: categoriesKeys.detail(deletedId) });
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: categoriesKeys.all });
       queryClient.invalidateQueries({ queryKey: budgetsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: bankAccountsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
+      queryClient.invalidateQueries({ queryKey: creditCardsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: creditCardsKeys.all });
     },
     onError: (error) => {
-      console.error('Erro ao deletar categoria:', error);
+      console.error("Erro ao deletar categoria:", error);
     },
   });
 }
 
 export function useIncomeCategories() {
-  return useCategoriesByType('income');
+  return useCategoriesByType("income");
 }
 
 export function useExpenseCategories() {
-  return useCategoriesByType('expense');
+  return useCategoriesByType("expense");
 }

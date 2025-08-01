@@ -1,7 +1,7 @@
 export type CategoryType = 'income' | 'expense';
 
 export interface Category {
-  id: string;
+  id: number;
   name: string;
   color_hex: string;
   type: CategoryType;

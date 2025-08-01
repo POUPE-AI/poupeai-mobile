@@ -142,10 +142,6 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
     }
   );
 
-  const selectedBankAccountItem = bankAccountItems.find(
-    (item) => item.id === selectedBankAccount
-  );
-
   const formatDateInput = (value: string) => {
     // Remove non-numeric characters
     const cleaned = value.replace(/\D/g, "");

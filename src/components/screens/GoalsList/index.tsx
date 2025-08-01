@@ -10,6 +10,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { createGoalsListStyles } from "./styles";
 import { useGoals, useCreateGoalDeposit, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/hooks/useGoals";
 import { useState } from "react";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 
 export const GoalsList = () => {
   const { theme } = useTheme();
@@ -132,16 +134,9 @@ export const GoalsList = () => {
       </View>
 
       {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text style={styles.loadingText}>Carregando metas...</Text>
-        </View>
+        <LoadingContent text="metas" />
       ) : error ? (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.feedback.error} />
-          <Text style={styles.errorText}>Erro ao carregar metas</Text>
-          <Text style={styles.errorSubtext}>Tente novamente mais tarde</Text>
-        </View>
+        <ErrorContent text="Erro ao carregar metas" />
       ) : (
         <FlatList
           style={styles.goalsList}

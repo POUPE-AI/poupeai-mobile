@@ -1,14 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { budgetsService } from '../services/budgets';
 import { Budget, CreateBudgetRequest } from '../types/budgets';
-
-export const budgetsKeys = {
-  all: ['budgets'] as const,
-  lists: () => [...budgetsKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...budgetsKeys.lists(), { filters }] as const,
-  details: () => [...budgetsKeys.all, 'detail'] as const,
-  detail: (id: number) => [...budgetsKeys.details(), id] as const,
-};
+import { budgetsKeys } from '@/constants/queryKeys';
 
 export function useBudgets(params?: {
   category?: number;

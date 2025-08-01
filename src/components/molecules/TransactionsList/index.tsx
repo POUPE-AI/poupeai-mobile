@@ -1,102 +1,172 @@
-import React from 'react';
-import { View, SectionList } from 'react-native';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { TransactionsListItem } from '../../atoms/TransactionsListItem';
-import { TransactionsSeparator } from '../../atoms/TransactionsSeparator';
-import { Transaction, TransactionSection } from '../../../types/transactions';
-import { styles } from './styles';
-import { Text } from '@/components/atoms/Text';
+import React, { useMemo, useCallback } from "react";
+import { View, SectionList, ActivityIndicator } from "react-native";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { TransactionsListItem } from "../../atoms/TransactionsListItem";
+import { TransactionsSeparator } from "../../atoms/TransactionsSeparator";
+import { Transaction, TransactionSection } from "../../../types/transactions";
+import { styles } from "./styles";
+import { Text } from "@/components/atoms/Text";
+import { useTransactions } from "@/hooks/useTransactions";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
+import { colors } from "@/constants/theme";
 
-interface TransactionsListProps {
-  transactions: Transaction[];
-}
+const getGroupKey = (dateString: string): string => {
+  const date = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-export const TransactionsList = ({ transactions }: TransactionsListProps) => {
+  const dateOnly = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const todayOnly = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const yesterdayOnly = new Date(
+    yesterday.getFullYear(),
+    yesterday.getMonth(),
+    yesterday.getDate()
+  );
+
+  if (
+    dateOnly.getTime() === todayOnly.getTime() ||
+    dateOnly.getTime() === yesterdayOnly.getTime()
+  ) {
+    return dateString;
+  }
+
+  if (
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  ) {
+    return dateString;
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-01`;
+};
+
+const groupTransactionsByDate = (
+  transactions: Transaction[]
+): TransactionSection[] => {
+  const sortedTransactions = [...transactions].sort(
+    (a, b) =>
+      new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+  );
+
+  const groupedByDate = sortedTransactions.reduce((groups, transaction) => {
+    const groupKey = getGroupKey(transaction.issue_date);
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = {
+        title: groupKey,
+        date: groupKey,
+        data: [],
+      };
+    }
+
+    groups[groupKey].data.push(transaction);
+    return groups;
+  }, {} as Record<string, TransactionSection>);
+
+  return Object.values(groupedByDate).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+};
+
+export const TransactionsList = () => {
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const getSections = (): TransactionSection[] => {
-    const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useTransactions({
+    issue_date_end: new Date().toISOString().split("T")[0],
+  });
 
-    const getGroupKey = (dateString: string): string => {
-      const date = new Date(dateString);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
-
-      if (dateOnly.getTime() === todayOnly.getTime() || 
-          dateOnly.getTime() === yesterdayOnly.getTime()) {
-        return dateString;
-      }
-
-      if (date.getMonth() === today.getMonth() && 
-          date.getFullYear() === today.getFullYear()) {
-        return dateString;
-      }
-
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
-    };
-
-    const groupedByDate = sortedTransactions.reduce((groups, transaction) => {
-      const groupKey = getGroupKey(transaction.date);
-      
-      if (!groups[groupKey]) {
-        groups[groupKey] = {
-          title: groupKey, 
-          date: groupKey, // Usa a chave como data para o FormatDate
-          data: []
-        };
-      }
-      
-      groups[groupKey].data.push(transaction);
-      return groups;
-    }, {} as Record<string, TransactionSection>);
-
-    return Object.values(groupedByDate).sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-  };
-
-  const renderTransaction = ({ item }: { item: Transaction }) => (
-    <TransactionsListItem
-      description={item.title}
-      amount={item.amount}
-      category={item.category.name}
-      date={item.date}
-      color={item.category.color}
-    />
+  const transactions = useMemo(
+    () => data?.pages.flatMap((page) => page.results) || [],
+    [data]
   );
 
-  const renderSectionHeader = ({ section }: { section: TransactionSection }) => (
-    <TransactionsSeparator date={section.date} />
+  const sections = useMemo(
+    () => groupTransactionsByDate(transactions),
+    [transactions]
   );
 
-  if (transactions.length === 0) {
-    return (
+  const renderTransaction = useCallback(
+    ({ item }: { item: Transaction }) => (
+      <TransactionsListItem transaction={item} />
+    ),
+    []
+  );
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: TransactionSection }) => (
+      <TransactionsSeparator date={section.date} />
+    ),
+    []
+  );
+
+  const renderEmptyList = useCallback(
+    () => (
       <View style={style.emptyContainer}>
-        <Text color='text' variant='h3'>Nenhuma transação encontrada</Text>
-        <Text color='text' variant='caption'>Adicione uma nova transação para começar</Text>
+        <Text color="text" variant="h3">
+          Nenhuma transação encontrada
+        </Text>
+        <Text color="text" variant="caption">
+          Adicione uma nova transação para começar
+        </Text>
       </View>
-    );
-  }
+    ),
+    [style.emptyContainer]
+  );
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <View style={style.container}>
-      <SectionList
-        sections={getSections()}
-        keyExtractor={(item) => item.id}
-        renderItem={renderTransaction}
-        renderSectionHeader={renderSectionHeader}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={style.listContent}
-        stickySectionHeadersEnabled={false}
-      />
+      {isLoading ? (
+        <LoadingContent text="transações" />
+      ) : error ? (
+        <ErrorContent text="Erro ao carregar transações" />
+      ) : (
+        <SectionList
+          sections={sections}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderTransaction}
+          renderSectionHeader={renderSectionHeader}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={style.listContent}
+          stickySectionHeadersEnabled={false}
+          ListEmptyComponent={renderEmptyList}
+          onStartReached={() => refetch}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator size="small" color={colors.primary[500]} />
+            ) : null
+          }
+        />
+      )}
     </View>
   );
 };

@@ -1,85 +1,105 @@
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Alert, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { TransactionsList } from "../../molecules/TransactionsList";
-import { Transaction } from "../../../types/transactions";
 import { styles } from "./styles";
 import { Text } from "@/components/atoms/Text";
 import { Ionicons } from "@expo/vector-icons";
-
-const mockTransactions: Transaction[] = [
-  {
-    id: "1",
-    title: "Salário",
-    category: { name: "Trabalho", color: "#4CAF50" },
-    amount: 3200,
-    date: "2025-07-22",
-    type: "income",
-    icon: "card",
-  },
-  {
-    id: "2",
-    title: "Almoço",
-    category: { name: "Alimentação", color: "#FF9800" },
-    amount: -25,
-    date: "2025-07-22",
-    type: "expense",
-    icon: "restaurant",
-  },
-  {
-    id: "3",
-    title: "Uber",
-    category: { name: "Transporte", color: "#2196F3" },
-    amount: -15,
-    date: "2025-07-21",
-    type: "expense",
-    icon: "car",
-  },
-  {
-    id: "4",
-    title: "Freelance",
-    category: { name: "Trabalho", color: "#4CAF50" },
-    amount: 500,
-    date: "2025-07-20",
-    type: "income",
-    icon: "laptop",
-  },
-  {
-    id: "5",
-    title: "Supermercado",
-    category: { name: "Alimentação", color: "#FF9800" },
-    amount: -120,
-    date: "2025-06-15",
-    type: "expense",
-    icon: "basket",
-  },
-  {
-    id: "6",
-    title: "Conta de Luz",
-    category: { name: "Contas", color: "#9E9E9E" },
-    amount: -80,
-    date: "2025-06-10",
-    type: "expense",
-    icon: "lightbulb",
-  },
-  {
-    id: "7",
-    title: "Venda de Produto",
-    category: { name: "Vendas", color: "#FF5722" },
-    amount: 200,
-    date: "2025-05-30",
-    type: "income",
-    icon: "shopping-cart",
-  },
-];
+import {
+  useCreateTransaction,
+  useTransactions,
+  useUpdateTransaction,
+} from "@/hooks/useTransactions";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
+import { useState } from "react";
+import {
+  CreateTransactionRequest,
+  Transaction,
+  TransactionDetail,
+} from "@/types/transactions";
+import { TransactionModal } from "@/components/molecules/TransactionModal";
+import { CategoryModal } from "@/components/molecules/CategoryModal";
+import { useCreateCategory } from "@/hooks/useCategories";
+import { BankAccountModal } from "@/components/molecules/BankAccountModal";
+import { useCreateBankAccount } from "@/hooks/useBankAccounts";
+import { CreditCardModal } from "@/components/molecules/CreditCardModal";
+import { useCreateCreditCard } from "@/hooks/useCreditCards";
+import { CreateBankAccountRequest, CreateCreditCardRequest } from "@/types";
+import { CreateCategoryRequest } from "@/services/categories";
 
 export const Transactions = () => {
   const { theme } = useTheme();
   const style = styles(theme);
 
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<TransactionDetail | null>(null);
+  const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [bankAccountModalVisible, setBankAccountModalVisible] = useState(false);
+  const [creditCardModalVisible, setCreditCardModalVisible] = useState(false);
+
   const handleAddTransaction = () => {
-    // TODO: Implementar adição de transação
-    console.log("Adicionar nova transação");
+    setSelectedTransaction(null);
+    setTransactionModalVisible(true);
+  };
+
+  const createTransactionMutation = useCreateTransaction();
+  const handledSaveTransaction = async (data: CreateTransactionRequest) => {
+    try {
+      await createTransactionMutation.mutateAsync(data);
+      setTransactionModalVisible(false);
+      setSelectedTransaction(null);
+    } catch (error) {
+      Alert.alert("Erro", "Ocorreu um erro. Tente novamente.");
+      console.error("Erro ao salvar transação:", error);
+    }
+  };
+
+  const createCategoryMutation = useCreateCategory();
+  const handleSaveCategory = async (categoryData: CreateCategoryRequest) => {
+    try {
+      await createCategoryMutation.mutateAsync(categoryData);
+      setCategoryModalVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        "Não foi possível criar a categoria. Tente novamente."
+      );
+      throw error;
+    }
+  };
+
+  const createBankAccountMutation = useCreateBankAccount();
+  const handleSaveBankAccount = async (
+    bankAccountData: CreateBankAccountRequest
+  ) => {
+    try {
+      await createBankAccountMutation.mutateAsync(bankAccountData);
+      setBankAccountModalVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        "Não foi possível salvar a conta bancária. Tente novamente."
+      );
+      throw error;
+    }
+  };
+
+  const createCreditCardMutation = useCreateCreditCard();
+  const handleSaveCreditCard = async (
+    creditCardData: CreateCreditCardRequest
+  ) => {
+    try {
+      await createCreditCardMutation.mutateAsync(creditCardData);
+      setCreditCardModalVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Erro",
+        "Não foi possível salvar o cartão de crédito. Tente novamente."
+      );
+      throw error;
+    }
   };
 
   return (
@@ -94,7 +114,39 @@ export const Transactions = () => {
         </TouchableOpacity>
       </View>
 
-      <TransactionsList transactions={mockTransactions} />
+      <TransactionsList />
+
+      <TransactionModal
+        visible={transactionModalVisible}
+        onClose={() => setTransactionModalVisible(false)}
+        onSave={handledSaveTransaction}
+        transaction={selectedTransaction}
+        mode={"create"}
+        onCreateCategory={() => setCategoryModalVisible(true)}
+        onCreateBankAccount={() => setBankAccountModalVisible(true)}
+        onCreateCreditCard={() => setCreditCardModalVisible(true)}
+      />
+
+      <CategoryModal
+        visible={categoryModalVisible}
+        onClose={() => setCategoryModalVisible(false)}
+        onSave={handleSaveCategory}
+        mode="create"
+      />
+
+      <BankAccountModal
+        visible={bankAccountModalVisible}
+        onClose={() => setBankAccountModalVisible(false)}
+        onSave={handleSaveBankAccount}
+        mode="create"
+      />
+
+      <CreditCardModal
+        visible={creditCardModalVisible}
+        onClose={() => setCreditCardModalVisible(false)}
+        onSave={handleSaveCreditCard}
+        mode="create"
+      />
     </View>
   );
 };

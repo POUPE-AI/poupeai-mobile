@@ -15,7 +15,7 @@ export interface CreateCategoryRequest {
 }
 
 export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
-  id: string;
+  id: number;
 }
 
 export class CategoriesService {
@@ -31,7 +31,7 @@ export class CategoriesService {
     return response.data;
   }
 
-  async getCategoryById(id: string): Promise<Category> {
+  async getCategoryById(id: number): Promise<Category> {
     const response = await api.get<Category>(`${this.baseUrl}${id}/`);
     return response.data;
   }
@@ -48,7 +48,7 @@ export class CategoriesService {
   }
 
   // Deletar categoria
-  async deleteCategory(id: string): Promise<void> {
+  async deleteCategory(id: number): Promise<void> {
     await api.delete(`${this.baseUrl}${id}/`);
   }
 

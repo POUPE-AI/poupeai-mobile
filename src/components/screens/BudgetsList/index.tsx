@@ -97,7 +97,7 @@ export const BudgetsList = () => {
   };
 
   const calculateProgress = (budget: Budget): BudgetProgress => {
-    const amount = parseFloat(budget.amount);
+    const amount = budget.amount;
     const percentage = (budget.actual_amount / amount) * 100;
     const remaining = amount - budget.actual_amount;
     
@@ -129,7 +129,7 @@ export const BudgetsList = () => {
 
     const adaptedBudget = {
       ...item,
-      amount: parseFloat(item.amount)
+      amount: item.amount
     } as any;
 
     return (

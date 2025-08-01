@@ -1,44 +1,85 @@
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/atoms/Text";
 import { colors } from "@/constants/theme";
 import { styles } from "./styles";
 import { useTheme } from "@/contexts/ThemeContext";
+import { Transaction } from "@/types/transactions";
+import { useCategories } from "@/hooks/useCategories";
+import { formatCurrencySimple } from "@/utils/currency";
+import { router, useSegments } from "expo-router";
 
 interface TransactionsListItemProps {
-    description: string;
-    amount: number;
-    category: string;
-    date: string;
-    color?: string;
+  transaction: Transaction;
 }
 
-export const TransactionsListItem = ({description, amount, category, date, color = colors.feedback.error}: TransactionsListItemProps) => {
-    const { theme } = useTheme();
-    const style = styles(theme);
-  
-    const ammountColor = (amount >= 0 ? colors.feedback.success : colors.feedback.error);
+export const TransactionsListItem = ({
+  transaction,
+}: TransactionsListItemProps) => {
+  const { theme } = useTheme();
+  const style = styles(theme);
 
-    const descriptionText = description.length > 20 ? `${description.substring(0, 20)}...` : description;
+  const descriptionText =
+    transaction.description.length > 20
+      ? `${transaction.description.substring(0, 20)}...`
+      : transaction.description;
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    }
-
-    return (
-    <View style={[style.container, { borderColor: color }]}>
-        <View style={style.leftContainer}>
-            <Text style={style.descriptionText}>{descriptionText}</Text>
-            <Text style={style.categoryText}>{category}</Text>
-        </View>
-        <View style={style.rightContainer}>
-            <Text style={[style.amountText, { color: ammountColor }]}>{amount < 0 ? `- R$ ${Math.abs(amount).toFixed(2)}` : `R$ ${amount.toFixed(2)}`}</Text>
-            <Text style={style.dateText}>{formatDate(date)}</Text>
-        </View>
-    </View>
+  const { data: categories } = useCategories();
+  const category = categories?.results.find(
+    (cat) => cat.id === transaction.category
   );
-}
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const amountText = `${
+    category?.type === "expense" ? "- " : ""
+  }${formatCurrencySimple(Math.abs(transaction.amount))}`;
+  const amountColor =
+    category?.type === "expense"
+      ? colors.feedback.error
+      : colors.feedback.success;
+
+  const segments = useSegments();
+  const isInTransactionStack = segments.includes("transactions");
+
+  const handleOnPress = () => {
+    if (isInTransactionStack) {
+      router.push(`/transactions/${transaction.id}`);
+    } else {
+      router.navigate("/transactions");
+      setTimeout(() => {
+        router.push(`/transactions/${transaction.id}`);
+      }, 20);
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      style={[
+        style.container,
+        { borderColor: category?.color_hex || colors.feedback.error },
+      ]}
+      onPress={handleOnPress}
+      activeOpacity={0.7}
+    >
+      <View style={style.leftContainer}>
+        <Text style={style.descriptionText}>{descriptionText}</Text>
+        <Text style={style.categoryText}>
+          {category?.name || "Desconhecido"}
+        </Text>
+      </View>
+      <View style={style.rightContainer}>
+        <Text style={[style.amountText, { color: amountColor }]}>
+          {amountText}
+        </Text>
+        <Text style={style.dateText}>{formatDate(transaction.issue_date)}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};

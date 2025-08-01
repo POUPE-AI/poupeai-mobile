@@ -1,6 +1,7 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { storageKeys } from '../config/auth';
+import axios, { AxiosInstance, AxiosError } from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storageKeys } from "../config/auth";
+import { Alert } from "react-native";
 
 export interface ApiError {
   message: string;
@@ -17,7 +18,7 @@ class ApiService {
       baseURL: this.baseURL,
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -35,7 +36,7 @@ class ApiService {
             config.headers.Authorization = `Bearer ${tokenData.access_token}`;
           }
         } catch (error) {
-          console.log('❌ Erro ao obter token para requisição:', error);
+          console.log("❌ Erro ao obter token para requisição:", error);
         }
 
         return config;
@@ -50,26 +51,43 @@ class ApiService {
       (response) => response,
       (error: AxiosError) => {
         const apiError: ApiError = {
-          message: 'Erro na requisição',
+          message: "Erro na requisição",
           status: error.response?.status,
           code: error.code,
         };
 
-        console.log(error.response)
+        /*         console.log("❌ Erro na resposta da API:", error.response);
+        if (
+          error.response?.data &&
+          typeof error.response.data === "object" &&
+          "message" in error.response.data
+        ) {
+          apiError.message =
+            (error.response.data as { message?: string }).message ||
+            apiError.message;
+        }
+
+        Alert.alert("Erro", apiError.message, [{ text: "OK" }], {
+          cancelable: true,
+        }); */
 
         if (error.response?.status === 401) {
-          apiError.message = 'Token expirado ou inválido';
+          apiError.message = "Token expirado ou inválido";
         } else if (error.response?.status === 403) {
-          apiError.message = 'Acesso negado';
+          apiError.message = "Acesso negado";
         } else if (error.response?.status === 404) {
-          apiError.message = 'Recurso não encontrado';
+          apiError.message = "Recurso não encontrado";
         } else if (error.response?.status === 500) {
-          apiError.message = 'Erro interno do servidor';
-        } else if (error.code === 'ECONNABORTED') {
-          apiError.message = 'Timeout da requisição';
-        } else if (error.message === 'Network Error') {
-          apiError.message = 'Erro de conexão';
-        } else if (error.response?.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+          apiError.message = "Erro interno do servidor";
+        } else if (error.code === "ECONNABORTED") {
+          apiError.message = "Timeout da requisição";
+        } else if (error.message === "Network Error") {
+          apiError.message = "Erro de conexão";
+        } else if (
+          error.response?.data &&
+          typeof error.response.data === "object" &&
+          "message" in error.response.data
+        ) {
           apiError.message = (error.response.data as any).message;
         }
 
