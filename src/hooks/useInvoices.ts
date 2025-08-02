@@ -10,6 +10,7 @@ import {
   invoicesKeys,
   transactionsKeys,
 } from "@/constants/queryKeys";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useInvoices = (
   creditCardId: number,
@@ -17,6 +18,8 @@ export const useInvoices = (
     page_size?: number;
   }
 ) => {
+  const { isAuthenticated, user } = useAuth();
+
   return useInfiniteQuery({
     queryKey: invoicesKeys.list(creditCardId, params || {}),
     queryFn: ({ pageParam = 1 }: { pageParam?: number }) =>
@@ -30,6 +33,7 @@ export const useInvoices = (
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
+    enabled: isAuthenticated && !!user && !!creditCardId, // Só executa se o usuário estiver autenticado e creditCardId for válido
   });
 };
 

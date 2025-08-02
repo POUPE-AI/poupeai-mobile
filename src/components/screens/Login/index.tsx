@@ -13,16 +13,16 @@ export function Login() {
   const style = styles(theme);
 
   const handleLogin = async () => {
-    const success = await signIn();
+    const result = await signIn();
 
-    if (!success) {
+    if (result.success) {
+      router.replace("/(drawer)/(tabs)/");
+    } else if (!result.cancelled) {
       Alert.alert(
         "Erro na autenticação",
         "Não foi possível realizar o login. Tente novamente.",
         [{ text: "OK" }]
       );
-    } else {
-      router.replace("/(drawer)/(tabs)/");
     }
   };
 

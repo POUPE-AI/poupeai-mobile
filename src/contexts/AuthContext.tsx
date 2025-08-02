@@ -352,11 +352,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [request, redirectUri, router, scheduleTokenRefresh]
   );
 
-  const signIn = useCallback(async (): Promise<boolean> => {
+  const signIn = useCallback(async (): Promise<{
+    success: boolean;
+    cancelled?: boolean;
+  }> => {
     try {
       if (!request) {
         console.log("⚠️ Request não está pronto para autenticação");
-        return false;
+        return { success: false };
       }
 
       console.log("🚀 Iniciando processo de login...");
@@ -365,20 +368,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       switch (result.type) {
         case "success":
           console.log("✅ Login bem-sucedido");
-          return true;
+          return { success: true };
         case "cancel":
           console.log("ℹ️ Login cancelado pelo usuário");
-          return false;
+          return { success: false, cancelled: true };
         case "error":
           console.log("❌ Erro no login:", result.error);
-          return false;
+          return { success: false };
         default:
           console.log(`⚠️ Tipo de resposta inesperado: ${result.type}`);
-          return false;
+          return { success: false };
       }
     } catch (error) {
       console.log("❌ Erro inesperado no login:", error);
-      return false;
+      return { success: false };
     }
   }, [promptAsync, request]);
 

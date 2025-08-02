@@ -1,12 +1,12 @@
-import React from 'react';
-import { ScrollView, View } from 'react-native';
-import { router } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Text } from '@/components/atoms/Text';
-import { SettingsItem } from '@/components/molecules/SettingsItem';
-import { ThemeDropdown } from '@/components/atoms/ThemeDropdown';
-import { createSettingsScreenStyles } from './styles';
+import React from "react";
+import { ScrollView, View } from "react-native";
+import { router } from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Text } from "@/components/atoms/Text";
+import { SettingsItem } from "@/components/molecules/SettingsItem";
+import { ThemeDropdown } from "@/components/atoms/ThemeDropdown";
+import { createSettingsScreenStyles } from "./styles";
 
 export const SettingsScreen = () => {
   const { colors } = useTheme();
@@ -17,11 +17,11 @@ export const SettingsScreen = () => {
   };
 
   const navigateToHelp = () => {
-    router.push('/settings/help');
+    router.push("/settings/help");
   };
 
   const navigateToAbout = () => {
-    router.push('/settings/about');
+    router.push("/settings/about");
   };
 
   const navigateToExport = () => {
@@ -29,7 +29,10 @@ export const SettingsScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 88 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 88 }}
+    >
       <View style={styles.section}>
         <Text variant="subtitle" style={styles.sectionTitle}>
           Aparência
@@ -65,6 +68,7 @@ export const SettingsScreen = () => {
           title="Exportar dados"
           subtitle="Baixe uma cópia dos seus dados"
           icon="download-outline"
+          disabled
           onPress={navigateToExport}
         />
       </View>

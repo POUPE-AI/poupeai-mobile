@@ -10,6 +10,7 @@ export const styles = (themeType: ThemeType) =>
       alignItems: "center",
       paddingVertical: 40,
       paddingHorizontal: 32,
+      backgroundColor: colors.theme[themeType].background,
     },
     errorText: {
       fontSize: 18,
