@@ -5,40 +5,20 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
 import { Button } from "@/components/atoms/Button";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { ReportHeaderRight } from "@/components/atoms/ReportHeaderRight";
+import { useOverviewReport, useRefreshReports } from "@/hooks/useReports";
 import { styles } from "./styles";
-
-// Mock data - será substituído pelos dados reais da API
-const mockOverviewData = {
-  header: {
-    status: 200,
-    message: "Relatório financeiro gerado com sucesso.",
-  },
-  content: {
-    balance: 3403.36,
-    totalIncome: 3600,
-    totalExpense: 696.64,
-    categories: [
-      { name: "Salario", balance: 3600 },
-      { name: "Mercado", balance: -338.1 },
-      { name: "Casa", balance: -149.64 },
-      { name: "Trabalho", balance: -150 },
-      { name: "Lazer", balance: -26 },
-    ],
-    startDate: "2025-07-02",
-    endDate: "2025-08-02",
-    textAnalysis:
-      "O período analisado apresenta um saldo positivo, impulsionado pela receita de salários. As maiores despesas concentram-se nas categorias 'Mercado' e 'Casa'.",
-    suggestion:
-      "Monitore seus gastos na categoria 'Mercado' para otimizar seu orçamento. Considere alternativas para reduzir os custos com 'Casa'.",
-    createdAt: "2025-08-02T20:48:01.8747607Z",
-  },
-};
 
 export default function OverviewReportScreen() {
   const { colors: themeColors } = useTheme();
   const navigation = useNavigation();
   const style = styles(themeColors);
+
+  // Hooks para buscar dados e refrescar
+  const { data: reportData, isLoading, error, refetch } = useOverviewReport();
+  const refreshReportsMutation = useRefreshReports();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -47,8 +27,13 @@ export default function OverviewReportScreen() {
     }).format(value);
   };
 
-  const handleRefresh = () => {
-    console.log("Refreshing overview report...");
+  const handleRefresh = async () => {
+    try {
+      await refreshReportsMutation.mutateAsync();
+      refetch();
+    } catch (error) {
+      console.error("Erro ao atualizar relatório:", error);
+    }
   };
 
   useLayoutEffect(() => {
@@ -56,6 +41,16 @@ export default function OverviewReportScreen() {
       headerRight: () => <ReportHeaderRight onRefresh={handleRefresh} />,
     });
   }, [navigation]);
+
+  if (isLoading) {
+    return <LoadingContent text="Carregando relatório..." />;
+  }
+
+  if (error || !reportData) {
+    return <ErrorContent text="Erro ao carregar relatório de visão geral" />;
+  }
+
+  const { content } = reportData;
 
   return (
     <View style={style.container}>
@@ -68,35 +63,28 @@ export default function OverviewReportScreen() {
         <View style={style.section}>
           <Text style={style.sectionTitle}>Resumo do Período</Text>
           <Text style={style.period}>
-            {new Date(mockOverviewData.content.startDate).toLocaleDateString(
-              "pt-BR"
-            )}{" "}
-            -{" "}
-            {new Date(mockOverviewData.content.endDate).toLocaleDateString(
-              "pt-BR"
-            )}
+            {new Date(content.startDate).toLocaleDateString("pt-BR")} -{" "}
+            {new Date(content.endDate).toLocaleDateString("pt-BR")}
           </Text>
 
           <FinancialInfoCard
             title="Saldo Atual"
-            value={formatCurrency(mockOverviewData.content.balance)}
-            variant={
-              mockOverviewData.content.balance >= 0 ? "positive" : "negative"
-            }
+            value={formatCurrency(content.balance)}
+            variant={content.balance >= 0 ? "positive" : "negative"}
           />
 
           <View style={style.row}>
             <View style={style.halfCard}>
               <FinancialInfoCard
                 title="Receitas"
-                value={formatCurrency(mockOverviewData.content.totalIncome)}
+                value={formatCurrency(content.totalIncome)}
                 variant="positive"
               />
             </View>
             <View style={style.halfCard}>
               <FinancialInfoCard
                 title="Despesas"
-                value={formatCurrency(mockOverviewData.content.totalExpense)}
+                value={formatCurrency(content.totalExpense)}
                 variant="negative"
               />
             </View>
@@ -106,7 +94,7 @@ export default function OverviewReportScreen() {
         {/* Categorias */}
         <View style={style.section}>
           <Text style={style.sectionTitle}>Principais Categorias</Text>
-          {mockOverviewData.content.categories.map((category, index) => (
+          {content.categories.map((category, index) => (
             <FinancialInfoCard
               key={index}
               title={category.name}
@@ -120,14 +108,14 @@ export default function OverviewReportScreen() {
         <View style={style.section}>
           <AnalysisCard
             title="Análise do Período"
-            content={mockOverviewData.content.textAnalysis}
+            content={content.textAnalysis}
             icon="analytics-outline"
             variant="analysis"
           />
 
           <AnalysisCard
             title="Sugestões"
-            content={mockOverviewData.content.suggestion}
+            content={content.suggestion}
             icon="bulb-outline"
             variant="suggestion"
           />

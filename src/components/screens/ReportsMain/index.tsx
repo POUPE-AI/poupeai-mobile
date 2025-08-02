@@ -29,8 +29,8 @@ const REPORT_TYPES = [
   },
   {
     key: "category",
-    title: "Por Categoria",
-    description: "Análise por categoria específica",
+    title: "Análise por Categorias",
+    description: "Relatório detalhado por todas as categorias",
     icon: "pie-chart-outline" as const,
     route: "(tabs)/reports/category",
   },

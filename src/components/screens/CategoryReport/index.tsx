@@ -6,62 +6,20 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
 import { Button } from "@/components/atoms/Button";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { ReportHeaderRight } from "@/components/atoms/ReportHeaderRight";
+import { useCategoryReport, useRefreshReports } from "@/hooks/useReports";
 import { styles } from "./styles";
-
-// Mock data - será substituído pelos dados reais da API
-const mockCategoryData = {
-  header: {
-    status: 200,
-    message: "Relatório financeiro gerado com sucesso.",
-  },
-  content: {
-    category: "Geral",
-    total: 3706.32,
-    average: 716.78,
-    trend: "Aumento nos gastos com Mercado.",
-    peakDays: ["2025-08-01", "2025-08-02", "2025-07-08"],
-    transactions: [
-      {
-        description: "Salario",
-        date: "2025-08-01T00:00:00",
-        amount: 1800,
-      },
-      {
-        description: "Salario",
-        date: "2025-07-08T00:00:00",
-        amount: 1800,
-      },
-      {
-        description: "Compras Mercado",
-        date: "2025-08-01T00:00:00",
-        amount: 186.94,
-      },
-      {
-        description: "Compra de Computador (1/8)",
-        date: "2025-08-01T00:00:00",
-        amount: 150,
-      },
-      {
-        description: "Caern",
-        date: "2025-08-02T00:00:00",
-        amount: 108.96,
-      },
-    ],
-    startDate: "2025-07-02",
-    endDate: "2025-08-02",
-    textAnalysis:
-      "As categorias Salário e Mercado são as que mais impactam no seu orçamento. Analise seus gastos e ganhos para um melhor planejamento financeiro.",
-    suggestion:
-      "Monitore seus gastos com Mercado e Casa para otimizar seu orçamento.",
-    createdAt: "2025-08-02T20:51:30.7103157Z",
-  },
-};
 
 export default function CategoryReportScreen() {
   const { colors: themeColors } = useTheme();
   const navigation = useNavigation();
   const style = styles(themeColors);
+
+  // Hooks para buscar dados e refrescar
+  const { data: reportData, isLoading, error, refetch } = useCategoryReport();
+  const refreshReportsMutation = useRefreshReports();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -74,9 +32,13 @@ export default function CategoryReportScreen() {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
-  const handleRefresh = () => {
-    // TODO: Implementar refresh dos dados
-    console.log("Refreshing category report...");
+  const handleRefresh = async () => {
+    try {
+      await refreshReportsMutation.mutateAsync();
+      refetch();
+    } catch (error) {
+      console.error("Erro ao atualizar relatório:", error);
+    }
   };
 
   useLayoutEffect(() => {
@@ -85,6 +47,16 @@ export default function CategoryReportScreen() {
     });
   }, [navigation]);
 
+  if (isLoading) {
+    return <LoadingContent text="Carregando análise por categorias..." />;
+  }
+
+  if (error || !reportData) {
+    return <ErrorContent text="Erro ao carregar análise por categorias" />;
+  }
+
+  const { content } = reportData;
+
   return (
     <View style={style.container}>
       <ScrollView
@@ -92,49 +64,44 @@ export default function CategoryReportScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 48 }}
       >
-        {/* Informações da Categoria */}
+        {/* Análise por Categorias */}
         <View style={style.section}>
-          <Text style={style.sectionTitle}>
-            Categoria: {mockCategoryData.content.category}
-          </Text>
+          <Text style={style.sectionTitle}>Análise por Categorias</Text>
           <Text style={style.period}>
-            {formatDate(mockCategoryData.content.startDate)} -{" "}
-            {formatDate(mockCategoryData.content.endDate)}
+            {formatDate(content.startDate)} - {formatDate(content.endDate)}
           </Text>
 
           <View style={style.row}>
             <View style={style.halfCard}>
               <FinancialInfoCard
                 title="Total Movimentado"
-                value={formatCurrency(mockCategoryData.content.total)}
+                value={formatCurrency(content.total)}
                 variant="default"
               />
             </View>
             <View style={style.halfCard}>
               <FinancialInfoCard
-                title="Média Diária"
-                value={formatCurrency(mockCategoryData.content.average)}
+                title="Média"
+                value={formatCurrency(content.average)}
                 variant="default"
               />
             </View>
           </View>
         </View>
 
-        {/* Tendência */}
+        {/* Tendência das Categorias */}
         <View style={style.section}>
-          <Text style={style.sectionTitle}>Tendência</Text>
+          <Text style={style.sectionTitle}>Tendência das Categorias</Text>
           <View style={style.trendContainer}>
             <Ionicons name="trending-up" size={20} color="#17a2b8" />
-            <Text style={style.trendText}>
-              {mockCategoryData.content.trend}
-            </Text>
+            <Text style={style.trendText}>{content.trend}</Text>
           </View>
         </View>
 
-        {/* Dias de Pico */}
+        {/* Dias de Maior Atividade */}
         <View style={style.section}>
-          <Text style={style.sectionTitle}>Dias de Maior Movimentação</Text>
-          {mockCategoryData.content.peakDays.map((day, index) => (
+          <Text style={style.sectionTitle}>Dias de Maior Atividade</Text>
+          {content.peakDays.map((day, index) => (
             <View key={index} style={style.peakDayItem}>
               <Ionicons
                 name="calendar"
@@ -146,10 +113,12 @@ export default function CategoryReportScreen() {
           ))}
         </View>
 
-        {/* Transações Principais */}
+        {/* Principais Movimentações por Categoria */}
         <View style={style.section}>
-          <Text style={style.sectionTitle}>Principais Transações</Text>
-          {mockCategoryData.content.transactions.map((transaction, index) => (
+          <Text style={style.sectionTitle}>
+            Principais Movimentações por Categoria
+          </Text>
+          {content.transactions.map((transaction, index) => (
             <View key={index} style={style.transactionItem}>
               <View style={style.transactionInfo}>
                 <Text style={style.transactionDescription}>
@@ -174,15 +143,15 @@ export default function CategoryReportScreen() {
         {/* Análise e Sugestões */}
         <View style={style.section}>
           <AnalysisCard
-            title="Análise da Categoria"
-            content={mockCategoryData.content.textAnalysis}
+            title="Análise das Categorias"
+            content={content.textAnalysis}
             icon="analytics-outline"
             variant="analysis"
           />
 
           <AnalysisCard
-            title="Sugestões"
-            content={mockCategoryData.content.suggestion}
+            title="Sugestões por Categoria"
+            content={content.suggestion}
             icon="bulb-outline"
             variant="suggestion"
           />

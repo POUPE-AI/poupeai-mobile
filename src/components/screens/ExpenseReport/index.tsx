@@ -5,69 +5,20 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
 import { Button } from "@/components/atoms/Button";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { ReportHeaderRight } from "@/components/atoms/ReportHeaderRight";
+import { useExpenseReport, useRefreshReports } from "@/hooks/useReports";
 import { styles } from "./styles";
-
-// Mock data - será substituído pelos dados reais da API
-const mockExpenseData = {
-  header: {
-    status: 200,
-    message: null,
-  },
-  content: {
-    totalExpense: 614.7,
-    categories: [
-      { name: "Casa", balance: 149.64 },
-      { name: "Mercado", balance: 288.1 },
-      { name: "Lazer", balance: 26 },
-      { name: "Trabalho", balance: 150 },
-    ],
-    mainExpenses: [
-      {
-        description: "Caern",
-        categoryName: "Casa",
-        date: "2025-08-02T00:00:00",
-        amount: 108.96,
-      },
-      {
-        description: "Compras Mercado",
-        categoryName: "Mercado",
-        date: "2025-08-01T00:00:00",
-        amount: 186.94,
-      },
-      {
-        description: "Racao do Cachorro",
-        categoryName: "Mercado",
-        date: "2025-08-01T00:00:00",
-        amount: 101.16,
-      },
-      {
-        description: "Compra de Computador (1/8)",
-        categoryName: "Trabalho",
-        date: "2025-08-01T00:00:00",
-        amount: 150,
-      },
-      {
-        description: "Energia",
-        categoryName: "Casa",
-        date: "2025-08-02T00:00:00",
-        amount: 40.68,
-      },
-    ],
-    startDate: "2025-07-02",
-    endDate: "2025-08-02",
-    textAnalysis:
-      "Durante o período analisado, as maiores despesas foram com 'Mercado' e 'Casa'. É importante ficar atento a esses gastos para manter as finanças equilibradas.",
-    suggestion:
-      "Monitore seus gastos na categoria 'Mercado' para garantir que você está dentro do orçamento.",
-    createdAt: "2025-08-02T20:50:52.0395495Z",
-  },
-};
 
 export default function ExpenseReportScreen() {
   const { colors: themeColors } = useTheme();
   const navigation = useNavigation();
   const style = styles(themeColors);
+
+  // Hooks para buscar dados e refrescar
+  const { data: reportData, isLoading, error, refetch } = useExpenseReport();
+  const refreshReportsMutation = useRefreshReports();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -80,9 +31,13 @@ export default function ExpenseReportScreen() {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
-  const handleRefresh = () => {
-    // TODO: Implementar refresh dos dados
-    console.log("Refreshing expense report...");
+  const handleRefresh = async () => {
+    try {
+      await refreshReportsMutation.mutateAsync();
+      refetch();
+    } catch (error) {
+      console.error("Erro ao atualizar relatório:", error);
+    }
   };
 
   useLayoutEffect(() => {
@@ -90,6 +45,16 @@ export default function ExpenseReportScreen() {
       headerRight: () => <ReportHeaderRight onRefresh={handleRefresh} />,
     });
   }, [navigation]);
+
+  if (isLoading) {
+    return <LoadingContent text="Carregando relatório de despesas..." />;
+  }
+
+  if (error || !reportData) {
+    return <ErrorContent text="Erro ao carregar relatório de despesas" />;
+  }
+
+  const { content } = reportData;
 
   return (
     <View style={style.container}>
@@ -102,13 +67,12 @@ export default function ExpenseReportScreen() {
         <View style={style.section}>
           <Text style={style.sectionTitle}>Total de Despesas</Text>
           <Text style={style.period}>
-            {formatDate(mockExpenseData.content.startDate)} -{" "}
-            {formatDate(mockExpenseData.content.endDate)}
+            {formatDate(content.startDate)} - {formatDate(content.endDate)}
           </Text>
 
           <FinancialInfoCard
             title="Total Gasto no Período"
-            value={formatCurrency(mockExpenseData.content.totalExpense)}
+            value={formatCurrency(content.totalExpense)}
             variant="negative"
           />
         </View>
@@ -116,7 +80,7 @@ export default function ExpenseReportScreen() {
         {/* Categorias de Despesas */}
         <View style={style.section}>
           <Text style={style.sectionTitle}>Despesas por Categoria</Text>
-          {mockExpenseData.content.categories.map((category, index) => (
+          {content.categories.map((category, index) => (
             <FinancialInfoCard
               key={index}
               title={category.name}
@@ -129,7 +93,7 @@ export default function ExpenseReportScreen() {
         {/* Principais Despesas */}
         <View style={style.section}>
           <Text style={style.sectionTitle}>Principais Despesas</Text>
-          {mockExpenseData.content.mainExpenses.map((expense, index) => (
+          {content.mainExpenses.map((expense, index) => (
             <View key={index} style={style.expenseItem}>
               <View style={style.expenseInfo}>
                 <Text style={style.expenseDescription}>
@@ -153,14 +117,14 @@ export default function ExpenseReportScreen() {
         <View style={style.section}>
           <AnalysisCard
             title="Análise das Despesas"
-            content={mockExpenseData.content.textAnalysis}
+            content={content.textAnalysis}
             icon="analytics-outline"
             variant="analysis"
           />
 
           <AnalysisCard
             title="Sugestões de Economia"
-            content={mockExpenseData.content.suggestion}
+            content={content.suggestion}
             icon="bulb-outline"
             variant="suggestion"
           />

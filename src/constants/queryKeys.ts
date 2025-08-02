@@ -61,3 +61,15 @@ export const dashboardKeys = {
   data: (params?: Record<string, any>) =>
     [...dashboardKeys.all, params] as const,
 };
+
+export const reportsKeys = {
+  all: ["reports"] as const,
+  overview: (params?: Record<string, any>) =>
+    [...reportsKeys.all, "overview", params] as const,
+  expense: (params?: Record<string, any>) =>
+    [...reportsKeys.all, "expense", params] as const,
+  income: (params?: Record<string, any>) =>
+    [...reportsKeys.all, "income", params] as const,
+  category: (params?: Record<string, any>) =>
+    [...reportsKeys.all, "category", params] as const,
+};

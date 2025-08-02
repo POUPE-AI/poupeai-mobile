@@ -5,52 +5,20 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
 import { Button } from "@/components/atoms/Button";
+import { LoadingContent } from "@/components/atoms/LoadingContent";
+import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { ReportHeaderRight } from "@/components/atoms/ReportHeaderRight";
+import { useIncomeReport, useRefreshReports } from "@/hooks/useReports";
 import { styles } from "./styles";
-
-// Mock data - será substituído pelos dados reais da API
-const mockIncomeData = {
-  header: {
-    status: 200,
-    message: "Relatório financeiro gerado com sucesso.",
-  },
-  content: {
-    totalIncome: 3600,
-    categories: [
-      { name: "Salario", balance: 3600 },
-      { name: "Mercado", balance: 338.1 },
-      { name: "Casa", balance: 196.64 },
-      { name: "Trabalho", balance: 150 },
-      { name: "Lazer", balance: 26 },
-    ],
-    mainIncomes: [
-      {
-        description: "Salario",
-        categoryName: "Salario",
-        date: "2025-08-01T00:00:00",
-        amount: 1800,
-      },
-      {
-        description: "Salario",
-        categoryName: "Salario",
-        date: "2025-07-08T00:00:00",
-        amount: 1800,
-      },
-    ],
-    startDate: "2025-07-02",
-    endDate: "2025-08-02",
-    textAnalysis:
-      "O relatório financeiro apresenta um total de receitas de R$3600.00 no período analisado. As principais categorias de despesas incluem Casa, Mercado, Trabalho e Lazer. É importante analisar os gastos em cada categoria para identificar oportunidades de economia e otimizar o orçamento.",
-    suggestion:
-      "Com base nas suas receitas e despesas, observei que a maior parte dos seus gastos está concentrada nas categorias Casa e Mercado. Avalie se é possível reduzir os gastos nessas áreas. Continue mantendo o controle de suas finanças para garantir um futuro financeiro estável.",
-    createdAt: "2025-08-02T20:51:12.2215882Z",
-  },
-};
 
 export default function IncomeReportScreen() {
   const { colors: themeColors } = useTheme();
   const navigation = useNavigation();
   const style = styles(themeColors);
+
+  // Hooks para buscar dados e refrescar
+  const { data: reportData, isLoading, error, refetch } = useIncomeReport();
+  const refreshReportsMutation = useRefreshReports();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -63,9 +31,13 @@ export default function IncomeReportScreen() {
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
 
-  const handleRefresh = () => {
-    // TODO: Implementar refresh dos dados
-    console.log("Refreshing income report...");
+  const handleRefresh = async () => {
+    try {
+      await refreshReportsMutation.mutateAsync();
+      refetch();
+    } catch (error) {
+      console.error("Erro ao atualizar relatório:", error);
+    }
   };
 
   useLayoutEffect(() => {
@@ -73,6 +45,16 @@ export default function IncomeReportScreen() {
       headerRight: () => <ReportHeaderRight onRefresh={handleRefresh} />,
     });
   }, [navigation]);
+
+  if (isLoading) {
+    return <LoadingContent text="Carregando relatório de receitas..." />;
+  }
+
+  if (error || !reportData) {
+    return <ErrorContent text="Erro ao carregar relatório de receitas" />;
+  }
+
+  const { content } = reportData;
 
   return (
     <View style={style.container}>
@@ -85,13 +67,12 @@ export default function IncomeReportScreen() {
         <View style={style.section}>
           <Text style={style.sectionTitle}>Total de Receitas</Text>
           <Text style={style.period}>
-            {formatDate(mockIncomeData.content.startDate)} -{" "}
-            {formatDate(mockIncomeData.content.endDate)}
+            {formatDate(content.startDate)} - {formatDate(content.endDate)}
           </Text>
 
           <FinancialInfoCard
             title="Total Recebido no Período"
-            value={formatCurrency(mockIncomeData.content.totalIncome)}
+            value={formatCurrency(content.totalIncome)}
             variant="positive"
           />
         </View>
@@ -99,7 +80,7 @@ export default function IncomeReportScreen() {
         {/* Categorias de Receitas */}
         <View style={style.section}>
           <Text style={style.sectionTitle}>Receitas por Categoria</Text>
-          {mockIncomeData.content.categories.map((category, index) => (
+          {content.categories.map((category, index) => (
             <FinancialInfoCard
               key={index}
               title={category.name}
@@ -112,7 +93,7 @@ export default function IncomeReportScreen() {
         {/* Principais Receitas */}
         <View style={style.section}>
           <Text style={style.sectionTitle}>Principais Receitas</Text>
-          {mockIncomeData.content.mainIncomes.map((income, index) => (
+          {content.mainIncomes.map((income, index) => (
             <View key={index} style={style.incomeItem}>
               <View style={style.incomeInfo}>
                 <Text style={style.incomeDescription}>
@@ -132,14 +113,14 @@ export default function IncomeReportScreen() {
         <View style={style.section}>
           <AnalysisCard
             title="Análise das Receitas"
-            content={mockIncomeData.content.textAnalysis}
+            content={content.textAnalysis}
             icon="analytics-outline"
             variant="analysis"
           />
 
           <AnalysisCard
             title="Sugestões de Crescimento"
-            content={mockIncomeData.content.suggestion}
+            content={content.suggestion}
             icon="bulb-outline"
             variant="suggestion"
           />
