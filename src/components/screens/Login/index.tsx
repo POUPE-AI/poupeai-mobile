@@ -5,6 +5,7 @@ import { LoginHeader } from "@/components/molecules/LoginHeader";
 import { LoginSection } from "@/components/molecules/LoginSection";
 import { styles } from "./styles";
 import { useTheme } from "@/contexts/ThemeContext";
+import { router } from "expo-router";
 
 export function Login() {
   const { signIn, isLoading } = useAuth();
@@ -13,20 +14,21 @@ export function Login() {
 
   const handleLogin = async () => {
     const success = await signIn();
+
     if (!success) {
       Alert.alert(
         "Erro na autenticação",
         "Não foi possível realizar o login. Tente novamente.",
         [{ text: "OK" }]
       );
+    } else {
+      router.replace("/(drawer)/(tabs)/");
     }
   };
 
   return (
     <View style={style.container}>
-      <LoginHeader
-        subtitle="Gerencie suas finanças de forma inteligente"
-      />
+      <LoginHeader subtitle="Gerencie suas finanças de forma inteligente" />
 
       <LoginSection
         onLogin={handleLogin}

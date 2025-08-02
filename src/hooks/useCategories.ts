@@ -10,6 +10,7 @@ import {
   budgetsKeys,
   categoriesKeys,
   creditCardsKeys,
+  dashboardKeys,
   transactionsKeys,
 } from "@/constants/queryKeys";
 
@@ -110,6 +111,7 @@ export function useDeleteCategory() {
       queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
       queryClient.invalidateQueries({ queryKey: creditCardsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: creditCardsKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
     onError: (error) => {
       console.error("Erro ao deletar categoria:", error);

@@ -10,42 +10,54 @@ export const transactionsKeys = {
 };
 
 export const invoicesKeys = {
-  all: ['invoices'] as const,
-  lists: () => [...invoicesKeys.all, 'list'] as const,
-  list: (creditCardId: number, params?: any) => [...invoicesKeys.lists(), { creditCardId }] as const,
-  details: () => [...invoicesKeys.all, 'detail'] as const,
+  all: ["invoices"] as const,
+  lists: () => [...invoicesKeys.all, "list"] as const,
+  list: (creditCardId: number, params?: any) =>
+    [...invoicesKeys.lists(), { creditCardId }] as const,
+  details: () => [...invoicesKeys.all, "detail"] as const,
   detail: (id: number) => [...invoicesKeys.details(), id] as const,
 };
 
 export const bankAccountsKeys = {
-  all: ['bank-accounts'] as const,
-  lists: () => [...bankAccountsKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...bankAccountsKeys.lists(), { filters }] as const,
-  details: () => [...bankAccountsKeys.all, 'detail'] as const,
+  all: ["bank-accounts"] as const,
+  lists: () => [...bankAccountsKeys.all, "list"] as const,
+  list: (filters: Record<string, any>) =>
+    [...bankAccountsKeys.lists(), { filters }] as const,
+  details: () => [...bankAccountsKeys.all, "detail"] as const,
   detail: (id: number) => [...bankAccountsKeys.details(), id] as const,
 };
 
 export const creditCardsKeys = {
-  all: ['credit-cards'] as const,
-  lists: () => [...creditCardsKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...creditCardsKeys.lists(), { filters }] as const,
-  details: () => [...creditCardsKeys.all, 'detail'] as const,
+  all: ["credit-cards"] as const,
+  lists: () => [...creditCardsKeys.all, "list"] as const,
+  list: (filters: Record<string, any>) =>
+    [...creditCardsKeys.lists(), { filters }] as const,
+  details: () => [...creditCardsKeys.all, "detail"] as const,
   detail: (id: number) => [...creditCardsKeys.details(), id] as const,
 };
 
 export const budgetsKeys = {
-  all: ['budgets'] as const,
-  lists: () => [...budgetsKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...budgetsKeys.lists(), { filters }] as const,
-  details: () => [...budgetsKeys.all, 'detail'] as const,
+  all: ["budgets"] as const,
+  lists: () => [...budgetsKeys.all, "list"] as const,
+  list: (filters: Record<string, any>) =>
+    [...budgetsKeys.lists(), { filters }] as const,
+  details: () => [...budgetsKeys.all, "detail"] as const,
   detail: (id: number) => [...budgetsKeys.details(), id] as const,
 };
 
 export const categoriesKeys = {
-  all: ['categories'] as const,
-  lists: () => [...categoriesKeys.all, 'list'] as const,
-  list: (filters: Record<number, any>) => [...categoriesKeys.lists(), { filters }] as const,
-  details: () => [...categoriesKeys.all, 'detail'] as const,
+  all: ["categories"] as const,
+  lists: () => [...categoriesKeys.all, "list"] as const,
+  list: (filters: Record<number, any>) =>
+    [...categoriesKeys.lists(), { filters }] as const,
+  details: () => [...categoriesKeys.all, "detail"] as const,
   detail: (id: number) => [...categoriesKeys.details(), id] as const,
-  byType: (type: CategoryType) => [...categoriesKeys.all, 'byType', type] as const,
+  byType: (type: CategoryType) =>
+    [...categoriesKeys.all, "byType", type] as const,
+};
+
+export const dashboardKeys = {
+  all: ["dashboard"] as const,
+  data: (params?: Record<string, any>) =>
+    [...dashboardKeys.all, params] as const,
 };

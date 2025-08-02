@@ -4,7 +4,11 @@ import {
   UpdateBankAccountRequest,
 } from "@/services/bankAccounts";
 import { CreateBankAccountRequest } from "@/types/accounts";
-import { bankAccountsKeys } from "@/constants/queryKeys";
+import {
+  bankAccountsKeys,
+  dashboardKeys,
+  transactionsKeys,
+} from "@/constants/queryKeys";
 
 export function useBankAccounts(params?: {
   search?: string;
@@ -76,6 +80,8 @@ export function useDeleteBankAccount() {
       queryClient.invalidateQueries({
         queryKey: bankAccountsKeys.lists(),
       });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
     },
   });
 }
