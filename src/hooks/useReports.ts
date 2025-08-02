@@ -7,15 +7,19 @@ import {
   IncomeReport,
   CategoryReport,
 } from "@/types/reports";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useOverviewReport(params?: {
   startDate?: string;
   endDate?: string;
   model?: string;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: reportsKeys.overview(params),
     queryFn: () => reportsService.getOverviewReport(params),
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   });
@@ -26,9 +30,12 @@ export function useExpenseReport(params?: {
   endDate?: string;
   model?: string;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: reportsKeys.expense(params),
     queryFn: () => reportsService.getExpenseReport(params),
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   });
@@ -39,9 +46,12 @@ export function useIncomeReport(params?: {
   endDate?: string;
   model?: string;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: reportsKeys.income(params),
     queryFn: () => reportsService.getIncomeReport(params),
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   });
@@ -52,9 +62,12 @@ export function useCategoryReport(params?: {
   endDate?: string;
   model?: string;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: reportsKeys.category(params),
     queryFn: () => reportsService.getCategoryReport(params),
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
   });

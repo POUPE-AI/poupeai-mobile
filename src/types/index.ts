@@ -7,7 +7,7 @@ export interface User {
 export interface AuthContextData {
   user: User | null;
   isLoading: boolean;
-  signIn: () => Promise<boolean>;
+  signIn: () => Promise<{ success: boolean; cancelled?: boolean }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
   isNavigationReady: boolean;
@@ -27,9 +27,9 @@ export interface KeycloakUserInfo {
   email: string;
 }
 
-export * from './categories';
-export * from './accounts';
-export * from './budgets';
-export * from './cards';
-export * from './invoices';
-export * from './goals';
+export * from "./categories";
+export * from "./accounts";
+export * from "./budgets";
+export * from "./cards";
+export * from "./invoices";
+export * from "./goals";

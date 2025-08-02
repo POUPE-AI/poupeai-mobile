@@ -9,16 +9,19 @@ import {
   dashboardKeys,
   transactionsKeys,
 } from "@/constants/queryKeys";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useBankAccounts(params?: {
   search?: string;
   page?: number;
   page_size?: number;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useQuery({
     queryKey: bankAccountsKeys.list(params || {}),
     queryFn: () => bankAccountsService.getBankAccounts(params),
-    enabled: true,
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
   });
 }
 

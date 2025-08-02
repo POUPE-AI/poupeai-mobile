@@ -17,7 +17,7 @@ import {
   invoicesKeys,
   transactionsKeys,
 } from "@/constants/queryKeys";
-import tr from "zod/v4/locales/tr.cjs";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useTransactions(params?: {
   search?: string;
@@ -25,6 +25,8 @@ export function useTransactions(params?: {
   issue_date_end?: string;
   purchase_group_uuid?: string;
 }) {
+  const { isAuthenticated, user } = useAuth();
+
   return useInfiniteQuery({
     queryKey: transactionsKeys.list(params || {}),
     queryFn: ({ pageParam = 1 }) =>
@@ -35,6 +37,7 @@ export function useTransactions(params?: {
       return nextPage <= totalPages ? nextPage : undefined;
     },
     initialPageParam: 1,
+    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
   });
 }
 
