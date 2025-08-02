@@ -4,59 +4,36 @@ import { BalanceCard } from "@/components/molecules/BalanceCard";
 import { CategoriesCard } from "@/components/molecules/CategoriesCard";
 import { EstimatedSavingsCard } from "@/components/molecules/EstimatedSavingsCard";
 import { TransactionsListItem } from "@/components/atoms/TransactionsListItem";
-//import CategoryChart from "@/components/atoms/CategoryChart";
-//import EstimatedSavings from "@/components/atoms/EstimatedSavings";
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
-import { Transaction } from "@/types/transactions";
-import { useAccessToken } from "@/hooks/useAccessToken";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
-
-// Mock data para cada tipo de card
-const mockData = {
-  saldoTotal: [
-    { data: [1200, 800, 950, 1235, 1100, 1300, 1235] },
-    { data: [900, 1100, 850, 1150, 1050, 1200, 1000] },
-    { data: [600, 750, 680, 900, 820, 950, 875] },
-  ],
-  receitas: [
-    { data: [2500, 2800, 2600, 3200, 2900, 3500, 3100] },
-    { data: [1800, 2100, 1900, 2400, 2200, 2600, 2300] },
-  ],
-  despesas: [
-    { data: [1800, 2200, 1900, 2100, 2000, 2300, 2050] },
-    { data: [1200, 1500, 1350, 1600, 1450, 1700, 1550] },
-    { data: [800, 1000, 900, 1100, 950, 1200, 1100] },
-  ],
-  faturas: [
-    { data: [450, 520, 480, 600, 550, 650, 580] },
-    { data: [320, 380, 350, 420, 400, 480, 450] },
-  ],
-};
-
-// Mock data para categorias
-const mockCategoriesData = [
-  { value: 850, label: "Alimentação" },
-  { value: 420, label: "Transporte" },
-  { value: 320, label: "Saúde" },
-  { value: 280, label: "Lazer" },
-  { value: 180, label: "Outros" },
-];
+import { useDashboard } from "@/hooks/useDashboard";
 
 export default function DashboardScreen() {
   const { theme } = useTheme();
   const style = styles(theme);
-
   const { user } = useAuth();
+
+  const today = new Date();
+  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const end_date = endOfMonth.toISOString().split("T")[0];
+
+  const {
+    data: dashboard,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+  } = useDashboard();
 
   const {
     data: transactions,
     isLoading: transactionLoading,
     error: transactionsError,
-  } = useTransactions({ issue_date_end: new Date().toISOString().split('T')[0] });
+  } = useTransactions({
+    issue_date_end: end_date,
+  });
   const lastTransactions =
     transactions?.pages[0]?.results
       .slice()
@@ -65,6 +42,15 @@ export default function DashboardScreen() {
           new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
       )
       .slice(0, 5) || [];
+
+  if (dashboardLoading) return <LoadingContent text="dashboard" />;
+  if (dashboardError) return <ErrorContent text="Erro ao carregar dashboard" />;
+
+  if (!dashboard) {
+    return (
+      <ErrorContent text="Você não tem dados suficientes para gerar um dashboard." />
+    );
+  }
 
   return (
     <ScrollView
@@ -83,41 +69,72 @@ export default function DashboardScreen() {
         style={style.horizontalScroll}
       >
         <BalanceCard
-          data={mockData.saldoTotal}
+          data={[
+            {
+              data:
+                dashboard?.balance?.chart_data?.map(
+                  (item) => item.balance ?? 0
+                ) || [],
+            },
+          ]}
           title="Saldo Total"
-          percentage={-51.49}
-          amount={1235.99}
+          percentage={dashboard?.balance?.difference ?? 0}
+          amount={dashboard?.balance?.current_total ?? 0}
         />
 
         <BalanceCard
-          data={mockData.receitas}
+          data={[
+            {
+              data:
+                dashboard?.incomes?.chart_data?.map(
+                  (item) => item.total ?? 0
+                ) || [],
+            },
+          ]}
           title="Receitas"
-          percentage={12.35}
-          amount={3100.5}
+          percentage={dashboard?.incomes?.difference ?? 0}
+          amount={dashboard?.incomes?.current_total ?? 0}
         />
 
         <BalanceCard
-          data={mockData.despesas}
+          data={[
+            {
+              data:
+                dashboard?.expenses?.chart_data?.map(
+                  (item) => item.total ?? 0
+                ) || [],
+            },
+          ]}
           title="Despesas"
-          percentage={-8.2}
-          amount={2050.75}
+          percentage={dashboard?.expenses?.difference ?? 0}
+          amount={dashboard?.expenses?.current_total ?? 0}
         />
 
-        <BalanceCard
-          data={mockData.faturas}
+        {/*         <BalanceCard
+          data={[
+            {
+              data:
+                dashboard?.invoices?.chart_data?.map((item) =>
+                  typeof item.total_amount === "number" ? item.total_amount : 0
+                ) || [],
+            },
+          ]}
           title="Faturas"
-          percentage={15.6}
-          amount={580.25}
-        />
+          percentage={dashboard?.invoices?.difference ?? 0}
+          amount={dashboard?.invoices?.current_total ?? 0}
+        /> */}
       </ScrollView>
 
-      <CategoriesCard
+      {/* <CategoriesCard
         data={mockCategoriesData}
         title="Categorias"
         tip="Alimentação lidera seus gastos este mês"
-      />
+      /> */}
 
-      <EstimatedSavingsCard value={-150.25} title="Economia Estimada" />
+      <EstimatedSavingsCard
+        value={dashboard?.estimated_saving ?? 0}
+        title="Economia Estimada"
+      />
 
       {/* Seção de Últimas Transações */}
       <View style={style.sectionContainer}>
@@ -127,6 +144,10 @@ export default function DashboardScreen() {
           <LoadingContent text="transações" />
         ) : transactionsError ? (
           <ErrorContent text="Erro ao carregar transações" />
+        ) : lastTransactions.length === 0 ? (
+          <Text style={style.noTransactionsText}>
+            Nenhuma transação encontrada.
+          </Text>
         ) : (
           lastTransactions.map((transaction) => (
             <TransactionsListItem

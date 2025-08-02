@@ -13,6 +13,7 @@ import {
   bankAccountsKeys,
   budgetsKeys,
   creditCardsKeys,
+  dashboardKeys,
   invoicesKeys,
   transactionsKeys,
 } from "@/constants/queryKeys";
@@ -69,6 +70,7 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
 }

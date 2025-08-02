@@ -1,71 +1,75 @@
 {
   "expo": {
-    "name": "poupeai-mobile",
-    "slug": "poupeai-mobile",  
-    "version": "1.0.0",
+    "name": "Poupe.AI",
+    "slug": "poupeai-mobile",
+    "version": "1.0.0-preview.3",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
+    "icon": "./assets/icons/adaptive-icon.png",
+    "userInterfaceStyle": "light",
     "scheme": "ai.poupe.mobile",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icons/splash-icon-light.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FF660F"
+      "backgroundColor": "#ff660f"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": "./assets/icons/ios-light.png",
+      "iconDark": "./assets/icons/ios-dark.png"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF660F"
-      },
+      "usesCleartextTraffic": true,
       "package": "ai.poupe.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
+        "backgroundColor": "#f8f8f8"
+      },
       "intentFilters": [
         {
           "action": "VIEW",
-          "category": [
-            "DEFAULT",
-            "BROWSABLE"
-          ],
-          "data": {
-            "scheme": "ai.poupe"
-          }
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": { "scheme": "ai.poupe.mobile" }
         },
         {
           "action": "VIEW",
-          "category": [
-            "DEFAULT",
-            "BROWSABLE"
-          ],
-          "data": {
-            "scheme": "exp"
-          }
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": { "scheme": "exp" }
         }
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ff660f",
+          "image": "./assets/icons/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/icons/splash-icon-dark.png",
+            "backgroundColor": "#121212"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "extra": {
-      "router": {
-        "origin": false
-      },
+      "router": { "origin": false },
       "eas": {
         "projectId": "b5778dad-1362-4faa-b0e9-03881ccee202"
       }
     },
     "owner": "eudivan",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": { "policy": "appVersion" },
     "updates": {
       "url": "https://u.expo.dev/b5778dad-1362-4faa-b0e9-03881ccee202"
-    }
+    },
+    "newArchEnabled": true
   }
 }
