@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     discoveryEndpoints
   );
 
-  // ✨ NOVA FUNCIONALIDADE: Refresh automático de tokens
   const refreshToken = useCallback(
     async (storedTokens: TokenData): Promise<TokenData | null> => {
       try {
@@ -93,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ).toISOString(),
         };
 
-        // Salva os novos tokens
         await Promise.all([
           AsyncStorage.setItem(storageKeys.tokens, JSON.stringify(tokenData)),
           api.updateToken(tokenData.access_token),
@@ -109,7 +107,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // ✨ NOVA FUNCIONALIDADE: Agenda próxima renovação
   const scheduleTokenRefresh = useCallback(
     (expiresAt: string) => {
       if (refreshTimeoutRef.current) {
@@ -118,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const expirationTime = new Date(expiresAt).getTime();
       const currentTime = Date.now();
-      const timeUntilRefresh = expirationTime - currentTime - 10 * 60 * 1000; // 10 min antes
+      const timeUntilRefresh = expirationTime - currentTime - 10 * 60 * 1000;
 
       if (timeUntilRefresh > 0) {
         refreshTimeoutRef.current = setTimeout(async () => {
@@ -129,10 +126,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const newTokens = await refreshToken(tokens);
 
               if (newTokens) {
-                // Agenda próxima renovação
                 scheduleTokenRefresh(newTokens.expiresAt);
               } else {
-                // Se falhou, faz logout
                 await signOut();
               }
             }
@@ -146,7 +141,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user, refreshToken]
   );
 
-  // ✨ MELHORADA: Inicialização com refresh automático
   const initializeAuth = useCallback(async () => {
     if (hasInitialized.current) return;
 
@@ -165,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const marginTime = authConfig.tokenExpirationMarginMs;
 
         if (expirationTime > currentTime + marginTime) {
-          // Token ainda válido
           console.log("✅ Token válido encontrado");
           setUser(userData);
           scheduleTokenRefresh(tokens.expiresAt);
@@ -173,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           tokens.refresh_token &&
           expirationTime > currentTime - 24 * 60 * 60 * 1000
         ) {
-          // Token expirado mas refresh token ainda válido (menos de 24h)
           console.log("🔄 Token expirado, tentando renovar...");
           const newTokens = await refreshToken(tokens);
 
@@ -181,14 +173,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(userData);
             scheduleTokenRefresh(newTokens.expiresAt);
           } else {
-            // Falha na renovação, limpa dados
             await AsyncStorage.multiRemove([
               storageKeys.user,
               storageKeys.tokens,
             ]);
           }
         } else {
-          // Token e refresh token expirados
           console.log("❌ Tokens expirados, limpando dados");
           await AsyncStorage.multiRemove([
             storageKeys.user,
@@ -198,7 +188,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.log("❌ Erro ao carregar autenticação:", error);
-      // Em caso de erro, limpa possíveis dados corrompidos
       await AsyncStorage.multiRemove([storageKeys.user, storageKeys.tokens]);
     } finally {
       setIsLoading(false);
@@ -207,7 +196,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [refreshToken, scheduleTokenRefresh]);
 
-  // ✨ MELHORADA: Cleanup do timeout
   useEffect(() => {
     return () => {
       if (refreshTimeoutRef.current) {
@@ -248,11 +236,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, [initializeAuth]);
 
-  // ✨ MELHORADA: Navegação mais robusta com delay
   useEffect(() => {
     if (!isNavigationReady || isLoading || !hasInitialized.current) return;
 
-    // Pequeno delay para garantir que o Root Layout está totalmente montado
     const navigationTimeout = setTimeout(() => {
       const inAuthGroup = segments[0] === "(drawer)";
       const isLoginScreen = segments[0] === "login";
@@ -268,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("📱 Redirecionando para app - usuário autenticado");
         router.replace("/(drawer)/(tabs)/");
       }
-    }, 100); // Delay de 100ms
+    }, 100);
 
     return () => clearTimeout(navigationTimeout);
   }, [user, isLoading, segments, router, isNavigationReady, hasInitialized]);
@@ -277,7 +263,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     handleAuthResponseCallback(response);
   }, [response, handleAuthResponseCallback]);
 
-  // ✨ MELHORADA: handleAuthResponse com agendamento
   const handleAuthResponse = useCallback(
     async (code: string) => {
       try {
@@ -397,12 +382,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [promptAsync, request]);
 
-  // ✨ MELHORADA: SignOut com cleanup do timeout
   const signOut = useCallback(async (): Promise<void> => {
     try {
       console.log("🚪 Iniciando processo de logout...");
 
-      // Limpa timeout de refresh
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
         refreshTimeoutRef.current = null;
@@ -410,7 +393,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const storedTokens = await AsyncStorage.getItem(storageKeys.tokens);
 
-      // Limpa dados locais imediatamente
       const cleanupPromise = AsyncStorage.multiRemove([
         storageKeys.user,
         storageKeys.tokens,
@@ -421,7 +403,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedTokens) {
         const tokens = JSON.parse(storedTokens);
 
-        // Logout no servidor (não bloqueia o processo)
         const logoutUrl = new URL(
           `${discoveryEndpoints.authorizationEndpoint.replace(
             "/auth",
@@ -435,7 +416,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           logoutUrl.searchParams.append("id_token_hint", tokens.id_token);
         }
 
-        // Abre logout no navegador (assíncrono)
         WebBrowser.openAuthSessionAsync(
           logoutUrl.toString(),
           redirectUri
@@ -443,7 +423,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log("⚠️ Erro ao abrir logout no navegador:", logoutError);
         });
 
-        // Revoga refresh token (assíncrono)
         if (tokens.refresh_token) {
           fetch(discoveryEndpoints.revocationEndpoint, {
             method: "POST",
@@ -463,7 +442,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("✅ Logout concluído");
     } catch (error) {
       console.log("❌ Erro no logout:", error);
-      // Garantia de limpeza mesmo em caso de erro
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
         refreshTimeoutRef.current = null;

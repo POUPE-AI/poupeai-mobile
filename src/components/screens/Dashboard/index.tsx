@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, ScrollView, View } from "react-native";
 import { BalanceCard } from "@/components/molecules/BalanceCard";
 import { CategoriesCard } from "@/components/molecules/CategoriesCard";
@@ -13,6 +13,7 @@ import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
 
 export default function DashboardScreen() {
+  const { isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const style = styles(theme);
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function DashboardScreen() {
     data: dashboard,
     isLoading: dashboardLoading,
     error: dashboardError,
+    refetch: refetchDashboard,
   } = useDashboard();
 
   const {
@@ -42,6 +44,12 @@ export default function DashboardScreen() {
           new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
       )
       .slice(0, 5) || [];
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refetchDashboard();
+    }
+  }, [isAuthenticated, transactions]);
 
   if (dashboardLoading) return <LoadingContent text="dashboard" />;
   if (dashboardError) return <ErrorContent text="Erro ao carregar dashboard" />;
