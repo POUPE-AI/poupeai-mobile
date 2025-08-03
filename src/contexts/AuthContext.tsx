@@ -17,6 +17,7 @@ import {
   discoveryEndpoints,
   storageKeys,
   authConfig,
+  validateAuthConfig,
 } from "../config/auth";
 import type {
   User,
@@ -68,18 +69,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
 
+        // Validar se o refresh token não está corrompido
+        if (
+          typeof storedTokens.refresh_token !== "string" ||
+          storedTokens.refresh_token.trim() === ""
+        ) {
+          console.log("❌ Refresh token inválido ou corrompido");
+          return null;
+        }
+
+        // Verificar se o refresh token é um JWT válido
+        const refreshTokenParts = storedTokens.refresh_token.split(".");
+        if (refreshTokenParts.length !== 3) {
+          console.log("❌ Refresh token não é um JWT válido");
+          return null;
+        }
+
+        // Verificar se o refresh token não expirou
+        try {
+          const payload = JSON.parse(atob(refreshTokenParts[1]));
+          const refreshTokenExp = payload.exp * 1000;
+          const now = Date.now();
+
+          console.log(
+            "📝 Refresh token expira em:",
+            new Date(refreshTokenExp).toISOString()
+          );
+          console.log("📝 Tempo atual:", new Date(now).toISOString());
+
+          if (refreshTokenExp <= now) {
+            console.log("❌ Refresh token expirado");
+            return null;
+          }
+        } catch (error) {
+          console.log("❌ Erro ao decodificar refresh token:", error);
+          return null;
+        }
+
+        console.log(
+          "📝 Enviando requisição de refresh token para:",
+          discoveryEndpoints.tokenEndpoint
+        );
+        console.log("📝 Client ID:", keycloakConfig.clientId);
+        console.log("📝 Refresh token exists:", !!storedTokens.refresh_token);
+
+        // Testar conectividade básica primeiro
+        try {
+          const connectivityTest = await fetch(
+            discoveryEndpoints.tokenEndpoint,
+            {
+              method: "HEAD",
+            }
+          );
+          console.log("📝 Teste de conectividade:", connectivityTest.status);
+        } catch (connectivityError) {
+          console.log("❌ Problema de conectividade:", connectivityError);
+        }
+
+        const requestBody = new URLSearchParams();
+        requestBody.append("grant_type", "refresh_token");
+        requestBody.append("client_id", keycloakConfig.clientId);
+        requestBody.append("refresh_token", storedTokens.refresh_token);
+
+        // Método alternativo de construção do body (para debug)
+        const alternativeBody = `grant_type=refresh_token&client_id=${encodeURIComponent(
+          keycloakConfig.clientId
+        )}&refresh_token=${encodeURIComponent(storedTokens.refresh_token)}`;
+        console.log("📝 Alternative body:", alternativeBody);
+        console.log(
+          "📝 Bodies são iguais:",
+          requestBody.toString() === alternativeBody
+        );
+
         const refreshResponse = await fetch(discoveryEndpoints.tokenEndpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            grant_type: "refresh_token",
-            client_id: keycloakConfig.clientId,
-            refresh_token: storedTokens.refresh_token,
-          }),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+            "Cache-Control": "no-cache",
+          },
+          body: alternativeBody,
         });
 
         if (!refreshResponse.ok) {
+          const errorText = await refreshResponse.text();
           console.log("❌ Falha ao renovar token:", refreshResponse.status);
+          console.log("❌ Erro detalhado:", errorText);
+
+          try {
+            const errorJson = JSON.parse(errorText);
+            console.log("❌ Erro JSON:", errorJson);
+          } catch {
+            console.log("❌ Resposta não é JSON válido");
+          }
+
           return null;
         }
 
@@ -144,6 +227,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initializeAuth = useCallback(async () => {
     if (hasInitialized.current) return;
 
+    // Validar configurações de autenticação
+    const configValidation = validateAuthConfig();
+    if (!configValidation.isValid) {
+      console.error(
+        "❌ Configuração de autenticação inválida:",
+        configValidation.errors
+      );
+      setIsLoading(false);
+      hasInitialized.current = true;
+      setIsNavigationReady(true);
+      return;
+    }
+
     try {
       const [storedUser, storedTokens] = await Promise.all([
         AsyncStorage.getItem(storageKeys.user),
@@ -167,12 +263,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           expirationTime > currentTime - 24 * 60 * 60 * 1000
         ) {
           console.log("🔄 Token expirado, tentando renovar...");
+          console.log(
+            "📝 Token expira em:",
+            new Date(tokens.expiresAt).toISOString()
+          );
+          console.log("📝 Tempo atual:", new Date(currentTime).toISOString());
+          console.log(
+            "📝 Diferença em horas:",
+            (currentTime - expirationTime) / (1000 * 60 * 60)
+          );
+
           const newTokens = await refreshToken(tokens);
 
           if (newTokens) {
             setUser(userData);
             scheduleTokenRefresh(newTokens.expiresAt);
           } else {
+            console.log(
+              "❌ Falha ao renovar token, limpando dados de autenticação"
+            );
             await AsyncStorage.multiRemove([
               storageKeys.user,
               storageKeys.tokens,
@@ -273,17 +382,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error("Code verifier não encontrado. O PKCE falhou.");
         }
 
-        const requestBody = new URLSearchParams({
-          grant_type: "authorization_code",
-          client_id: keycloakConfig.clientId,
-          code: code,
-          redirect_uri: redirectUri,
-          code_verifier: request.codeVerifier,
-        });
+        const requestBody = new URLSearchParams();
+        requestBody.append("grant_type", "authorization_code");
+        requestBody.append("client_id", keycloakConfig.clientId);
+        requestBody.append("code", code);
+        requestBody.append("redirect_uri", redirectUri);
+        requestBody.append("code_verifier", request.codeVerifier);
 
         const tokenResponse = await fetch(discoveryEndpoints.tokenEndpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
           body: requestBody.toString(),
         });
 
