@@ -8,14 +8,20 @@ export const styles = (theme: ThemeType) =>
       backgroundColor: colors.theme[theme].surface,
       borderRadius: 12,
       padding: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
 
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
       elevation: 1,
+    },
+    content: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 8,
     },
     leftContent: {
       flexDirection: "row",
@@ -30,5 +36,26 @@ export const styles = (theme: ThemeType) =>
     value: {
       fontSize: 16,
       fontWeight: "700",
+    },
+    detailsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 8,
+    },
+    percentage: {
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    comparisonText: {
+      fontSize: 12,
+      color: colors.theme[theme].text,
+      opacity: 0.7,
+    },
+    message: {
+      fontSize: 12,
+      color: colors.theme[theme].text,
+      opacity: 0.8,
+      lineHeight: 16,
     },
   });

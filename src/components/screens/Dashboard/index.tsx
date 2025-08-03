@@ -140,7 +140,14 @@ export default function DashboardScreen() {
       /> */}
 
       <EstimatedSavingsCard
-        value={dashboard?.estimated_saving ?? 0}
+        data={
+          dashboard?.estimated_saving ?? {
+            estimated_savings: 0,
+            savings_percentage: 0,
+            message: "",
+            comparison_period: "monthly",
+          }
+        }
         title="Economia Estimada"
       />
 

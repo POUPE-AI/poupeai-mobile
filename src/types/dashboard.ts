@@ -24,6 +24,13 @@ export interface CreditCardSection {
   chart_data: CreditCardInvoice[];
 }
 
+export interface EstimatedSavingSection {
+  estimated_savings: number;
+  savings_percentage: number;
+  message: string;
+  comparison_period: string;
+}
+
 export interface DashboardResponse {
   message: string;
   start_date: string;
@@ -33,5 +40,5 @@ export interface DashboardResponse {
   expenses: DashboardSection;
   invoices: CreditCardSection;
   spending_by_category: Record<string, number>;
-  estimated_saving: number;
+  estimated_saving: EstimatedSavingSection;
 }
