@@ -150,7 +150,9 @@ export const TransactionsList = () => {
       ) : (
         <SectionList
           sections={sections}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item, index) =>
+            `${item.id}-${item.issue_date}-${index}`
+          }
           renderItem={renderTransaction}
           renderSectionHeader={renderSectionHeader}
           showsVerticalScrollIndicator={false}

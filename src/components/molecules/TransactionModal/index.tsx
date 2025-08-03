@@ -13,11 +13,11 @@ import {
 } from "@/types/transactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
-import { Masks } from "react-native-mask-input";
 import { CategoryDropdown } from "../CategoryDropdown";
 import { useCategories } from "@/hooks/useCategories";
 import { BankAccountDropDown } from "../BankAccountDropdown";
 import { CreditCardDropDown } from "../CreditCardDropdown";
+import { DatePickerField } from "@/components/atoms/DatePickerField";
 
 const transactionSchema = z
   .object({
@@ -182,16 +182,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     setIsLoading(true);
     try {
-      const [day, month, year] = formData.issue_date.split("/");
-      const formattedIssueDate =
-        year && month && day
-          ? `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
-          : formData.issue_date;
-
+      // formData.issue_date já está no formato ISO (YYYY-MM-DD) vindo do DatePickerField
       const saveData: CreateTransactionRequest = {
         description: formData.description,
         amount: formData.amount,
-        issue_date: formattedIssueDate,
+        issue_date: formData.issue_date,
         source_type: formData.source_type,
         category: formData.category,
         bank_account: formData.bank_account,
@@ -292,19 +287,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           onCreateCategory={onCreateCategory}
         />
 
-        <FormField
+        <DatePickerField
           label="Data de Emissão"
-          placeholder="DD/MM/AAAA"
           value={formData.issue_date}
-          onChangeText={(masked) => {
+          onDateChange={(isoDate) => {
             setFormData((prev) => ({
               ...prev,
-              issue_date: masked,
+              issue_date: isoDate,
             }));
           }}
-          keyboardType="numeric"
+          placeholder="DD/MM/AAAA"
           error={errors.issue_date}
-          mask={Masks.DATE_DDMMYYYY}
         />
 
         <TransactionTypeSelector
