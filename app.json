@@ -2,7 +2,7 @@
   "expo": {
     "name": "Poupe.AI",
     "slug": "poupeai-mobile",
-    "version": "1.0.0-preview.4",
+    "version": "1.0.0-preview.5",
     "orientation": "portrait",
     "icon": "./assets/icons/adaptive-icon.png",
     "userInterfaceStyle": "light",
@@ -63,7 +63,8 @@
       "router": { "origin": false },
       "eas": {
         "projectId": "b5778dad-1362-4faa-b0e9-03881ccee202"
-      }
+      },
+      "timezone": "America/Fortaleza"
     },
     "owner": "eudivan",
     "runtimeVersion": { "policy": "appVersion" },

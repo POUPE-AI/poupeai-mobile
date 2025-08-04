@@ -1,22 +1,25 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Button } from '@/components/atoms/Button';
-import { useCategories } from '@/hooks/useCategories';
-import { Budget, CreateBudgetRequest } from '@/types';
-import { z } from 'zod';
-import { styles } from './styles';
-import { ModalContainer } from '@/components/atoms/ModalContainer';
-import { FormField } from '@/components/atoms/FormField';
-import { CategoryDropdown } from '@/components/molecules/CategoryDropdown';
+import React, { useState, useEffect } from "react";
+import { View } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Budget, CreateBudgetRequest } from "@/types";
+import { z } from "zod";
+import { styles } from "./styles";
+import { ModalContainer } from "@/components/atoms/ModalContainer";
+import { FormField } from "@/components/atoms/FormField";
+import { Button } from "@/components/atoms/Button";
+import { Text } from "@/components/atoms/Text";
+import { DropdownSelector } from "@/components/atoms/DropdownSelector";
+import { CurrencyInput } from "@/components/atoms/CurrencyInput";
+import { useCategories } from "@/hooks/useCategories";
+import { colors } from "@/constants/theme";
 
 const budgetSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório').max(100, 'Nome deve ter no máximo 100 caracteres'),
-  category: z.number().min(1, 'Categoria é obrigatória'),
-  amount: z.string().min(1, 'Valor é obrigatório').refine((val) => {
-    const amount = parseFloat(val.replace(',', '.'));
-    return !isNaN(amount) && amount > 0;
-  }, 'Valor deve ser um número positivo'),
+  amount: z.number().min(0.01, "Valor deve ser maior que zero"),
+  name: z
+    .string()
+    .min(1, "Nome é obrigatório")
+    .max(100, "Nome deve ter no máximo 100 caracteres"),
+  category: z.number().min(1, "Categoria é obrigatória"),
 });
 
 type BudgetFormData = z.infer<typeof budgetSchema>;
@@ -26,8 +29,7 @@ interface BudgetModalProps {
   onClose: () => void;
   onSave: (data: CreateBudgetRequest) => Promise<void>;
   budget?: Budget | null;
-  mode: 'create' | 'edit';
-  onCreateCategory?: () => void;
+  mode: "create" | "edit";
 }
 
 export const BudgetModal: React.FC<BudgetModalProps> = ({
@@ -36,46 +38,42 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   onSave,
   budget,
   mode,
-  onCreateCategory,
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
-  
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
-  const categories = useMemo(() => 
-    (categoriesData?.results || []).filter(cat => cat.type === 'expense'), 
-    [categoriesData?.results]
-  );
+  const { data: categoriesResponse } = useCategories();
 
   const [formData, setFormData] = useState<BudgetFormData>({
-    name: '',
+    amount: 0,
+    name: "",
     category: 0,
-    amount: '',
   });
-  
-  const [errors, setErrors] = useState<Partial<Record<keyof BudgetFormData, string>>>({});
+
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof BudgetFormData, string>>
+  >({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
 
-    if (mode === 'edit' && budget) {
+    if (mode === "edit" && budget) {
       setFormData({
+        amount: budget.amount,
         name: budget.name,
         category: budget.category,
-        amount: budget.amount,
       });
     } else {
       setFormData({
-        name: '',
-        category: categories.length > 0 ? parseInt(categories[0].id) : 0,
-        amount: '',
+        amount: 0,
+        name: "",
+        category: 0,
       });
     }
     setErrors({});
-    setShowCategoryDropdown(false);
-  }, [mode, budget, visible, categories.length]);
+    setCategoryDropdownOpen(false);
+  }, [mode, budget, visible]);
 
   const validateForm = (): boolean => {
     try {
@@ -97,45 +95,44 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Converter BudgetFormData validado para CreateBudgetRequest
-      const dataToSave: CreateBudgetRequest = {
+      const saveData: CreateBudgetRequest = {
+        amount: formData.amount.toString(),
         name: formData.name,
         category: formData.category,
-        amount: formData.amount.replace(',', '.'), // Garantir formato correto
       };
-      await onSave(dataToSave);
+
+      await onSave(saveData);
       onClose();
     } catch (error) {
-      console.error('Erro ao salvar orçamento:', error);
+      console.error("Erro ao salvar orçamento:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const formatAmount = useCallback((value: string) => {
-    let formatted = value.replace(/[^\d,.-]/g, '');
-    formatted = formatted.replace('.', ',');
-    return formatted;
-  }, []);
+  const handleClose = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
 
-  const handleAmountChange = useCallback((text: string) => {
-    const formatted = formatAmount(text);
-    setFormData(prev => ({ ...prev, amount: formatted }));
-  }, [formatAmount]);
-
-  const getSelectedCategory = useCallback(() => {
-    return categories.find(cat => parseInt(cat.id) === formData.category);
-  }, [categories, formData.category]);
+  const categoryOptions =
+    categoriesResponse?.results?.map((category) => ({
+      id: category.id,
+      label: category.name,
+    })) || [];
 
   return (
-    <ModalContainer 
-      visible={visible} 
-      onClose={onClose}
-      title={mode === 'create' ? 'Novo Orçamento' : 'Editar Orçamento'}
+    <ModalContainer
+      visible={visible}
+      onClose={handleClose}
+      title={mode === "edit" ? "Editar Orçamento" : "Novo Orçamento"}
       footer={
         <>
           <Button
@@ -145,7 +142,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
             style={style.cancelButton}
           />
           <Button
-            title={mode === 'create' ? 'Criar' : 'Salvar'}
+            title={mode === "create" ? "Criar" : "Salvar"}
             onPress={handleSave}
             loading={isLoading}
             style={style.saveButton}
@@ -155,33 +152,51 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
     >
       <FormField
         label="Nome do Orçamento"
-        placeholder="Ex: Orçamento Alimentação"
         value={formData.name}
-        onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
-        maxLength={100}
-        error={errors.name}
+        onChangeText={(text) =>
+          setFormData((prev) => ({ ...prev, name: text }))
+        }
+        placeholder="Ex: Alimentação Janeiro"
       />
+      {errors.name && (
+        <Text
+          style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
+        >
+          {errors.name}
+        </Text>
+      )}
 
-      <CategoryDropdown
-        categories={categories}
-        selectedCategoryId={formData.category}
-        onSelect={(categoryId) => setFormData(prev => ({ ...prev, category: categoryId }))}
-        error={errors.category}
-        isLoading={categoriesLoading}
-        isOpen={showCategoryDropdown}
-        onToggle={() => setShowCategoryDropdown(!showCategoryDropdown)}
-        filterType="expense"
-        onCreateCategory={onCreateCategory}
-      />
-
-      <FormField
-        label="Valor Limite (R$)"
+      <CurrencyInput
+        label="Valor do Orçamento"
+        value={formData.amount.toString()}
+        onChangeText={(formattedValue, numericValue) =>
+          setFormData((prev) => ({ ...prev, amount: numericValue }))
+        }
         placeholder="0,00"
-        value={formData.amount}
-        onChangeText={handleAmountChange}
-        keyboardType="numeric"
         error={errors.amount}
       />
+
+      <View style={style.categoryContainer}>
+        <Text style={style.categoryLabel}>Categoria</Text>
+        <DropdownSelector
+          items={categoryOptions}
+          selectedId={formData.category}
+          onSelect={(item) =>
+            setFormData((prev) => ({ ...prev, category: item.id }))
+          }
+          placeholder="Selecione uma categoria"
+          isOpen={categoryDropdownOpen}
+          onToggle={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+          error={!!errors.category}
+        />
+        {errors.category && (
+          <Text
+            style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
+          >
+            {errors.category}
+          </Text>
+        )}
+      </View>
     </ModalContainer>
   );
 };

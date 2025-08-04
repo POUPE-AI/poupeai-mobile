@@ -110,21 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "📝 Enviando requisição de refresh token para:",
           discoveryEndpoints.tokenEndpoint
         );
-        console.log("📝 Client ID:", keycloakConfig.clientId);
-        console.log("📝 Refresh token exists:", !!storedTokens.refresh_token);
-
-        // Testar conectividade básica primeiro
-        try {
-          const connectivityTest = await fetch(
-            discoveryEndpoints.tokenEndpoint,
-            {
-              method: "HEAD",
-            }
-          );
-          console.log("📝 Teste de conectividade:", connectivityTest.status);
-        } catch (connectivityError) {
-          console.log("❌ Problema de conectividade:", connectivityError);
-        }
 
         const requestBody = new URLSearchParams();
         requestBody.append("grant_type", "refresh_token");
@@ -135,11 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const alternativeBody = `grant_type=refresh_token&client_id=${encodeURIComponent(
           keycloakConfig.clientId
         )}&refresh_token=${encodeURIComponent(storedTokens.refresh_token)}`;
-        console.log("📝 Alternative body:", alternativeBody);
-        console.log(
-          "📝 Bodies são iguais:",
-          requestBody.toString() === alternativeBody
-        );
 
         const refreshResponse = await fetch(discoveryEndpoints.tokenEndpoint, {
           method: "POST",
