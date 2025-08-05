@@ -148,6 +148,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         credit_card: undefined,
         is_installment: false,
       });
+      setAmmountInput("");
     }
     setErrors({});
   }, [mode, transaction, visible, bankDefault, bankLoading]);
