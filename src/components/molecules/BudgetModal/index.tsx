@@ -8,7 +8,7 @@ import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import { Button } from "@/components/atoms/Button";
 import { Text } from "@/components/atoms/Text";
-import { DropdownSelector } from "@/components/atoms/DropdownSelector";
+import { CategoryDropdown } from "@/components/molecules/CategoryDropdown";
 import { CurrencyInput } from "@/components/atoms/CurrencyInput";
 import { useCategories } from "@/hooks/useCategories";
 import { colors } from "@/constants/theme";
@@ -30,6 +30,7 @@ interface BudgetModalProps {
   onSave: (data: CreateBudgetRequest) => Promise<void>;
   budget?: Budget | null;
   mode: "create" | "edit";
+  onCreateCategory?: () => void;
 }
 
 export const BudgetModal: React.FC<BudgetModalProps> = ({
@@ -38,6 +39,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   onSave,
   budget,
   mode,
+  onCreateCategory,
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
@@ -122,12 +124,6 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
     }
   };
 
-  const categoryOptions =
-    categoriesResponse?.results?.map((category) => ({
-      id: category.id,
-      label: category.name,
-    })) || [];
-
   return (
     <ModalContainer
       visible={visible}
@@ -176,27 +172,18 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
         error={errors.amount}
       />
 
-      <View style={style.categoryContainer}>
-        <Text style={style.categoryLabel}>Categoria</Text>
-        <DropdownSelector
-          items={categoryOptions}
-          selectedId={formData.category}
-          onSelect={(item) =>
-            setFormData((prev) => ({ ...prev, category: item.id }))
-          }
-          placeholder="Selecione uma categoria"
-          isOpen={categoryDropdownOpen}
-          onToggle={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-          error={!!errors.category}
-        />
-        {errors.category && (
-          <Text
-            style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
-          >
-            {errors.category}
-          </Text>
-        )}
-      </View>
+      <CategoryDropdown
+        categories={categoriesResponse?.results || []}
+        selectedCategoryId={formData.category}
+        onSelect={(categoryId) =>
+          setFormData((prev) => ({ ...prev, category: categoryId }))
+        }
+        error={errors.category}
+        isOpen={categoryDropdownOpen}
+        onToggle={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+        filterType="expense"
+        onCreateCategory={onCreateCategory}
+      />
     </ModalContainer>
   );
 };

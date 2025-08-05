@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View } from "react-native";
+import { parseISO, isValid, format } from "date-fns";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Goal } from "@/types/goals";
 import { styles } from "./styles";
@@ -22,8 +23,8 @@ const goalDepositSchema = z.object({
       // Validate date format YYYY-MM-DD
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(val)) return false;
-      const date = new Date(val);
-      return !isNaN(date.getTime());
+      const date = parseISO(val);
+      return isValid(date);
     }, "Data deve estar no formato válido"),
   note: z.string().optional(),
 });
@@ -63,8 +64,7 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
   useEffect(() => {
     if (visible && goal) {
       // Set today's date as default
-      const today = new Date();
-      const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+      const todayString = format(new Date(), "yyyy-MM-dd"); // YYYY-MM-DD format
       setFormData({
         depositAmount: 0,
         depositDate: todayString,

@@ -1,6 +1,8 @@
 import React, { useLayoutEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
@@ -28,7 +30,7 @@ export default function IncomeReportScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
+    return format(parseISO(dateString), "dd/MM/yyyy", { locale: ptBR });
   };
 
   const handleRefresh = async () => {
@@ -47,7 +49,7 @@ export default function IncomeReportScreen() {
   }, [navigation]);
 
   if (isLoading) {
-    return <LoadingContent text="Carregando relatório de receitas..." />;
+    return <LoadingContent text="relatório de receitas" />;
   }
 
   if (error || !reportData) {

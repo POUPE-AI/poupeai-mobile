@@ -52,6 +52,7 @@ export function useCreateBankAccount() {
       queryClient.invalidateQueries({
         queryKey: bankAccountsKeys.lists(),
       });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
 }

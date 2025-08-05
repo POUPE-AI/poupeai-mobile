@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View } from "react-native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Invoice } from "@/types/invoices";
 import { Account } from "@/types/accounts";
@@ -58,8 +60,7 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   useEffect(() => {
     if (visible && invoice) {
       // Set today's date as default
-      const today = new Date();
-      const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD format
+      const todayString = format(new Date(), "yyyy-MM-dd"); // YYYY-MM-DD format
       setPaymentDate(todayString);
       setSelectedBankAccount(null); // Reset bank account selection
       setIsBankAccountDropdownOpen(false); // Close dropdown
@@ -117,8 +118,8 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   };
 
   const formatDateForDisplay = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR");
+    const date = parseISO(dateString);
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
   };
 
   const getMonthYear = () => {

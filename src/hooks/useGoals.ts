@@ -6,6 +6,11 @@ import {
   UpdateGoalRequest,
   CreateGoalDepositRequest,
 } from "../types/goals";
+import {
+  dashboardKeys,
+  transactionsKeys,
+  bankAccountsKeys,
+} from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const goalsKeys = {
@@ -89,6 +94,9 @@ export function useCreateGoalDeposit() {
       queryClient.invalidateQueries({
         queryKey: goalsKeys.detail(variables.goalId),
       });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
     },
   });
 }

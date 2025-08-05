@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View } from "react-native";
+import { parseISO, isAfter, isToday, addDays, format } from "date-fns";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Goal, CreateGoalRequest } from "@/types/goals";
 import { z } from "zod";
@@ -38,10 +39,9 @@ const goalSchema = z.object({
       // Validate date format YYYY-MM-DD
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(val)) return false;
-      const date = new Date(val);
+      const date = parseISO(val);
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return !isNaN(date.getTime()) && date >= today;
+      return isToday(date) || isAfter(date, today);
     }, "Data da meta deve ser hoje ou uma data futura"),
 });
 
@@ -99,9 +99,8 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       });
     } else {
       // Set tomorrow as default target date
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowString = tomorrow.toISOString().split("T")[0];
+      const tomorrow = addDays(new Date(), 1);
+      const tomorrowString = format(tomorrow, "yyyy-MM-dd");
 
       setFormData({
         name: "",

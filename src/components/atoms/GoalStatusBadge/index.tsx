@@ -1,5 +1,7 @@
 import React from "react";
 import { View } from "react-native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Text } from "@/components/atoms/Text";
 import { Goal } from "@/types/goals";
 import { styles } from "./styles";
@@ -18,7 +20,8 @@ export const GoalStatusBadge: React.FC<GoalStatusBadgeProps> = ({ goal }) => {
       <Text style={styles.completedText}>✅ Meta Concluída</Text>
       {goal.completed_at && (
         <Text style={styles.completedDate}>
-          Concluída em {new Date(goal.completed_at).toLocaleDateString("pt-BR")}
+          Concluída em{" "}
+          {format(parseISO(goal.completed_at), "dd/MM/yyyy", { locale: ptBR })}
         </Text>
       )}
     </View>

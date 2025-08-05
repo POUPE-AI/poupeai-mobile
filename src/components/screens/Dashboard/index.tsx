@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Text, ScrollView, View } from "react-native";
+import { parseISO, format, startOfDay, isBefore, isEqual } from "date-fns";
 import { BalanceCard } from "@/components/molecules/BalanceCard";
-import { CategoriesCard } from "@/components/molecules/CategoriesCard";
 import { EstimatedSavingsCard } from "@/components/molecules/EstimatedSavingsCard";
 import { TransactionsListItem } from "@/components/atoms/TransactionsListItem";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -19,8 +19,7 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const today = new Date();
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  const end_date = endOfMonth.toISOString().split("T")[0];
+  const todayFormatted = format(today, "yyyy-MM-dd");
 
   const {
     data: dashboard,
@@ -34,14 +33,22 @@ export default function DashboardScreen() {
     isLoading: transactionLoading,
     error: transactionsError,
   } = useTransactions({
-    issue_date_end: end_date,
+    issue_date_end: todayFormatted,
   });
   const lastTransactions =
     transactions?.pages[0]?.results
       .slice()
+      .filter((transaction) => {
+        const transactionDate = parseISO(transaction.issue_date);
+        const todayStart = startOfDay(today);
+        return (
+          isBefore(transactionDate, todayStart) ||
+          isEqual(transactionDate, todayStart)
+        );
+      })
       .sort(
         (a, b) =>
-          new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
       )
       .slice(0, 5) || [];
 

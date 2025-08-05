@@ -28,7 +28,7 @@ export interface EstimatedSavingSection {
   estimated_savings: number;
   savings_percentage: number;
   message: string;
-  comparison_period: string;
+  comparison_period?: string;
 }
 
 export interface DashboardResponse {

@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
@@ -127,11 +129,11 @@ export const TransactionDetails: React.FC = () => {
         <View style={style.card}>
           <View style={style.cardHeader}>
             <Text variant="caption" color="textSecondary">
-              {new Date(transaction.created_at).toLocaleDateString("pt-BR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {format(
+                parseISO(transaction.created_at),
+                "d 'de' MMMM 'de' yyyy",
+                { locale: ptBR }
+              )}
             </Text>
             <View style={style.actionsContainer}>
               <ActionButton
@@ -214,8 +216,8 @@ export const TransactionDetails: React.FC = () => {
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
         onConfirm={handleConfirmDelete}
-        title="Excluir Categoria"
-        message="Tem certeza que deseja excluir esta categoria?"
+        title="Excluir Transação"
+        message="Tem certeza que deseja excluir esta transação?"
         itemName={transactionToDelete?.description}
       />
     </>
