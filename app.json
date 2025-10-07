@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "Poupe.AI",
+    "slug": "poupeai-mobile",
+    "version": "1.0.0-preview.5",
+    "orientation": "portrait",
+    "icon": "./assets/icons/adaptive-icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "ai.poupe.mobile",
+    "splash": {
+      "image": "./assets/icons/splash-icon-light.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ff660f"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/icons/ios-light.png",
+      "iconDark": "./assets/icons/ios-dark.png"
+    },
+    "android": {
+      "usesCleartextTraffic": true,
+      "package": "ai.poupe.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
+        "backgroundColor": "#f8f8f8"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": { "scheme": "ai.poupe.mobile" }
+        },
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": { "scheme": "exp" }
+        }
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ff660f",
+          "image": "./assets/icons/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/icons/splash-icon-dark.png",
+            "backgroundColor": "#121212"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "router": { "origin": false },
+      "eas": {
+        "projectId": "b5778dad-1362-4faa-b0e9-03881ccee202"
+      },
+      "timezone": "America/Fortaleza"
+    },
+    "owner": "eudivan",
+    "runtimeVersion": { "policy": "appVersion" },
+    "updates": {
+      "url": "https://u.expo.dev/b5778dad-1362-4faa-b0e9-03881ccee202"
+    },
+    "newArchEnabled": true
+  }
+}
