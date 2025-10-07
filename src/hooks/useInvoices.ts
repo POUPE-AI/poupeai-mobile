@@ -9,6 +9,7 @@ import {
   bankAccountsKeys,
   invoicesKeys,
   transactionsKeys,
+  dashboardKeys,
 } from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -68,6 +69,7 @@ export const usePayInvoice = () => {
       queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
       queryClient.invalidateQueries({ queryKey: bankAccountsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: bankAccountsKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
 };

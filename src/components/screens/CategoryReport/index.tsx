@@ -2,6 +2,8 @@ import React, { useLayoutEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
@@ -10,6 +12,7 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { ReportHeaderRight } from "@/components/atoms/ReportHeaderRight";
 import { useCategoryReport, useRefreshReports } from "@/hooks/useReports";
+import { colors } from "@/constants/theme";
 import { styles } from "./styles";
 
 export default function CategoryReportScreen() {
@@ -29,7 +32,7 @@ export default function CategoryReportScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR");
+    return format(parseISO(dateString), "dd/MM/yyyy", { locale: ptBR });
   };
 
   const handleRefresh = async () => {
@@ -48,7 +51,7 @@ export default function CategoryReportScreen() {
   }, [navigation]);
 
   if (isLoading) {
-    return <LoadingContent text="Carregando análise por categorias..." />;
+    return <LoadingContent text="análise por categorias" />;
   }
 
   if (error || !reportData) {
@@ -93,7 +96,11 @@ export default function CategoryReportScreen() {
         <View style={style.section}>
           <Text style={style.sectionTitle}>Tendência das Categorias</Text>
           <View style={style.trendContainer}>
-            <Ionicons name="trending-up" size={20} color="#17a2b8" />
+            <Ionicons
+              name="trending-up"
+              size={20}
+              color={colors.feedback.info}
+            />
             <Text style={style.trendText}>{content.trend}</Text>
           </View>
         </View>
@@ -131,7 +138,12 @@ export default function CategoryReportScreen() {
               <Text
                 style={[
                   style.transactionAmount,
-                  { color: transaction.amount > 0 ? "#28a745" : "#dc3545" },
+                  {
+                    color:
+                      transaction.amount > 0
+                        ? colors.feedback.success
+                        : colors.feedback.error,
+                  },
                 ]}
               >
                 {formatCurrency(Math.abs(transaction.amount))}

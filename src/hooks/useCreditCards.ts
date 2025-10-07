@@ -4,7 +4,12 @@ import {
   UpdateCreditCardRequest,
 } from "@/services/creditCards";
 import { CreateCreditCardRequest } from "@/types/cards";
-import { creditCardsKeys } from "@/constants/queryKeys";
+import {
+  creditCardsKeys,
+  dashboardKeys,
+  transactionsKeys,
+  invoicesKeys,
+} from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useCreditCards(params?: {
@@ -77,6 +82,9 @@ export function useDeleteCreditCard() {
       queryClient.invalidateQueries({
         queryKey: creditCardsKeys.lists(),
       });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionsKeys.all });
+      queryClient.invalidateQueries({ queryKey: invoicesKeys.all });
     },
   });
 }

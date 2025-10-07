@@ -111,6 +111,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Identifica se é edição de transação de cartão de crédito
+  // Quando verdadeiro, restringe edição apenas para: descrição, valor e categoria
+  const isCreditCardEditMode =
+    mode === "edit" && transaction?.source_type === "CREDIT_CARD";
+
   // Preenche o formulário quando estiver editando
   useEffect(() => {
     if (mode === "edit" && transaction) {
@@ -143,6 +148,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         credit_card: undefined,
         is_installment: false,
       });
+      setAmmountInput("");
     }
     setErrors({});
   }, [mode, transaction, visible, bankDefault, bankLoading]);
@@ -182,21 +188,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     setIsLoading(true);
     try {
-      // formData.issue_date já está no formato ISO (YYYY-MM-DD) vindo do DatePickerField
-      const saveData: CreateTransactionRequest = {
-        description: formData.description,
-        amount: formData.amount,
-        issue_date: formData.issue_date,
-        source_type: formData.source_type,
-        category: formData.category,
-        bank_account: formData.bank_account,
-        credit_card: formData.credit_card,
-        is_installment: formData.is_installment,
-        installment_number: formData.installment_number,
-        total_installments: formData.total_installments,
-      };
+      // Para edição de transações de cartão de crédito, enviar apenas campos permitidos
+      if (isCreditCardEditMode) {
+        const saveData: Partial<CreateTransactionRequest> = {
+          description: formData.description,
+          amount: formData.amount,
+          category: formData.category,
+        };
+        await onSave(saveData as CreateTransactionRequest);
+      } else {
+        // Para criação ou edição de outras transações, enviar todos os campos
+        const saveData: CreateTransactionRequest = {
+          description: formData.description,
+          amount: formData.amount,
+          issue_date: formData.issue_date,
+          source_type: formData.source_type,
+          category: formData.category,
+          bank_account: formData.bank_account,
+          credit_card: formData.credit_card,
+          is_installment: formData.is_installment,
+          installment_number: formData.installment_number,
+          total_installments: formData.total_installments,
+        };
+        await onSave(saveData);
+      }
 
-      await onSave(saveData);
       onClose();
     } catch (error) {
       Alert.alert(
@@ -298,6 +314,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           }}
           placeholder="DD/MM/AAAA"
           error={errors.issue_date}
+          disabled={isCreditCardEditMode}
         />
 
         <TransactionTypeSelector
@@ -323,6 +340,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             setFormData((prev) => ({ ...prev, source_type }));
           }}
           error={errors.source_type}
+          disabled={isCreditCardEditMode}
         />
 
         {formData.source_type === "BANK_ACCOUNT" ? (
@@ -348,6 +366,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 isOpen={bankCreditCardIsOpen}
                 onToggle={() => setCreditCardIsOpen((prev) => !prev)}
                 onCreateCreditCard={onCreateCreditCard}
+                disabled={isCreditCardEditMode}
               />
 
               <FormField
@@ -355,6 +374,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 placeholder="Número de parcelas"
                 value={formData.total_installments?.toString() || ""}
                 keyboardType="numeric"
+                editable={!isCreditCardEditMode}
                 onChangeText={(text: string) => {
                   const cleanedText = text.replace(/\D/g, "");
                   const value = parseInt(cleanedText, 10);
@@ -389,6 +409,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 placeholder="Número da parcela"
                 value={formData.installment_number?.toString() || ""}
                 keyboardType="numeric"
+                editable={!isCreditCardEditMode}
                 onChangeText={(text: string) => {
                   const cleanedText = text.replace(/\D/g, "");
                   const value = parseInt(cleanedText, 10);

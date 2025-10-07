@@ -4,6 +4,7 @@ import {
   TransactionsResponse,
   CreateTransactionRequest,
   TransactionDetail,
+  UpdateTransactionRequest,
 } from "../types/transactions";
 import { UpdateGoalRequest } from "@/types";
 
@@ -33,7 +34,9 @@ export class TransactionsService {
     return response.data;
   }
 
-  async updateTransaction(data: UpdateGoalRequest): Promise<Transaction> {
+  async updateTransaction(
+    data: UpdateTransactionRequest
+  ): Promise<Transaction> {
     const { id, ...updateData } = data;
     const response = await api.patch<Transaction>(
       `${this.baseUrl}${id}/`,

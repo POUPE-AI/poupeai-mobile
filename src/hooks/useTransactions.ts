@@ -94,6 +94,7 @@ export function useUpdateTransaction() {
       queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
 }
@@ -113,6 +114,7 @@ export function useDeleteTransaction() {
       queryClient.invalidateQueries({ queryKey: budgetsKeys.all });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: invoicesKeys.all });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
 }

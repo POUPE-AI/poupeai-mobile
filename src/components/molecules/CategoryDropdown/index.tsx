@@ -1,13 +1,13 @@
-import React from 'react';
-import { ActivityIndicator, View, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { DropdownSelector } from '@/components/atoms/DropdownSelector';
-import { FormField } from '@/components/atoms/FormField';
-import { Text } from '@/components/atoms/Text';
-import { Category } from '@/types';
-import { colors } from '@/constants/theme';
-import { useTheme } from '@/contexts/ThemeContext';
-import { styles } from './styles';
+import React from "react";
+import { ActivityIndicator, View, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { DropdownSelector } from "@/components/atoms/DropdownSelector";
+import { FormField } from "@/components/atoms/FormField";
+import { Text } from "@/components/atoms/Text";
+import { Category } from "@/types";
+import { colors } from "@/constants/theme";
+import { useTheme } from "@/contexts/ThemeContext";
+import { styles } from "./styles";
 
 interface CategoryDropdownProps {
   categories: Category[];
@@ -17,7 +17,7 @@ interface CategoryDropdownProps {
   isLoading?: boolean;
   isOpen: boolean;
   onToggle: () => void;
-  filterType?: 'income' | 'expense';
+  filterType?: "income" | "expense";
   onCreateCategory?: () => void;
 }
 
@@ -35,12 +35,12 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const filteredCategories = filterType 
-    ? categories.filter(cat => cat.type === filterType)
+  const filteredCategories = filterType
+    ? categories.filter((cat) => cat.type === filterType)
     : categories;
 
-  const dropdownItems = filteredCategories.map(category => ({
-    id: parseInt(category.id),
+  const dropdownItems = filteredCategories.map((category) => ({
+    id: category.id,
     label: category.name,
     color: category.color_hex,
   }));
@@ -76,17 +76,13 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             showColorDot={true}
           />
         </View>
-        
+
         {onCreateCategory && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={style.createButton}
             onPress={onCreateCategory}
           >
-            <Ionicons 
-              name="add" 
-              size={20} 
-              color={colors.theme[theme].text} 
-            />
+            <Ionicons name="add" size={20} color={colors.theme[theme].text} />
           </TouchableOpacity>
         )}
       </View>

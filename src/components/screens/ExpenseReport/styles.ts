@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { colors } from "@/constants/theme";
 
 export const styles = (themeColors: any) =>
   StyleSheet.create({
@@ -54,7 +55,7 @@ export const styles = (themeColors: any) =>
     expenseAmount: {
       fontSize: 16,
       fontWeight: "bold",
-      color: "#dc3545",
+      color: colors.feedback.error,
     },
     buttonContainer: {
       marginVertical: 24,

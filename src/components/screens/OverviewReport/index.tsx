@@ -1,6 +1,8 @@
 import React, { useLayoutEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
 import { FinancialInfoCard } from "@/components/atoms/FinancialInfoCard";
 import { AnalysisCard } from "@/components/atoms/AnalysisCard";
@@ -43,7 +45,7 @@ export default function OverviewReportScreen() {
   }, [navigation]);
 
   if (isLoading) {
-    return <LoadingContent text="Carregando relatório..." />;
+    return <LoadingContent text="relatório" />;
   }
 
   if (error || !reportData) {
@@ -63,8 +65,11 @@ export default function OverviewReportScreen() {
         <View style={style.section}>
           <Text style={style.sectionTitle}>Resumo do Período</Text>
           <Text style={style.period}>
-            {new Date(content.startDate).toLocaleDateString("pt-BR")} -{" "}
-            {new Date(content.endDate).toLocaleDateString("pt-BR")}
+            {format(parseISO(content.startDate), "dd/MM/yyyy", {
+              locale: ptBR,
+            })}{" "}
+            -{" "}
+            {format(parseISO(content.endDate), "dd/MM/yyyy", { locale: ptBR })}
           </Text>
 
           <FinancialInfoCard

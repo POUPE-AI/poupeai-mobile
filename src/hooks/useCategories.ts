@@ -22,10 +22,12 @@ export function useCategories(params?: {
 }) {
   const { isAuthenticated, user } = useAuth();
 
+  const finalParams = { page_size: 100, ...params };
+
   return useQuery({
-    queryKey: categoriesKeys.list(params || {}),
-    queryFn: () => categoriesService.getCategories(params),
-    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
+    queryKey: categoriesKeys.list(finalParams),
+    queryFn: () => categoriesService.getCategories(finalParams),
+    enabled: isAuthenticated && !!user,
   });
 }
 

@@ -3,6 +3,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Goal } from "@/types/goals";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, View } from "react-native";
+import { parseISO, differenceInDays } from "date-fns";
 import { createGoalListItemStyles } from "./styles";
 import { colors } from "@/constants/theme";
 import { formatCurrency } from "@/utils/currency";
@@ -16,17 +17,19 @@ interface GoalListItemProps {
   onDelete?: (goal: Goal) => void;
 }
 
-export const GoalListItem = ({ goal, onDeposit, onEdit, onDelete }: GoalListItemProps) => {
+export const GoalListItem = ({
+  goal,
+  onDeposit,
+  onEdit,
+  onDelete,
+}: GoalListItemProps) => {
   const { theme } = useTheme();
   const styles = createGoalListItemStyles(theme, goal.color_hex);
 
   const progress = goal.percentage_completed;
   const goalAmount = parseFloat(goal.goal_amount);
   const remainingAmount = goalAmount - goal.current_balance;
-  const daysRemaining = Math.ceil(
-    (new Date(goal.target_at).getTime() - new Date().getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
+  const daysRemaining = differenceInDays(parseISO(goal.target_at), new Date());
 
   return (
     <View key={goal.id} style={styles.container}>
@@ -84,7 +87,7 @@ export const GoalListItem = ({ goal, onDeposit, onEdit, onDelete }: GoalListItem
               />
             )}
           </View>
-          
+
           <View style={styles.rightActions}>
             {onEdit && (
               <ActionButton
@@ -93,7 +96,7 @@ export const GoalListItem = ({ goal, onDeposit, onEdit, onDelete }: GoalListItem
                 size={18}
               />
             )}
-            
+
             {onDelete && (
               <ActionButton
                 iconName="trash-outline"

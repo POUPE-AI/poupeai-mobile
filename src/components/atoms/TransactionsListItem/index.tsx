@@ -1,4 +1,6 @@
 import { TouchableOpacity, View } from "react-native";
+import { parseISO, format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Text } from "@/components/atoms/Text";
 import { colors } from "@/constants/theme";
 import { styles } from "./styles";
@@ -29,12 +31,8 @@ export const TransactionsListItem = ({
   );
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    const date = parseISO(dateString);
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
   };
 
   const amountText = `${

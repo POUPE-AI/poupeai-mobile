@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { View, SectionList, ActivityIndicator } from "react-native";
+import { parseISO, isToday, isYesterday, isSameMonth, format } from "date-fns";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { TransactionsListItem } from "../../atoms/TransactionsListItem";
 import { TransactionsSeparator } from "../../atoms/TransactionsSeparator";
@@ -12,45 +13,18 @@ import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { colors } from "@/constants/theme";
 
 const getGroupKey = (dateString: string): string => {
-  const date = new Date(dateString);
+  const date = parseISO(dateString);
   const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
 
-  const dateOnly = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
-  const todayOnly = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
-  const yesterdayOnly = new Date(
-    yesterday.getFullYear(),
-    yesterday.getMonth(),
-    yesterday.getDate()
-  );
-
-  if (
-    dateOnly.getTime() === todayOnly.getTime() ||
-    dateOnly.getTime() === yesterdayOnly.getTime()
-  ) {
+  if (isToday(date) || isYesterday(date)) {
     return dateString;
   }
 
-  if (
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  ) {
+  if (isSameMonth(date, today)) {
     return dateString;
   }
 
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-01`;
+  return format(date, "yyyy-MM-01");
 };
 
 const groupTransactionsByDate = (
@@ -58,7 +32,7 @@ const groupTransactionsByDate = (
 ): TransactionSection[] => {
   const sortedTransactions = [...transactions].sort(
     (a, b) =>
-      new Date(b.issue_date).getTime() - new Date(a.issue_date).getTime()
+      parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
   );
 
   const groupedByDate = sortedTransactions.reduce((groups, transaction) => {
@@ -77,7 +51,7 @@ const groupTransactionsByDate = (
   }, {} as Record<string, TransactionSection>);
 
   return Object.values(groupedByDate).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()
   );
 };
 
@@ -94,7 +68,7 @@ export const TransactionsList = () => {
     hasNextPage,
     isFetchingNextPage,
   } = useTransactions({
-    issue_date_end: new Date().toISOString().split("T")[0],
+    issue_date_end: format(new Date(), "yyyy-MM-dd"),
   });
 
   const transactions = useMemo(

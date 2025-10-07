@@ -17,6 +17,7 @@ interface CreditCardDropdownProps {
   isOpen: boolean;
   onToggle: () => void;
   onCreateCreditCard?: () => void;
+  disabled?: boolean;
 }
 
 export const CreditCardDropDown = ({
@@ -26,6 +27,7 @@ export const CreditCardDropDown = ({
   isOpen,
   onToggle,
   onCreateCreditCard = () => {},
+  disabled = false,
 }: CreditCardDropdownProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
@@ -75,10 +77,16 @@ export const CreditCardDropDown = ({
             onToggle={onToggle}
             error={!!error}
             showColorDot={true}
+            disabled={disabled}
           />
         </View>
 
-        <TouchableOpacity style={style.createButton} onPress={onCreateCreditCard}>
+        <TouchableOpacity
+          style={[style.createButton, disabled && style.createButtonDisabled]}
+          onPress={onCreateCreditCard}
+          disabled={disabled}
+          activeOpacity={disabled ? 1 : 0.7}
+        >
           <Ionicons name="add" size={20} color={colors.theme[theme].text} />
         </TouchableOpacity>
       </View>

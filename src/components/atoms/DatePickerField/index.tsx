@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import DatePicker from "react-native-date-picker";
+import { parseISO, format, isValid } from "date-fns";
 import { FormField } from "@/components/atoms/FormField";
 import { Text } from "@/components/atoms/Text";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -34,26 +35,20 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   // Converte ISO date (YYYY-MM-DD) para Date object
   const getDateFromISO = (isoDate: string): Date => {
     if (!isoDate) return new Date();
-    const date = new Date(isoDate + "T00:00:00.000Z");
-    return isNaN(date.getTime()) ? new Date() : date;
+    const date = parseISO(isoDate);
+    return isValid(date) ? date : new Date();
   };
 
   // Converte Date object para ISO date (YYYY-MM-DD)
   const getISOFromDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return format(date, "yyyy-MM-dd");
   };
 
   // Formata data para exibição (DD/MM/AAAA)
   const formatDisplayDate = (isoDate: string): string => {
     if (!isoDate) return "";
     const date = getDateFromISO(isoDate);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return format(date, "dd/MM/yyyy");
   };
 
   const currentDate = getDateFromISO(value);
@@ -67,7 +62,11 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
 
   return (
     <View style={style.container}>
-      <TouchableOpacity onPress={() => !disabled && setIsOpen(true)}>
+      <TouchableOpacity
+        onPress={() => !disabled && setIsOpen(true)}
+        activeOpacity={0.7}
+        style={disabled ? style.disabledContainer : undefined}
+      >
         <FormField
           label={label}
           placeholder={placeholder}

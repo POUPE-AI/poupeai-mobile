@@ -1,27 +1,30 @@
-export const FormatDate = (dateString: string) => {
-  const date = new Date(dateString);
+import {
+  parseISO,
+  isToday,
+  isYesterday,
+  isSameMonth,
+  format,
+  isValid,
+} from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-  if (isNaN(date.getTime())) {
+export const FormatDate = (dateString: string) => {
+  const date = parseISO(dateString);
+
+  if (!isValid(date)) {
     return "Data inválida";
   }
 
-  if (date.toDateString() === new Date().toDateString()) {
+  if (isToday(date)) {
     return "Hoje";
   }
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) {
+  if (isYesterday(date)) {
     return "Ontem";
   }
 
-  const currentMonth = new Date().getMonth();
-  if (date.getMonth() === currentMonth) {
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+  if (isSameMonth(date, new Date())) {
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
   }
 
   const capitalizeFirstLetter = (str: string): string => {
@@ -29,38 +32,24 @@ export const FormatDate = (dateString: string) => {
   };
 
   return capitalizeFirstLetter(
-    date.toLocaleDateString("pt-BR", {
-      month: "long",
-      year: "numeric",
-    })
+    format(date, "MMMM 'de' yyyy", { locale: ptBR })
   );
 };
 
 export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
+  const date = parseISO(dateString);
+  if (!isValid(date)) {
     return "Data inválida";
   }
-  
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+
+  return format(date, "dd/MM/yyyy HH:mm", { locale: ptBR });
 };
 
 export const formatDate_DDMMYYYY = (dateString: string): string => {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
+  const date = parseISO(dateString);
+  if (!isValid(date)) {
     return "Data inválida";
   }
 
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
+  return format(date, "dd/MM/yyyy", { locale: ptBR });
+};

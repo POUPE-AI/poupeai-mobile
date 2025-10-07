@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
+import { colors } from "@/constants/theme";
 import { styles } from "./styles";
 
 interface AnalysisCardProps {
@@ -21,7 +22,9 @@ export const AnalysisCard: React.FC<AnalysisCardProps> = ({
   const style = styles(themeColors, variant);
 
   const getIconColor = () => {
-    return variant === "suggestion" ? "#ff660f" : "#17a2b8";
+    return variant === "suggestion"
+      ? colors.primary[500]
+      : colors.feedback.info;
   };
 
   return (

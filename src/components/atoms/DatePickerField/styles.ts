@@ -5,4 +5,7 @@ export const styles = (theme: "light" | "dark") =>
     container: {
       marginBottom: 16,
     },
+    disabledContainer: {
+      opacity: 0.7,
+    },
   });
