@@ -1,47 +1,79 @@
-import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Text } from '@/components/atoms/Text';
-import { BudgetListItem } from '@/components/atoms/BudgetListItem';
-import { BudgetModal } from '@/components/molecules/BudgetModal';
-import { CategoryModal } from '@/components/molecules/CategoryModal';
-import { ConfirmDeleteModal } from '@/components/molecules/ConfirmDeleteModal';
-import { useBudgets, useCreateBudget, useUpdateBudget, useDeleteBudget } from '@/hooks/useBudgets';
-import { useCategories, useCreateCategory } from '@/hooks/useCategories';
-import { Budget, BudgetProgress, CreateBudgetRequest } from '@/types';
-import { colors } from '@/constants/theme';
-import { styles } from './styles';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Text } from "@/components/atoms/Text";
+import { BudgetListItem } from "@/components/atoms/BudgetListItem";
+import { BudgetModal } from "@/components/molecules/BudgetModal";
+import { CategoryModal } from "@/components/molecules/CategoryModal";
+import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
+import {
+  useBudgets,
+  useCreateBudget,
+  useUpdateBudget,
+  useDeleteBudget,
+} from "@/hooks/useBudgets";
+import { useCategories, useCreateCategory } from "@/hooks/useCategories";
+import { Budget, BudgetProgress, CreateBudgetRequest } from "@/types";
+import { colors } from "@/constants/theme";
+import { styles } from "./styles";
 
 export const BudgetsList = () => {
   const { theme } = useTheme();
   const style = styles(theme);
-  
-  const { data: budgetsData, isLoading: budgetsLoading, error: budgetsError } = useBudgets();
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+
+  const {
+    data: budgetsData,
+    isLoading: budgetsLoading,
+    error: budgetsError,
+    refetch: refetchBudgets,
+  } = useBudgets();
+
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCategories();
+
   const createBudgetMutation = useCreateBudget();
   const updateBudgetMutation = useUpdateBudget();
   const deleteBudgetMutation = useDeleteBudget();
   const createCategoryMutation = useCreateCategory();
 
   const budgets = budgetsData?.results || [];
-  const categories = categoriesData?.results || [];
+
+  useEffect(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    fetchNextPage();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  const categories =
+    categoriesData?.pages.flatMap((page) => page.results) || [];
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
 
   const handleCreateBudget = () => {
-    setModalMode('create');
+    setModalMode("create");
     setSelectedBudget(null);
     setModalVisible(true);
   };
 
   const handleEditBudget = (budget: Budget) => {
-    setModalMode('edit');
+    setModalMode("edit");
     setSelectedBudget(budget);
     setModalVisible(true);
   };
@@ -53,7 +85,7 @@ export const BudgetsList = () => {
 
   const handleSaveBudget = async (data: CreateBudgetRequest) => {
     try {
-      if (modalMode === 'create') {
+      if (modalMode === "create") {
         await createBudgetMutation.mutateAsync(data);
       } else if (selectedBudget) {
         await updateBudgetMutation.mutateAsync({
@@ -62,18 +94,24 @@ export const BudgetsList = () => {
         });
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar o orçamento. Tente novamente.');
+      Alert.alert(
+        "Erro",
+        "Não foi possível salvar o orçamento. Tente novamente."
+      );
       throw error;
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!budgetToDelete) return;
-    
+
     try {
       await deleteBudgetMutation.mutateAsync(budgetToDelete.id);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível excluir o orçamento. Tente novamente.');
+      Alert.alert(
+        "Erro",
+        "Não foi possível excluir o orçamento. Tente novamente."
+      );
       throw error;
     }
   };
@@ -91,7 +129,10 @@ export const BudgetsList = () => {
       await createCategoryMutation.mutateAsync(categoryData);
       setCategoryModalVisible(false);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível criar a categoria. Tente novamente.');
+      Alert.alert(
+        "Erro",
+        "Não foi possível criar a categoria. Tente novamente."
+      );
       throw error;
     }
   };
@@ -100,12 +141,12 @@ export const BudgetsList = () => {
     const amount = budget.amount;
     const percentage = (budget.actual_amount / amount) * 100;
     const remaining = amount - budget.actual_amount;
-    
-    let status: BudgetProgress['status'] = 'safe';
+
+    let status: BudgetProgress["status"] = "safe";
     if (percentage >= 100) {
-      status = 'danger';
+      status = "danger";
     } else if (percentage >= 80) {
-      status = 'warning';
+      status = "warning";
     }
 
     return {
@@ -116,9 +157,11 @@ export const BudgetsList = () => {
   };
 
   const getCategoryInfo = (categoryId: number) => {
-    const category = categories.find(cat => String(cat.id) === String(categoryId));
+    const category = categories.find(
+      (cat) => String(cat.id) === String(categoryId)
+    );
     return {
-      name: category?.name || 'Categoria não encontrada',
+      name: category?.name || "Categoria não encontrada",
       color: category?.color_hex || colors.theme[theme].border,
     };
   };
@@ -129,7 +172,7 @@ export const BudgetsList = () => {
 
     const adaptedBudget = {
       ...item,
-      amount: item.amount
+      amount: item.amount,
     } as any;
 
     return (
@@ -146,7 +189,11 @@ export const BudgetsList = () => {
 
   const renderEmptyState = () => (
     <View style={style.emptyContainer}>
-      <Ionicons name="wallet-outline" size={64} color={colors.theme[theme].textSecondary} />
+      <Ionicons
+        name="wallet-outline"
+        size={64}
+        color={colors.theme[theme].textSecondary}
+      />
       <Text style={style.emptyTitle}>Nenhum orçamento encontrado</Text>
       <Text style={style.emptySubtitle}>
         Crie orçamentos para suas categorias e monitore seus gastos mensais
@@ -156,7 +203,11 @@ export const BudgetsList = () => {
 
   const renderErrorState = () => (
     <View style={style.emptyContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color={colors.feedback.error} />
+      <Ionicons
+        name="alert-circle-outline"
+        size={64}
+        color={colors.feedback.error}
+      />
       <Text style={style.emptyTitle}>Erro ao carregar orçamentos</Text>
       <Text style={style.emptySubtitle}>
         Verifique sua conexão e tente novamente
@@ -197,7 +248,20 @@ export const BudgetsList = () => {
           renderItem={renderBudgetItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.listContent}
-          ListEmptyComponent={budgetsError ? renderErrorState : renderEmptyState}
+          ListEmptyComponent={
+            budgetsError ? renderErrorState : renderEmptyState
+          }
+          refreshing={budgetsLoading}
+          onRefresh={refetchBudgets}
+          ListFooterComponent={
+            budgetsLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.primary[500]}
+                style={{ marginVertical: 16 }}
+              />
+            ) : null
+          }
         />
       </View>
 

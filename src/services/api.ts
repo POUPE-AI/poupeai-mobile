@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { storageKeys } from "../config/auth";
-import { Alert } from "react-native";
 
 export interface ApiError {
   message: string;
@@ -36,14 +35,14 @@ class ApiService {
             config.headers.Authorization = `Bearer ${tokenData.access_token}`;
           }
         } catch (error) {
-          console.log("❌ Erro ao obter token para requisição:", error);
+          console.log("Erro ao obter token para requisição:", error);
         }
 
         return config;
       },
       (error) => {
         return Promise.reject(error);
-      }
+      },
     );
 
     // Response interceptor para tratar erros globais
@@ -55,21 +54,6 @@ class ApiService {
           status: error.response?.status,
           code: error.code,
         };
-
-        /*         console.log("❌ Erro na resposta da API:", error.response);
-        if (
-          error.response?.data &&
-          typeof error.response.data === "object" &&
-          "message" in error.response.data
-        ) {
-          apiError.message =
-            (error.response.data as { message?: string }).message ||
-            apiError.message;
-        }
-
-        Alert.alert("Erro", apiError.message, [{ text: "OK" }], {
-          cancelable: true,
-        }); */
 
         if (error.response?.status === 401) {
           apiError.message = "Token expirado ou inválido";
@@ -92,7 +76,7 @@ class ApiService {
         }
 
         return Promise.reject(apiError);
-      }
+      },
     );
   }
 

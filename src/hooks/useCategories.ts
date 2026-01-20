@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import {
   categoriesService,
   CreateCategoryRequest,
@@ -17,16 +22,20 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function useCategories(params?: {
   search?: string;
-  page?: number;
   page_size?: number;
 }) {
   const { isAuthenticated, user } = useAuth();
 
-  const finalParams = { page_size: 100, ...params };
-
-  return useQuery({
-    queryKey: categoriesKeys.list(finalParams),
-    queryFn: () => categoriesService.getCategories(finalParams),
+  return useInfiniteQuery({
+    queryKey: categoriesKeys.list(params || {}),
+    queryFn: ({ pageParam = 1 }) =>
+      categoriesService.getCategories({ ...params, page: pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = Math.ceil(lastPage.count / (params?.page_size || 10));
+      const nextPage = allPages.length + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
+    },
+    initialPageParam: 1,
     enabled: isAuthenticated && !!user,
   });
 }

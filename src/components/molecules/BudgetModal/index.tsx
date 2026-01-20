@@ -43,7 +43,6 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
-  const { data: categoriesResponse } = useCategories();
 
   const [formData, setFormData] = useState<BudgetFormData>({
     amount: 0,
@@ -173,12 +172,10 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
       />
 
       <CategoryDropdown
-        categories={categoriesResponse?.results || []}
         selectedCategoryId={formData.category}
         onSelect={(categoryId) =>
           setFormData((prev) => ({ ...prev, category: categoryId }))
         }
-        error={errors.category}
         isOpen={categoryDropdownOpen}
         onToggle={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
         filterType="expense"

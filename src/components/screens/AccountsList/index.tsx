@@ -1,34 +1,50 @@
-import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Text } from '@/components/atoms/Text';
-import { AccountListItem } from '@/components/atoms/AccountListItem';
-import { Account, CreateBankAccountRequest } from '@/types';
-import { colors } from '@/constants/theme';
-import { styles } from './styles';
-import { useBankAccounts, useCreateBankAccount, useUpdateBankAccount, useDeleteBankAccount } from '@/hooks/useBankAccounts';
-import { BankAccountModal } from '@/components/molecules/BankAccountModal';
-import { ConfirmDeleteModal } from '@/components/molecules/ConfirmDeleteModal';
+import React, { useState } from "react";
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Text } from "@/components/atoms/Text";
+import { AccountListItem } from "@/components/atoms/AccountListItem";
+import { Account, CreateBankAccountRequest } from "@/types";
+import { colors } from "@/constants/theme";
+import { styles } from "./styles";
+import {
+  useBankAccounts,
+  useCreateBankAccount,
+  useUpdateBankAccount,
+  useDeleteBankAccount,
+} from "@/hooks/useBankAccounts";
+import { BankAccountModal } from "@/components/molecules/BankAccountModal";
+import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
 
 export const AccountsList = () => {
   const { theme } = useTheme();
   const style = styles(theme);
-  
-  const { data: bankAccountsData, isLoading, error } = useBankAccounts();
+
+  const {
+    data: bankAccountsData,
+    isLoading,
+    error,
+    refetch,
+  } = useBankAccounts();
   const createBankAccountMutation = useCreateBankAccount();
   const updateBankAccountMutation = useUpdateBankAccount();
   const deleteBankAccountMutation = useDeleteBankAccount();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
 
   const handleEditAccount = (account: Account) => {
     setSelectedAccount(account);
-    setModalMode('edit');
+    setModalMode("edit");
     setModalVisible(true);
   };
 
@@ -39,13 +55,13 @@ export const AccountsList = () => {
 
   const handleAddAccount = () => {
     setSelectedAccount(null);
-    setModalMode('create');
+    setModalMode("create");
     setModalVisible(true);
   };
 
   const handleSaveAccount = async (data: CreateBankAccountRequest) => {
     try {
-      if (modalMode === 'edit' && selectedAccount) {
+      if (modalMode === "edit" && selectedAccount) {
         await updateBankAccountMutation.mutateAsync({
           id: selectedAccount.id,
           ...data,
@@ -55,21 +71,21 @@ export const AccountsList = () => {
       }
       setModalVisible(false);
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
-      console.error('Erro ao salvar conta:', error);
+      Alert.alert("Erro", "Ocorreu um erro. Tente novamente.");
+      console.error("Erro ao salvar conta:", error);
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!accountToDelete) return;
-    
+
     try {
       await deleteBankAccountMutation.mutateAsync(accountToDelete.id);
       setDeleteModalVisible(false);
       setAccountToDelete(null);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível excluir a conta. Tente novamente.');
-      console.error('Erro ao excluir conta:', error);
+      Alert.alert("Erro", "Não foi possível excluir a conta. Tente novamente.");
+      console.error("Erro ao excluir conta:", error);
     }
   };
 
@@ -83,7 +99,11 @@ export const AccountsList = () => {
 
   const renderEmptyState = () => (
     <View style={style.emptyContainer}>
-      <Ionicons name="wallet-outline" size={64} color={colors.theme[theme].textSecondary} />
+      <Ionicons
+        name="wallet-outline"
+        size={64}
+        color={colors.theme[theme].textSecondary}
+      />
       <Text style={style.emptyTitle}>Nenhuma conta encontrada</Text>
       <Text style={style.emptySubtitle}>
         Adicione suas contas bancárias para começar a organizar suas finanças
@@ -104,7 +124,10 @@ export const AccountsList = () => {
         <View style={style.container}>
           <View style={style.header}>
             <Text style={style.headerTitle}>Contas</Text>
-            <TouchableOpacity style={style.addButton} onPress={handleAddAccount}>
+            <TouchableOpacity
+              style={style.addButton}
+              onPress={handleAddAccount}
+            >
               <Ionicons name="add" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
@@ -128,12 +151,19 @@ export const AccountsList = () => {
         <View style={style.container}>
           <View style={style.header}>
             <Text style={style.headerTitle}>Contas</Text>
-            <TouchableOpacity style={style.addButton} onPress={handleAddAccount}>
+            <TouchableOpacity
+              style={style.addButton}
+              onPress={handleAddAccount}
+            >
               <Ionicons name="add" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
           <View style={style.emptyContainer}>
-            <Ionicons name="alert-circle-outline" size={64} color={colors.feedback.error} />
+            <Ionicons
+              name="alert-circle-outline"
+              size={64}
+              color={colors.feedback.error}
+            />
             <Text style={style.emptyTitle}>Erro ao carregar contas</Text>
             <Text style={style.emptySubtitle}>
               Verifique sua conexão e tente novamente
@@ -169,6 +199,8 @@ export const AccountsList = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.listContent}
           ListEmptyComponent={renderEmptyState}
+          refreshing={isLoading}
+          onRefresh={refetch}
         />
       </View>
 

@@ -85,11 +85,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     (account) => account.is_default
   );
 
-  const {
-    data: categories,
-    isLoading: categoriesLoading,
-    error: categoriesError,
-  } = useCategories();
   const [categoriesIsOpen, setCategoriesIsOpen] = useState(false);
   const [bankAccountIsOpen, setBankAccountIsOpen] = useState(false);
   const [bankCreditCardIsOpen, setCreditCardIsOpen] = useState(false);
@@ -291,13 +286,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         />
 
         <CategoryDropdown
-          categories={categories?.results || []}
           selectedCategoryId={formData.category}
           onSelect={(categoryId: number) =>
             setFormData((prev) => ({ ...prev, category: categoryId }))
           }
-          isLoading={categoriesLoading}
-          error={categoriesError?.message}
           isOpen={categoriesIsOpen}
           onToggle={() => setCategoriesIsOpen((prev) => !prev)}
           onCreateCategory={onCreateCategory}

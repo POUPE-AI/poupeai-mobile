@@ -56,16 +56,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       responseType: authConfig.responseType,
       usePKCE: authConfig.usePKCE,
     },
-    discoveryEndpoints
+    discoveryEndpoints,
   );
 
   const refreshToken = useCallback(
     async (storedTokens: TokenData): Promise<TokenData | null> => {
       try {
-        console.log("🔄 Tentando renovar token...");
+        console.log("Tentando renovar token...");
 
         if (!storedTokens.refresh_token) {
-          console.log("❌ Refresh token não encontrado");
+          console.log("Refresh token não encontrado");
           return null;
         }
 
@@ -74,14 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           typeof storedTokens.refresh_token !== "string" ||
           storedTokens.refresh_token.trim() === ""
         ) {
-          console.log("❌ Refresh token inválido ou corrompido");
+          console.log("Refresh token inválido ou corrompido");
           return null;
         }
 
         // Verificar se o refresh token é um JWT válido
         const refreshTokenParts = storedTokens.refresh_token.split(".");
         if (refreshTokenParts.length !== 3) {
-          console.log("❌ Refresh token não é um JWT válido");
+          console.log("Refresh token não é um JWT válido");
           return null;
         }
 
@@ -91,24 +91,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const refreshTokenExp = payload.exp * 1000;
           const now = Date.now();
 
-          console.log(
-            "📝 Refresh token expira em:",
-            new Date(refreshTokenExp).toISOString()
-          );
-          console.log("📝 Tempo atual:", new Date(now).toISOString());
-
           if (refreshTokenExp <= now) {
-            console.log("❌ Refresh token expirado");
+            console.log("Refresh token expirado");
             return null;
           }
         } catch (error) {
-          console.log("❌ Erro ao decodificar refresh token:", error);
+          console.log("Erro ao decodificar refresh token:", error);
           return null;
         }
 
         console.log(
-          "📝 Enviando requisição de refresh token para:",
-          discoveryEndpoints.tokenEndpoint
+          "Enviando requisição de refresh token para:",
+          discoveryEndpoints.tokenEndpoint,
         );
 
         const requestBody = new URLSearchParams();
@@ -118,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Método alternativo de construção do body (para debug)
         const alternativeBody = `grant_type=refresh_token&client_id=${encodeURIComponent(
-          keycloakConfig.clientId
+          keycloakConfig.clientId,
         )}&refresh_token=${encodeURIComponent(storedTokens.refresh_token)}`;
 
         const refreshResponse = await fetch(discoveryEndpoints.tokenEndpoint, {
@@ -133,14 +127,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!refreshResponse.ok) {
           const errorText = await refreshResponse.text();
-          console.log("❌ Falha ao renovar token:", refreshResponse.status);
-          console.log("❌ Erro detalhado:", errorText);
+          console.log("Falha ao renovar token:", refreshResponse.status);
+          console.log("Erro detalhado:", errorText);
 
           try {
             const errorJson = JSON.parse(errorText);
-            console.log("❌ Erro JSON:", errorJson);
+            console.log("Erro JSON:", errorJson);
           } catch {
-            console.log("❌ Resposta não é JSON válido");
+            console.log("Resposta não é JSON válido");
           }
 
           return null;
@@ -151,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const tokenData: TokenData = {
           ...newTokens,
           expiresAt: new Date(
-            Date.now() + (newTokens.expires_in - 300) * 1000
+            Date.now() + (newTokens.expires_in - 300) * 1000,
           ).toISOString(),
         };
 
@@ -160,14 +154,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           api.updateToken(tokenData.access_token),
         ]);
 
-        console.log("✅ Token renovado com sucesso");
+        console.log("Token renovado com sucesso");
         return tokenData;
       } catch (error) {
-        console.log("❌ Erro ao renovar token:", error);
+        console.log("Erro ao renovar token:", error);
         return null;
       }
     },
-    []
+    [],
   );
 
   const scheduleTokenRefresh = useCallback(
@@ -195,13 +189,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } catch (error) {
-            console.log("❌ Erro na renovação agendada:", error);
+            console.log("Erro na renovação agendada:", error);
             await signOut();
           }
         }, timeUntilRefresh);
       }
     },
-    [user, refreshToken]
+    [user, refreshToken],
   );
 
   const initializeAuth = useCallback(async () => {
@@ -211,8 +205,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const configValidation = validateAuthConfig();
     if (!configValidation.isValid) {
       console.error(
-        "❌ Configuração de autenticação inválida:",
-        configValidation.errors
+        "Configuração de autenticação inválida:",
+        configValidation.errors,
       );
       setIsLoading(false);
       hasInitialized.current = true;
@@ -244,13 +238,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ) {
           console.log("🔄 Token expirado, tentando renovar...");
           console.log(
-            "📝 Token expira em:",
-            new Date(tokens.expiresAt).toISOString()
+            "Token expira em:",
+            new Date(tokens.expiresAt).toISOString(),
           );
           console.log("📝 Tempo atual:", new Date(currentTime).toISOString());
           console.log(
-            "📝 Diferença em horas:",
-            (currentTime - expirationTime) / (1000 * 60 * 60)
+            "Diferença em horas:",
+            (currentTime - expirationTime) / (1000 * 60 * 60),
           );
 
           const newTokens = await refreshToken(tokens);
@@ -260,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             scheduleTokenRefresh(newTokens.expiresAt);
           } else {
             console.log(
-              "❌ Falha ao renovar token, limpando dados de autenticação"
+              "Falha ao renovar token, limpando dados de autenticação",
             );
             await AsyncStorage.multiRemove([
               storageKeys.user,
@@ -268,7 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ]);
           }
         } else {
-          console.log("❌ Tokens expirados, limpando dados");
+          console.log("Tokens expirados, limpando dados");
           await AsyncStorage.multiRemove([
             storageKeys.user,
             storageKeys.tokens,
@@ -276,7 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.log("❌ Erro ao carregar autenticação:", error);
+      console.log("Erro ao carregar autenticação:", error);
       await AsyncStorage.multiRemove([storageKeys.user, storageKeys.tokens]);
     } finally {
       setIsLoading(false);
@@ -309,16 +303,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         processedResponseRef.current = responseId;
         await handleAuthResponse(code);
       } else if (authResponse.type === "error") {
-        console.log("❌ Erro na autenticação:", authResponse.error);
+        console.log("Erro na autenticação:", authResponse.error);
         setIsLoading(false);
         setIsNavigationReady(true);
       } else if (authResponse.type === "cancel") {
-        console.log("ℹ️ Autenticação cancelada pelo usuário");
+        console.log("Autenticação cancelada pelo usuário");
         setIsLoading(false);
         setIsNavigationReady(true);
       }
     },
-    [request]
+    [request],
   );
 
   useEffect(() => {
@@ -334,13 +328,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isOAuthCallback = segments[0] === "oauth";
 
       if (!user && inAuthGroup) {
-        console.log("📱 Redirecionando para login - usuário não autenticado");
+        console.log("Redirecionando para login - usuário não autenticado");
         router.replace("/login");
       } else if (
         user &&
         (isLoginScreen || (!inAuthGroup && !isOAuthCallback))
       ) {
-        console.log("📱 Redirecionando para app - usuário autenticado");
+        console.log("Redirecionando para app - usuário autenticado");
         router.replace("/(drawer)/(tabs)/");
       }
     }, 100);
@@ -355,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleAuthResponse = useCallback(
     async (code: string) => {
       try {
-        console.log("🔐 Processando código de autorização...");
+        console.log("Processando código de autorização...");
         setIsLoading(true);
 
         if (!request?.codeVerifier) {
@@ -381,7 +375,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!tokenResponse.ok) {
           const responseText = await tokenResponse.text();
           throw new Error(
-            `Erro na requisição de token: ${tokenResponse.status} - ${responseText}`
+            `Erro na requisição de token: ${tokenResponse.status} - ${responseText}`,
           );
         }
 
@@ -397,7 +391,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!userInfoResp.ok) {
           throw new Error(
-            `Erro ao buscar info do usuário: ${userInfoResp.status}`
+            `Erro ao buscar info do usuário: ${userInfoResp.status}`,
           );
         }
 
@@ -416,7 +410,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const tokenData: TokenData = {
           ...tokens,
           expiresAt: new Date(
-            Date.now() + (tokens.expires_in - 300) * 1000
+            Date.now() + (tokens.expires_in - 300) * 1000,
           ).toISOString(),
         };
 
@@ -429,10 +423,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
         scheduleTokenRefresh(tokenData.expiresAt);
 
-        console.log("✅ Autenticação concluída com sucesso");
+        console.log("Autenticação concluída com sucesso");
         router.replace("/(drawer)/(tabs)/");
       } catch (error) {
-        console.log("❌ Erro ao processar autenticação:", error);
+        console.log("Erro ao processar autenticação:", error);
         await AsyncStorage.multiRemove([storageKeys.user, storageKeys.tokens]);
         processedResponseRef.current = null;
       } finally {
@@ -440,7 +434,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsNavigationReady(true);
       }
     },
-    [request, redirectUri, router, scheduleTokenRefresh]
+    [request, redirectUri, router, scheduleTokenRefresh],
   );
 
   const signIn = useCallback(async (): Promise<{
@@ -453,32 +447,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false };
       }
 
-      console.log("🚀 Iniciando processo de login...");
+      console.log("Iniciando processo de login...");
       const result = await promptAsync();
 
       switch (result.type) {
         case "success":
-          console.log("✅ Login bem-sucedido");
+          console.log("Login bem-sucedido");
           return { success: true };
         case "cancel":
-          console.log("ℹ️ Login cancelado pelo usuário");
+          console.log("Login cancelado pelo usuário");
           return { success: false, cancelled: true };
         case "error":
-          console.log("❌ Erro no login:", result.error);
+          console.log("Erro no login:", result.error);
           return { success: false };
         default:
-          console.log(`⚠️ Tipo de resposta inesperado: ${result.type}`);
+          console.log(`Tipo de resposta inesperado: ${result.type}`);
           return { success: false };
       }
     } catch (error) {
-      console.log("❌ Erro inesperado no login:", error);
+      console.log("Erro inesperado no login:", error);
       return { success: false };
     }
   }, [promptAsync, request]);
 
   const signOut = useCallback(async (): Promise<void> => {
     try {
-      console.log("🚪 Iniciando processo de logout...");
+      console.log("Iniciando processo de logout...");
 
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
@@ -500,8 +494,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const logoutUrl = new URL(
           `${discoveryEndpoints.authorizationEndpoint.replace(
             "/auth",
-            "/logout"
-          )}`
+            "/logout",
+          )}`,
         );
         logoutUrl.searchParams.append("client_id", keycloakConfig.clientId);
         logoutUrl.searchParams.append("post_logout_redirect_uri", redirectUri);
@@ -512,7 +506,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         WebBrowser.openAuthSessionAsync(
           logoutUrl.toString(),
-          redirectUri
+          redirectUri,
         ).catch((logoutError) => {
           console.log("⚠️ Erro ao abrir logout no navegador:", logoutError);
         });
@@ -533,9 +527,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       await cleanupPromise;
-      console.log("✅ Logout concluído");
+      console.log("Logout concluído");
     } catch (error) {
-      console.log("❌ Erro no logout:", error);
+      console.log("Erro no logout:", error);
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
         refreshTimeoutRef.current = null;
@@ -554,7 +548,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: !!user,
       isNavigationReady,
     }),
-    [user, isLoading, signIn, signOut, isNavigationReady]
+    [user, isLoading, signIn, signOut, isNavigationReady],
   );
 
   return (

@@ -9,6 +9,7 @@ import { Transaction } from "@/types/transactions";
 import { useCategories } from "@/hooks/useCategories";
 import { formatCurrencySimple } from "@/utils/currency";
 import { router, useSegments } from "expo-router";
+import { useEffect } from "react";
 
 interface TransactionsListItemProps {
   transaction: Transaction;
@@ -25,15 +26,27 @@ export const TransactionsListItem = ({
       ? `${transaction.description.substring(0, 20)}...`
       : transaction.description;
 
-  const { data: categories } = useCategories();
-  const category = categories?.results.find(
-    (cat) => cat.id === transaction.category
-  );
+  const {
+    data: categories,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useCategories();
+
+  useEffect(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    fetchNextPage();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
     return format(date, "dd/MM/yyyy", { locale: ptBR });
   };
+
+  const category = categories?.pages
+    .flatMap((page) => page.results)
+    .find((cat) => cat.id === transaction.category);
 
   const amountText = `${
     category?.type === "expense" ? "- " : ""

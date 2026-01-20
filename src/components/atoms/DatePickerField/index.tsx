@@ -3,9 +3,9 @@ import { View, TouchableOpacity } from "react-native";
 import DatePicker from "react-native-date-picker";
 import { parseISO, format, isValid } from "date-fns";
 import { FormField } from "@/components/atoms/FormField";
-import { Text } from "@/components/atoms/Text";
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
+import { Text } from "../Text";
 
 interface DatePickerFieldProps {
   label: string;
@@ -61,23 +61,34 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   };
 
   return (
-    <View style={style.container}>
+    <View style={style.fieldContainer}>
+      <Text style={style.label}>{label}</Text>
+
       <TouchableOpacity
-        onPress={() => !disabled && setIsOpen(true)}
+        onPress={() => {
+          if (!disabled) {
+            setIsOpen(true);
+          }
+        }}
         activeOpacity={0.7}
-        style={disabled ? style.disabledContainer : undefined}
+        style={[
+          style.dateInput,
+          error && style.dateInputError,
+          disabled && style.dateInputDisabled,
+        ]}
       >
-        <FormField
-          label={label}
-          placeholder={placeholder}
-          value={displayValue}
-          onChangeText={() => {}} // Não permite edição manual
-          keyboardType="numeric"
-          error={error}
-          editable={false}
-          pointerEvents="none"
-        />
+        <Text
+          style={[
+            style.dateText,
+            !displayValue && style.placeholderText,
+            disabled && style.dateTextDisabled,
+          ]}
+        >
+          {displayValue || placeholder}
+        </Text>
       </TouchableOpacity>
+
+      {error && <Text style={style.errorText}>{error}</Text>}
 
       <DatePicker
         modal
@@ -90,8 +101,12 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
         cancelText="Cancelar"
         minimumDate={minimumDate}
         maximumDate={maximumDate}
-        onConfirm={handleDateConfirm}
-        onCancel={() => setIsOpen(false)}
+        onConfirm={(selectedDate) => {
+          handleDateConfirm(selectedDate);
+        }}
+        onCancel={() => {
+          setIsOpen(false);
+        }}
         theme={theme === "dark" ? "dark" : "light"}
       />
     </View>

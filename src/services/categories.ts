@@ -1,5 +1,5 @@
-import { api } from './api';
-import { Category, CategoryType } from '../types/categories';
+import { api } from "./api";
+import { Category, CategoryType } from "../types/categories";
 
 export interface CategoriesResponse {
   results: Category[];
@@ -19,7 +19,7 @@ export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
 }
 
 export class CategoriesService {
-  private baseUrl = 'finances/api/v1/categories/';
+  private baseUrl = "core/api/v1/categories/";
 
   async getCategories(params?: {
     type?: CategoryType;
@@ -27,7 +27,7 @@ export class CategoriesService {
     page?: number;
     page_size?: number;
   }): Promise<CategoriesResponse> {
-    const response = await api.get(this.baseUrl, { params });
+    const response = await api.get(this.baseUrl, { ...params });
     return response.data;
   }
 
@@ -43,7 +43,10 @@ export class CategoriesService {
 
   async updateCategory(data: UpdateCategoryRequest): Promise<Category> {
     const { id, ...updateData } = data;
-    const response = await api.patch<Category>(`${this.baseUrl}${id}/`, updateData);
+    const response = await api.patch<Category>(
+      `${this.baseUrl}${id}/`,
+      updateData,
+    );
     return response.data;
   }
 
