@@ -133,9 +133,10 @@ export const TransactionsList = () => {
           contentContainerStyle={style.listContent}
           stickySectionHeadersEnabled={false}
           ListEmptyComponent={renderEmptyList}
-          onStartReached={() => refetch}
+          refreshing={isLoading}
+          onRefresh={refetch}
           onEndReached={handleEndReached}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={
             isFetchingNextPage ? (
               <ActivityIndicator size="small" color={colors.primary[500]} />

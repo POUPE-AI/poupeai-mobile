@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DropdownSelector } from "@/components/atoms/DropdownSelector";
@@ -8,13 +8,11 @@ import { Category } from "@/types";
 import { colors } from "@/constants/theme";
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategoryDropdownProps {
-  categories: Category[];
   selectedCategoryId?: number;
   onSelect: (categoryId: number) => void;
-  error?: string;
-  isLoading?: boolean;
   isOpen: boolean;
   onToggle: () => void;
   filterType?: "income" | "expense";
@@ -22,11 +20,8 @@ interface CategoryDropdownProps {
 }
 
 export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
-  categories,
   selectedCategoryId,
   onSelect,
-  error,
-  isLoading = false,
   isOpen,
   onToggle,
   filterType,
@@ -35,24 +30,42 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const filteredCategories = filterType
-    ? categories.filter((cat) => cat.type === filterType)
-    : categories;
+  const {
+    data: categories,
+    isLoading: isCategoriesLoading,
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCategories();
 
-  const dropdownItems = filteredCategories.map((category) => ({
-    id: category.id,
-    label: category.name,
-    color: category.color_hex,
-  }));
+  useEffect(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    fetchNextPage();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
+
+  const filteredCategories = filterType
+    ? categories?.pages
+        .flatMap((page) => page.results)
+        .filter((category: Category) => category.type === filterType)
+    : categories?.pages.flatMap((page) => page.results);
+
+  const dropdownItems =
+    filteredCategories?.map((category) => ({
+      id: category.id,
+      label: category.name,
+      color: category.color_hex,
+    })) || [];
 
   const handleSelect = (item: { id: string | number }) => {
     onSelect(item.id as number);
     onToggle(); // Fechar dropdown após seleção
   };
 
-  if (isLoading) {
+  if (isCategoriesLoading) {
     return (
-      <FormField label="Categoria" error={error}>
+      <FormField label="Categoria" error={error || undefined}>
         <View style={style.loadingContainer}>
           <ActivityIndicator size="small" color={colors.primary[500]} />
           <Text style={style.loadingText}>Carregando categorias...</Text>
@@ -62,7 +75,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   }
 
   return (
-    <FormField label="Categoria" error={error}>
+    <FormField label="Categoria" error={error?.message || undefined}>
       <View style={style.container}>
         <View style={style.dropdownContainer}>
           <DropdownSelector

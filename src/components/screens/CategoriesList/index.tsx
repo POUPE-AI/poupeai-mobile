@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { View, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Text } from "@/components/atoms/Text";
@@ -16,33 +21,46 @@ import {
   useDeleteCategory,
 } from "@/hooks/useCategories";
 import { CreateCategoryRequest } from "@/services/categories";
+import { colors } from "@/constants/theme";
 
 export const CategoriesList = () => {
   const { theme, colors: themeColors } = useTheme();
   const style = styles(theme);
 
   const [activeFilters, setActiveFilters] = useState<CategoryType[]>([
-    "income",
-    "expense",
+    "INCOME",
+    "EXPENSE",
   ]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
+    null,
   );
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
+    null,
   );
 
-  const { data: categoriesList, isLoading, error } = useCategories();
+  const {
+    data: categoriesList,
+    isLoading,
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch: refetchCategories,
+  } = useCategories();
+
   const createCategoryMutation = useCreateCategory();
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
 
   const filteredCategories = useMemo(() => {
-    return categoriesList?.results.filter((category) =>
-      activeFilters.includes(category.type)
+    const categories =
+      categoriesList?.pages.flatMap((page) => page.content) || [];
+
+    return categories.filter(
+      (category) => category && activeFilters.includes(category.type),
     );
   }, [activeFilters, categoriesList, isLoading]);
 
@@ -137,7 +155,7 @@ export const CategoriesList = () => {
       <Text style={style.emptySubtitle}>
         {activeFilters.length === 1
           ? `Não há categorias de ${
-              activeFilters[0] === "income" ? "receita" : "despesa"
+              activeFilters[0] === "INCOME" ? "receita" : "despesa"
             } cadastradas`
           : "Ajuste os filtros ou crie uma nova categoria"}
       </Text>
@@ -146,7 +164,6 @@ export const CategoriesList = () => {
 
   return (
     <View style={style.container}>
-      {/* Header */}
       <View style={style.header}>
         <Text style={style.headerTitle}>Categorias</Text>
         <TouchableOpacity style={style.addButton} onPress={handleAddCategory}>
@@ -154,33 +171,43 @@ export const CategoriesList = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Filtros */}
       <View style={style.filtersContainer}>
         <View style={style.filtersRow}>
           <CategoryFilterTag
-            type="income"
-            isActive={activeFilters.includes("income")}
+            type="INCOME"
+            isActive={activeFilters.includes("INCOME")}
             onPress={toggleFilter}
           />
           <CategoryFilterTag
-            type="expense"
-            isActive={activeFilters.includes("expense")}
+            type="EXPENSE"
+            isActive={activeFilters.includes("EXPENSE")}
             onPress={toggleFilter}
           />
         </View>
       </View>
 
-      {/* Lista de categorias */}
       <FlatList
         data={filteredCategories}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         renderItem={renderCategoryItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={style.listContent}
         ListEmptyComponent={renderEmptyState}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator size="small" color={colors.primary[500]} />
+          ) : null
+        }
+        refreshing={isLoading}
+        onRefresh={refetchCategories}
       />
 
-      {/* Modal de Criar/Editar Categoria */}
       <CategoryModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -189,7 +216,6 @@ export const CategoriesList = () => {
         mode={modalMode}
       />
 
-      {/* Modal de Confirmar Exclusão */}
       <ConfirmDeleteModal
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}
