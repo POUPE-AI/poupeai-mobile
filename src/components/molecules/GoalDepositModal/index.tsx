@@ -26,7 +26,6 @@ const goalDepositSchema = z.object({
       const date = parseISO(val);
       return isValid(date);
     }, "Data deve estar no formato válido"),
-  note: z.string().optional(),
 });
 
 type GoalDepositFormData = z.infer<typeof goalDepositSchema>;
@@ -34,11 +33,7 @@ type GoalDepositFormData = z.infer<typeof goalDepositSchema>;
 interface GoalDepositModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (
-    depositAmount: string,
-    depositDate: string,
-    note?: string
-  ) => Promise<void>;
+  onConfirm: (depositAmount: number, depositDate: string) => Promise<void>;
   goal: Goal | null;
 }
 
@@ -54,7 +49,6 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
   const [formData, setFormData] = useState<GoalDepositFormData>({
     depositAmount: 0,
     depositDate: "",
-    note: "",
   });
   const [errors, setErrors] = useState<
     Partial<Record<keyof GoalDepositFormData, string>>
@@ -68,7 +62,6 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
       setFormData({
         depositAmount: 0,
         depositDate: todayString,
-        note: "",
       });
       setErrors({});
     }
@@ -103,11 +96,7 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
 
     setIsLoading(true);
     try {
-      await onConfirm(
-        formData.depositAmount.toString(),
-        formData.depositDate,
-        formData.note || undefined
-      );
+      await onConfirm(formData.depositAmount, formData.depositDate);
       onClose();
     } catch (error: any) {
       console.error("Erro ao confirmar depósito:", error);
@@ -147,8 +136,8 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
 
   if (!goal) return null;
 
-  const currentAmount = parseFloat(goal.current_balance.toString()) || 0;
-  const goalAmount = parseFloat(goal.goal_amount.toString()) || 0;
+  const currentAmount = goal.currentBalance || 0;
+  const goalAmount = goal.goalAmount || 0;
   const remainingAmount = goalAmount - currentAmount;
 
   const footer = (
@@ -230,24 +219,6 @@ export const GoalDepositModal: React.FC<GoalDepositModalProps> = ({
         placeholder="DD/MM/AAAA"
         error={errors.depositDate}
       />
-
-      <FormField
-        label="Observação (opcional)"
-        value={formData.note || ""}
-        onChangeText={(text) =>
-          setFormData((prev) => ({ ...prev, note: text }))
-        }
-        placeholder="Adicione uma observação sobre este depósito..."
-        multiline
-        numberOfLines={3}
-      />
-      {errors.note && (
-        <Text
-          style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
-        >
-          {errors.note}
-        </Text>
-      )}
     </ModalContainer>
   );
 };

@@ -62,8 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshToken = useCallback(
     async (storedTokens: TokenData): Promise<TokenData | null> => {
       try {
-        console.log("Tentando renovar token...");
-
         if (!storedTokens.refresh_token) {
           console.log("Refresh token não encontrado");
           return null;
@@ -92,18 +90,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const now = Date.now();
 
           if (refreshTokenExp <= now) {
-            console.log("Refresh token expirado");
             return null;
           }
         } catch (error) {
           console.log("Erro ao decodificar refresh token:", error);
           return null;
         }
-
-        console.log(
-          "Enviando requisição de refresh token para:",
-          discoveryEndpoints.tokenEndpoint,
-        );
 
         const requestBody = new URLSearchParams();
         requestBody.append("grant_type", "refresh_token");
@@ -229,24 +221,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const marginTime = authConfig.tokenExpirationMarginMs;
 
         if (expirationTime > currentTime + marginTime) {
-          console.log("✅ Token válido encontrado");
           setUser(userData);
           scheduleTokenRefresh(tokens.expiresAt);
         } else if (
           tokens.refresh_token &&
           expirationTime > currentTime - 24 * 60 * 60 * 1000
         ) {
-          console.log("🔄 Token expirado, tentando renovar...");
-          console.log(
-            "Token expira em:",
-            new Date(tokens.expiresAt).toISOString(),
-          );
-          console.log("📝 Tempo atual:", new Date(currentTime).toISOString());
-          console.log(
-            "Diferença em horas:",
-            (currentTime - expirationTime) / (1000 * 60 * 60),
-          );
-
           const newTokens = await refreshToken(tokens);
 
           if (newTokens) {
@@ -262,7 +242,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ]);
           }
         } else {
-          console.log("Tokens expirados, limpando dados");
           await AsyncStorage.multiRemove([
             storageKeys.user,
             storageKeys.tokens,
@@ -328,13 +307,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isOAuthCallback = segments[0] === "oauth";
 
       if (!user && inAuthGroup) {
-        console.log("Redirecionando para login - usuário não autenticado");
         router.replace("/login");
       } else if (
         user &&
         (isLoginScreen || (!inAuthGroup && !isOAuthCallback))
       ) {
-        console.log("Redirecionando para app - usuário autenticado");
         router.replace("/(drawer)/(tabs)/");
       }
     }, 100);
@@ -349,7 +326,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleAuthResponse = useCallback(
     async (code: string) => {
       try {
-        console.log("Processando código de autorização...");
         setIsLoading(true);
 
         if (!request?.codeVerifier) {
@@ -423,7 +399,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
         scheduleTokenRefresh(tokenData.expiresAt);
 
-        console.log("Autenticação concluída com sucesso");
         router.replace("/(drawer)/(tabs)/");
       } catch (error) {
         console.log("Erro ao processar autenticação:", error);
@@ -443,19 +418,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }> => {
     try {
       if (!request) {
-        console.log("⚠️ Request não está pronto para autenticação");
         return { success: false };
       }
 
-      console.log("Iniciando processo de login...");
       const result = await promptAsync();
 
       switch (result.type) {
         case "success":
-          console.log("Login bem-sucedido");
           return { success: true };
         case "cancel":
-          console.log("Login cancelado pelo usuário");
           return { success: false, cancelled: true };
         case "error":
           console.log("Erro no login:", result.error);
@@ -472,8 +443,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async (): Promise<void> => {
     try {
-      console.log("Iniciando processo de logout...");
-
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
         refreshTimeoutRef.current = null;
@@ -508,7 +477,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           logoutUrl.toString(),
           redirectUri,
         ).catch((logoutError) => {
-          console.log("⚠️ Erro ao abrir logout no navegador:", logoutError);
+          console.log("Erro ao abrir logout no navegador:", logoutError);
         });
 
         if (tokens.refresh_token) {
@@ -521,7 +490,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               token_type_hint: "refresh_token",
             }),
           }).catch((revokeError) => {
-            console.log("⚠️ Erro ao revogar token no servidor:", revokeError);
+            console.log("Erro ao revogar token no servidor:", revokeError);
           });
         }
       }

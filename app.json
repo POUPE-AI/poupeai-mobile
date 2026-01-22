@@ -27,13 +27,23 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "category": ["DEFAULT", "BROWSABLE"],
-          "data": { "scheme": "ai.poupe.mobile" }
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": {
+            "scheme": "ai.poupe.mobile"
+          }
         },
         {
           "action": "VIEW",
-          "category": ["DEFAULT", "BROWSABLE"],
-          "data": { "scheme": "exp" }
+          "category": [
+            "DEFAULT",
+            "BROWSABLE"
+          ],
+          "data": {
+            "scheme": "exp"
+          }
         }
       ]
     },
@@ -57,17 +67,22 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
-      "router": { "origin": false },
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "b5778dad-1362-4faa-b0e9-03881ccee202"
       },
       "timezone": "America/Fortaleza"
     },
     "owner": "eudivan",
-    "runtimeVersion": { "policy": "appVersion" },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "updates": {
       "url": "https://u.expo.dev/b5778dad-1362-4faa-b0e9-03881ccee202"
     },

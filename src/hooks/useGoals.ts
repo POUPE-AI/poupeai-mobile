@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsService } from "../services/goals";
 import {
-  Goal,
   CreateGoalRequest,
   UpdateGoalRequest,
   CreateGoalDepositRequest,
@@ -19,24 +18,20 @@ export const goalsKeys = {
   list: (filters: Record<string, any>) =>
     [...goalsKeys.lists(), { filters }] as const,
   details: () => [...goalsKeys.all, "detail"] as const,
-  detail: (id: number) => [...goalsKeys.details(), id] as const,
+  detail: (id: string) => [...goalsKeys.details(), id] as const,
 };
 
-export function useGoals(params?: {
-  search?: string;
-  page?: number;
-  page_size?: number;
-}) {
+export function useGoals() {
   const { isAuthenticated, user } = useAuth();
 
   return useQuery({
-    queryKey: goalsKeys.list(params || {}),
-    queryFn: () => goalsService.getGoals(params),
+    queryKey: goalsKeys.list({}),
+    queryFn: () => goalsService.getGoals(),
     enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
   });
 }
 
-export function useGoal(id: number, enabled = true) {
+export function useGoal(id: string, enabled = true) {
   return useQuery({
     queryKey: goalsKeys.detail(id),
     queryFn: () => goalsService.getGoalById(id),
@@ -73,7 +68,7 @@ export function useDeleteGoal() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => goalsService.deleteGoal(id),
+    mutationFn: (id: string) => goalsService.deleteGoal(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: goalsKeys.lists() });
     },
@@ -87,7 +82,7 @@ export function useCreateGoalDeposit() {
     mutationFn: ({
       goalId,
       ...data
-    }: CreateGoalDepositRequest & { goalId: number }) =>
+    }: CreateGoalDepositRequest & { goalId: string }) =>
       goalsService.createDeposit(goalId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: goalsKeys.lists() });
