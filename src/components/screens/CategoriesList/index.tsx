@@ -28,17 +28,17 @@ export const CategoriesList = () => {
   const style = styles(theme);
 
   const [activeFilters, setActiveFilters] = useState<CategoryType[]>([
-    "income",
-    "expense",
+    "INCOME",
+    "EXPENSE",
   ]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
+    null,
   );
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null
+    null,
   );
 
   const {
@@ -57,10 +57,10 @@ export const CategoriesList = () => {
 
   const filteredCategories = useMemo(() => {
     const categories =
-      categoriesList?.pages.flatMap((page) => page.results) || [];
+      categoriesList?.pages.flatMap((page) => page.content) || [];
 
-    return categories.filter((category) =>
-      activeFilters.includes(category.type)
+    return categories.filter(
+      (category) => category && activeFilters.includes(category.type),
     );
   }, [activeFilters, categoriesList, isLoading]);
 
@@ -155,7 +155,7 @@ export const CategoriesList = () => {
       <Text style={style.emptySubtitle}>
         {activeFilters.length === 1
           ? `Não há categorias de ${
-              activeFilters[0] === "income" ? "receita" : "despesa"
+              activeFilters[0] === "INCOME" ? "receita" : "despesa"
             } cadastradas`
           : "Ajuste os filtros ou crie uma nova categoria"}
       </Text>
@@ -164,7 +164,6 @@ export const CategoriesList = () => {
 
   return (
     <View style={style.container}>
-      {/* Header */}
       <View style={style.header}>
         <Text style={style.headerTitle}>Categorias</Text>
         <TouchableOpacity style={style.addButton} onPress={handleAddCategory}>
@@ -172,23 +171,21 @@ export const CategoriesList = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Filtros */}
       <View style={style.filtersContainer}>
         <View style={style.filtersRow}>
           <CategoryFilterTag
-            type="income"
-            isActive={activeFilters.includes("income")}
+            type="INCOME"
+            isActive={activeFilters.includes("INCOME")}
             onPress={toggleFilter}
           />
           <CategoryFilterTag
-            type="expense"
-            isActive={activeFilters.includes("expense")}
+            type="EXPENSE"
+            isActive={activeFilters.includes("EXPENSE")}
             onPress={toggleFilter}
           />
         </View>
       </View>
 
-      {/* Lista de categorias */}
       <FlatList
         data={filteredCategories}
         keyExtractor={(item, index) => `${item.id}-${index}`}
@@ -219,7 +216,6 @@ export const CategoriesList = () => {
         mode={modalMode}
       />
 
-      {/* Modal de Confirmar Exclusão */}
       <ConfirmDeleteModal
         visible={deleteModalVisible}
         onClose={() => setDeleteModalVisible(false)}

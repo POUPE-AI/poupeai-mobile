@@ -28,20 +28,19 @@ export function useCategories(params?: {
 
   return useInfiniteQuery({
     queryKey: categoriesKeys.list(params || {}),
-    queryFn: ({ pageParam = 1 }) =>
+    queryFn: ({ pageParam = 0 }) =>
       categoriesService.getCategories({ ...params, page: pageParam }),
     getNextPageParam: (lastPage, allPages) => {
-      const totalPages = Math.ceil(lastPage.count / (params?.page_size || 10));
       const nextPage = allPages.length + 1;
-      return nextPage <= totalPages ? nextPage : undefined;
+      return nextPage <= lastPage.totalPages ? nextPage : undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: 0,
     enabled: isAuthenticated && !!user,
   });
 }
 
-export function useCategory(id: number, enabled = true) {
-  if (id <= 0) {
+export function useCategory(id: string, enabled = true) {
+  if (id === "") {
     return {
       data: null,
       isLoading: false,
@@ -77,7 +76,7 @@ export function useCreateCategory() {
         (oldData: Category[] | undefined) => {
           if (!oldData) return [newCategory];
           return [...oldData, newCategory];
-        }
+        },
       );
     },
     onError: (error) => {
@@ -95,7 +94,7 @@ export function useUpdateCategory() {
     onSuccess: (updatedCategory, variables) => {
       queryClient.setQueryData(
         categoriesKeys.detail(variables.id),
-        updatedCategory
+        updatedCategory,
       );
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
       queryClient.invalidateQueries({
@@ -112,7 +111,7 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => categoriesService.deleteCategory(id),
+    mutationFn: (id: string) => categoriesService.deleteCategory(id),
     onSuccess: (_, deletedId) => {
       queryClient.removeQueries({ queryKey: categoriesKeys.detail(deletedId) });
       queryClient.invalidateQueries({ queryKey: categoriesKeys.lists() });
@@ -134,9 +133,9 @@ export function useDeleteCategory() {
 }
 
 export function useIncomeCategories() {
-  return useCategoriesByType("income");
+  return useCategoriesByType("INCOME");
 }
 
 export function useExpenseCategories() {
-  return useCategoriesByType("expense");
+  return useCategoriesByType("EXPENSE");
 }

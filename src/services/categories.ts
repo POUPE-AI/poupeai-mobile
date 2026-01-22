@@ -2,20 +2,22 @@ import { api } from "./api";
 import { Category, CategoryType } from "../types/categories";
 
 export interface CategoriesResponse {
-  results: Category[];
-  count: number;
-  next: string | null;
-  previous: string | null;
+  content: Category[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export interface CreateCategoryRequest {
   name: string;
-  color_hex: string;
-  type: CategoryType;
+  colorHex: string;
+  iconName: string;
+  type: "INCOME" | "EXPENSE";
 }
 
 export interface UpdateCategoryRequest extends Partial<CreateCategoryRequest> {
-  id: number;
+  id: string;
 }
 
 export class CategoriesService {
@@ -31,7 +33,7 @@ export class CategoriesService {
     return response.data;
   }
 
-  async getCategoryById(id: number): Promise<Category> {
+  async getCategoryById(id: string): Promise<Category> {
     const response = await api.get<Category>(`${this.baseUrl}${id}/`);
     return response.data;
   }
@@ -44,23 +46,20 @@ export class CategoriesService {
   async updateCategory(data: UpdateCategoryRequest): Promise<Category> {
     const { id, ...updateData } = data;
     const response = await api.patch<Category>(
-      `${this.baseUrl}${id}/`,
+      `${this.baseUrl}${id}`,
       updateData,
     );
     return response.data;
   }
 
-  // Deletar categoria
-  async deleteCategory(id: number): Promise<void> {
-    await api.delete(`${this.baseUrl}${id}/`);
+  async deleteCategory(id: string): Promise<void> {
+    await api.delete(`${this.baseUrl}${id}`);
   }
 
-  // Buscar categorias por tipo
   async getCategoriesByType(type: CategoryType): Promise<Category[]> {
     const response = await this.getCategories({ type });
-    return response.results;
+    return response.content;
   }
 }
 
-// Exportar instância única do serviço
 export const categoriesService = new CategoriesService();

@@ -1,10 +1,10 @@
-import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Text } from '@/components/atoms/Text';
-import { useTheme } from '@/contexts/ThemeContext';
-import { CategoryType } from '@/types';
-import { styles } from './styles';
+import React from "react";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Text } from "@/components/atoms/Text";
+import { useTheme } from "@/contexts/ThemeContext";
+import { CategoryType } from "@/types";
+import { styles } from "./styles";
 
 interface CategoryFilterTagProps {
   type: CategoryType;
@@ -12,14 +12,18 @@ interface CategoryFilterTagProps {
   onPress: (type: CategoryType) => void;
 }
 
-export const CategoryFilterTag = ({ type, isActive, onPress }: CategoryFilterTagProps) => {
+export const CategoryFilterTag = ({
+  type,
+  isActive,
+  onPress,
+}: CategoryFilterTagProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
 
   const getTagInfo = (type: CategoryType) => {
-    return type === 'income' 
-      ? { label: 'Receitas', icon: 'arrow-up-circle', color: '#10B981' }
-      : { label: 'Despesas', icon: 'arrow-down-circle', color: '#EF4444' };
+    return type === "INCOME"
+      ? { label: "Receitas", icon: "arrow-up-circle", color: "#10B981" }
+      : { label: "Despesas", icon: "arrow-down-circle", color: "#EF4444" };
   };
 
   const tagInfo = getTagInfo(type);
@@ -28,7 +32,7 @@ export const CategoryFilterTag = ({ type, isActive, onPress }: CategoryFilterTag
     <TouchableOpacity
       style={[
         style.container,
-        isActive && { ...style.activeContainer, borderColor: tagInfo.color }
+        isActive && { ...style.activeContainer, borderColor: tagInfo.color },
       ]}
       onPress={() => onPress(type)}
       activeOpacity={0.7}
@@ -41,7 +45,7 @@ export const CategoryFilterTag = ({ type, isActive, onPress }: CategoryFilterTag
       <Text
         style={[
           style.text,
-          isActive ? { color: tagInfo.color } : style.inactiveText
+          isActive ? { color: tagInfo.color } : style.inactiveText,
         ]}
       >
         {tagInfo.label}
