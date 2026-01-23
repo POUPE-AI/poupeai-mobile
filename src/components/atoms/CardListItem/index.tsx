@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { Text } from '@/components/atoms/Text';
-import { ActionButton } from '@/components/atoms/ActionButton';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Card, CardProgress } from '@/types/cards';
-import { colors } from '@/constants/theme';
-import { formatCurrencySimple } from '@/utils/currency';
-import { styles } from './styles';
+import React from "react";
+import { View, TouchableOpacity } from "react-native";
+import { Text } from "@/components/atoms/Text";
+import { ActionButton } from "@/components/atoms/ActionButton";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Card, CardProgress } from "@/types/cards";
+import { colors } from "@/constants/theme";
+import { formatCurrencySimple } from "@/utils/currency";
+import { styles } from "./styles";
 
 interface CardListItemProps {
   card: Card;
@@ -16,18 +16,18 @@ interface CardListItemProps {
   onDelete?: (card: Card) => void;
 }
 
-export const CardListItem = ({ 
-  card, 
+export const CardListItem = ({
+  card,
   progress,
-  onPress, 
-  onEdit, 
-  onDelete 
+  onPress,
+  onEdit,
+  onDelete,
 }: CardListItemProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={style.container}
       onPress={() => onPress?.(card)}
       activeOpacity={0.7}
@@ -35,11 +35,13 @@ export const CardListItem = ({
       <View style={style.cardInfo}>
         <View style={style.headerRow}>
           <Text style={style.nameText}>{card.name}</Text>
-          <Text style={style.limitText}>{formatCurrencySimple(card.credit_limit)}</Text>
+          <Text style={style.limitText}>
+            {formatCurrencySimple(card.creditLimit)}
+          </Text>
         </View>
 
         <View style={style.brandRow}>
-          <Text style={style.brandText}>{card.brand_display}</Text>
+          <Text style={style.brandText}>{card.institutionId}</Text>
           <Text style={style.usedText}>
             {formatCurrencySimple(progress.used_amount)} usado
           </Text>
@@ -47,17 +49,17 @@ export const CardListItem = ({
 
         <View style={style.progressSection}>
           <View style={style.progressBar}>
-            <View 
+            <View
               style={[
-                style.progressFill, 
-                { 
+                style.progressFill,
+                {
                   width: `${Math.min(progress.percentage, 100)}%`,
-                  backgroundColor: colors.primary[500]
-                }
-              ]} 
+                  backgroundColor: colors.primary[500],
+                },
+              ]}
             />
           </View>
-          
+
           <View style={style.progressFooter}>
             <Text style={style.availableText}>
               {formatCurrencySimple(progress.available_amount)} disponível
@@ -71,13 +73,13 @@ export const CardListItem = ({
         <View style={style.datesSection}>
           <View style={style.dateItem}>
             <Text style={style.dateLabel}>Fechamento</Text>
-            <Text style={style.dateValue}>Dia {card.closing_day}</Text>
+            <Text style={style.dateValue}>Dia {card.closingDay}</Text>
           </View>
           <View style={style.dateItem}>
             <Text style={style.dateLabel}>Vencimento</Text>
-            <Text style={style.dateValue}>Dia {card.due_day}</Text>
+            <Text style={style.dateValue}>Dia {card.dueDay}</Text>
           </View>
-          
+
           <View style={style.actionsContainer}>
             {onEdit && (
               <ActionButton
@@ -86,7 +88,7 @@ export const CardListItem = ({
                 size={18}
               />
             )}
-            
+
             {onDelete && (
               <ActionButton
                 iconName="trash-outline"

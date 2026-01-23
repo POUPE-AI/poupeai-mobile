@@ -12,22 +12,18 @@ import {
 } from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function useCreditCards(params?: {
-  search?: string;
-  page?: number;
-  page_size?: number;
-}) {
+export function useCreditCards() {
   const { isAuthenticated, user } = useAuth();
 
   return useQuery({
-    queryKey: creditCardsKeys.list(params || {}),
-    queryFn: () => creditCardsService.getCreditCards(params),
+    queryKey: creditCardsKeys.list({}),
+    queryFn: () => creditCardsService.getCreditCards(),
     enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
   });
 }
 
-export function useCreditCard(id: number, enabled = true) {
-  if (id <= 0) {
+export function useCreditCard(id: string, enabled = true) {
+  if (id === "") {
     return {
       data: null,
       isLoading: false,
@@ -67,7 +63,7 @@ export function useUpdateCreditCard() {
       });
       queryClient.setQueryData(
         creditCardsKeys.detail(updatedCard.id),
-        updatedCard
+        updatedCard,
       );
     },
   });
@@ -77,7 +73,7 @@ export function useDeleteCreditCard() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => creditCardsService.deleteCreditCard(id),
+    mutationFn: (id: string) => creditCardsService.deleteCreditCard(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: creditCardsKeys.lists(),
