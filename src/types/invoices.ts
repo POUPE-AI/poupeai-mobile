@@ -1,5 +1,5 @@
 export interface Invoice {
-  id: number;
+  id: string;
   credit_card: number;
   month: number;
   year: number;
@@ -10,13 +10,6 @@ export interface Invoice {
   total_amount: number;
   created_at: string;
   updated_at: string;
-}
-
-export interface InvoicesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Invoice[];
 }
 
 export interface UpdateInvoiceRequest {

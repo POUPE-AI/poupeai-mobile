@@ -32,7 +32,7 @@ const MONTHS = [
 interface PayInvoiceModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (paymentDate: string, bankAccountId: number) => Promise<void>;
+  onConfirm: (bankAccountId: string, amount: number) => Promise<void>;
   invoice: Invoice | null;
 }
 
@@ -47,7 +47,7 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
 
   const [paymentDate, setPaymentDate] = useState("");
   const [selectedBankAccount, setSelectedBankAccount] = useState<number | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isBankAccountDropdownOpen, setIsBankAccountDropdownOpen] =
@@ -73,14 +73,14 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
 
     // Check if selected account has enough balance
     const selectedAccount = bankAccountsData?.results.find(
-      (acc) => acc.id === selectedBankAccount
+      (acc) => acc.id === selectedBankAccount,
     );
     if (
       selectedAccount &&
       selectedAccount.current_balance < invoice.total_amount
     ) {
       setErrorMessage(
-        "A conta selecionada não possui saldo suficiente para esta fatura."
+        "A conta selecionada não possui saldo suficiente para esta fatura.",
       );
       return;
     }
@@ -137,10 +137,10 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
       return {
         id: account.id,
         label: `${balanceIndicator} ${account.name} - ${formatCurrency(
-          account.current_balance
+          account.current_balance,
         )}`,
       };
-    }
+    },
   );
 
   const formatDateInput = (value: string) => {
