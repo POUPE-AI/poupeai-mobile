@@ -8,13 +8,11 @@ import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import {
   CreateTransactionRequest,
-  Transaction,
   TransactionDetail,
 } from "@/types/transactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
 import { CategoryDropdown } from "../CategoryDropdown";
-import { useCategories } from "@/hooks/useCategories";
 import { BankAccountDropDown } from "../BankAccountDropdown";
 import { CreditCardDropDown } from "../CreditCardDropdown";
 import { DatePickerField } from "@/components/atoms/DatePickerField";
@@ -33,7 +31,7 @@ const transactionSchema = z
       })
       .default("BANK_ACCOUNT"),
     category: z.number().int().min(1, "Categoria é obrigatória"),
-    bank_account: z.number().int().optional(),
+    bank_account: z.string().optional(),
     credit_card: z.number().int().optional(),
     is_installment: z.boolean().optional(),
     installment_number: z.number().int().optional(),
@@ -81,8 +79,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [ammountInput, setAmmountInput] = useState<string>("");
 
   const { data: bankAccounts, isLoading: bankLoading } = useBankAccounts();
-  const bankDefault = bankAccounts?.results.find(
-    (account) => account.is_default
+  const bankDefault = bankAccounts?.find(
+    (account) => account.isDefault
   );
 
   const [categoriesIsOpen, setCategoriesIsOpen] = useState(false);

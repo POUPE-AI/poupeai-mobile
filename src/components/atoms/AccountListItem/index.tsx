@@ -26,7 +26,7 @@ export const AccountListItem = ({
       return account.description;
     }
     
-    if (account.is_default) {
+    if (account.isDefault) {
       return 'Conta principal para movimentações financeiras';
     }
     
@@ -35,9 +35,9 @@ export const AccountListItem = ({
 
   return (
     <View 
-      style={[style.container, account.is_default && style.defaultContainer]}
+      style={[style.container, account.isDefault && style.defaultContainer]}
     >
-      {account.is_default && (
+      {account.isDefault && (
         <View style={style.defaultHeader}>
           <Text style={style.defaultHeaderText}>PADRÃO</Text>
         </View>
@@ -48,9 +48,9 @@ export const AccountListItem = ({
           <Text style={style.nameText}>{account.name}</Text>
           <Text style={[
             style.balanceText, 
-            account.current_balance < 0 && style.negativeBalance
+            account.currentBalance < 0 && style.negativeBalance
           ]}>
-            {formatCurrencyWithThousands(account.current_balance)}
+            {formatCurrencyWithThousands(account.currentBalance)}
           </Text>
         </View>
 
