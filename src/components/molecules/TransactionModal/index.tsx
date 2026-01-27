@@ -12,7 +12,7 @@ import {
 } from "@/types/transactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 
-import { TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
+import { TransactionSourceType, TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
 import { CategoryDropdown } from "../CategoryDropdown";
 import { BankAccountDropDown } from "../BankAccountDropdown";
 import { CreditCardDropDown } from "../CreditCardDropdown";
@@ -26,11 +26,6 @@ const transactionSchema = z
       .max(200, "Descrição deve ter no máximo 200 caracteres"),
     amount: z.number().nonoptional("Valor é obrigatório e diferente de zero"),
     issue_date: z.string().nonempty("Data de emissão é obrigatória"),
-    source_type: z
-      .enum(["CREDIT_CARD", "BANK_ACCOUNT"], {
-        message: "Tipo de transação é obrigatório",
-      })
-      .default("BANK_ACCOUNT"),
     category: z.string().nonempty("Categoria é obrigatória"),
     bank_account: z.string().optional(),
     credit_card: z.string().optional(),
@@ -87,12 +82,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [categoriesIsOpen, setCategoriesIsOpen] = useState(false);
   const [bankAccountIsOpen, setBankAccountIsOpen] = useState(false);
   const [bankCreditCardIsOpen, setCreditCardIsOpen] = useState(false);
+  const [sourceType, setSourceType] = useState<TransactionSourceType>("BANK_ACCOUNT");
 
   const [formData, setFormData] = useState<TransactionFormData>({
     description: "",
     amount: 0.0,
     issue_date: "",
-    source_type: "BANK_ACCOUNT",
     category: "",
     bank_account: bankDefault?.id || undefined,
     credit_card: undefined,
@@ -108,7 +103,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   // Identifica se é edição de transação de cartão de crédito
   // Quando verdadeiro, restringe edição apenas para: descrição, valor e categoria
   const isCreditCardEditMode =
-    mode === "edit" && transaction?.sourceType === "CREDIT_CARD";
+    mode === "edit" && transaction?.creditCardId != undefined;
 
   // Preenche o formulário quando estiver editando
   useEffect(() => {
@@ -117,7 +112,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         description: transaction.description,
         amount: transaction.amount,
         issue_date: transaction.transactionDate,
-        source_type: (transaction.sourceType as any) || "BANK_ACCOUNT",
         category: (transaction as any).categoryId || "",
         bank_account: transaction.bankAccountId ?? undefined,
         credit_card: transaction.creditCardId ?? undefined,
@@ -136,7 +130,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         description: "",
         amount: 0.0,
         issue_date: "",
-        source_type: "BANK_ACCOUNT",
         category: "",
         bank_account: bankDefault?.id || undefined,
         credit_card: undefined,
@@ -316,7 +309,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         />
 
         <TransactionTypeSelector
-          selectedType={formData.source_type}
+          selectedType={sourceType}
           onTypeSelect={(source_type) => {
             if (source_type === "BANK_ACCOUNT") {
               setFormData((prev) => ({
@@ -327,6 +320,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 installment_number: undefined,
                 total_installments: undefined,
               }));
+              
             } else if (source_type === "CREDIT_CARD") {
               setFormData((prev) => ({
                 ...prev,
@@ -335,13 +329,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               }));
             }
 
-            setFormData((prev) => ({ ...prev, source_type }));
+            setSourceType(source_type);
           }}
-          error={errors.source_type}
           disabled={isCreditCardEditMode}
         />
 
-        {formData.source_type === "BANK_ACCOUNT" ? (
+        {sourceType === "BANK_ACCOUNT" ? (
           <BankAccountDropDown
             selectedBankAccountId={formData.bank_account}
             onSelect={(id) =>
@@ -353,7 +346,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             onCreateAccount={onCreateBankAccount}
           />
         ) : (
-          formData.source_type === "CREDIT_CARD" && (
+          sourceType === "CREDIT_CARD" && (
             <>
               <CreditCardDropDown
                 selectedCreditCardId={formData.credit_card}

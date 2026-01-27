@@ -4,7 +4,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { FormField } from "@/components/atoms/FormField";
 import { Text } from "@/components/atoms/Text";
 import { styles } from "./styles";
-import { TransactionSourceType } from "@/types/transactions";
+
+export type TransactionSourceType = "BANK_ACCOUNT" | "CREDIT_CARD";
 
 interface TransactionTypeSelectorProps {
   selectedType: TransactionSourceType;

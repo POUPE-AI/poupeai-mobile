@@ -1,7 +1,10 @@
 import { CategoryType } from "./categories";
 
-export type TransactionSourceType = "BANK_ACCOUNT" | "CREDIT_CARD";
-export type TransactionStatus = "OVERDUE" | "PAID" | "PENDING";
+interface TransactionCategory {
+  id: string;
+  name: string;
+  colorHex?: string;
+}
 
 export interface Transaction {
   id: string;
@@ -9,9 +12,9 @@ export interface Transaction {
   amount: number;
   type: CategoryType;
   transactionDate: string;
-  bankAccountId: string;
-  creditCardId: string;
-  categoryId: string;
+  bankAccountId?: string;
+  creditCardId?: string;
+  category: TransactionCategory;
   invoiceId: string;
   attachmentKey: string;
   isInstallment: boolean;
@@ -22,9 +25,6 @@ export interface Transaction {
   originalStatementDescription: string;
   createdAt: string;
   updatedAt: string;
-
-  sourceType: TransactionSourceType;
-  status: TransactionStatus;
 }
 
 export interface TransactionSection {
@@ -44,7 +44,7 @@ export interface TransactionsResponse {
 export interface CreateTransactionRequest {
   description: string;
   amount: number;
-  transactionDate: string; // backend required format 'YYYY-MM-DD'
+  transactionDate: string;
   bankAccountId?: string;
   creditCardId?: string;
   categoryId?: string;
@@ -57,5 +57,5 @@ export interface CreateTransactionRequest {
 
 export interface UpdateTransactionRequest
   extends Partial<CreateTransactionRequest> {
-  id: number | string;
+  id: string;
 }

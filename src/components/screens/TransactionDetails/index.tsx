@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { parseISO, format } from "date-fns";
@@ -10,8 +10,6 @@ import { Text } from "@/components/atoms/Text";
 import { ActionButton } from "@/components/atoms/ActionButton";
 import { TransactionInfoRow } from "@/components/atoms/TransactionInfoRow";
 
-import { colors } from "@/constants/theme";
-import { getContrastColor } from "@/utils/color";
 import { formatCurrencySimple } from "@/utils/currency";
 import { formatDate_DDMMYYYY, formatDateTime } from "@/utils/date";
 
@@ -90,35 +88,6 @@ export const TransactionDetails: React.FC = () => {
     return <ErrorContent text="Não foi possível carregar a transação." />;
   }
 
-  const statusTag = () => {
-    const statusText =
-      transaction.status === "PAID"
-        ? "Pago"
-        : transaction.status === "PENDING"
-        ? "Pendente"
-        : transaction.status === "OVERDUE"
-        ? "Vencido"
-        : "Cancelado";
-
-    const color =
-      transaction.status === "PAID"
-        ? colors.feedback.success
-        : transaction.status === "PENDING"
-        ? colors.feedback.warning
-        : colors.feedback.error;
-
-    const textColor = getContrastColor(color);
-
-    return (
-      <Text
-        variant="body"
-        style={[style.statusTag, { backgroundColor: color, color: textColor }]}
-      >
-        {statusText}
-      </Text>
-    );
-  };
-
   return (
     <>
       <ScrollView
@@ -160,23 +129,20 @@ export const TransactionDetails: React.FC = () => {
               }${formatCurrencySimple(transaction.amount)}`}
             />
             <TransactionInfoRow label="Categoria">
-              <CategoryTag categoryId={transaction.categoryId} />
+              <CategoryTag name={transaction.category.name} colorHex={transaction.category.colorHex} />
             </TransactionInfoRow>
             <TransactionInfoRow
               label="Data de emissão"
               value={formatDate_DDMMYYYY(transaction.transactionDate)}
             />
 
-            <TransactionInfoRow label="Estado">
-              {statusTag()}
-            </TransactionInfoRow>
-            {transaction.sourceType === "BANK_ACCOUNT" && (
+            {transaction.bankAccountId && (
               <BankTransactionInfo
                 bankAccountId={transaction.bankAccountId || ""}
               />
             )}
 
-            {transaction.sourceType === "CREDIT_CARD" && (
+            {transaction.creditCardId && (
               <CreditCardTransactionInfo
                 creditCardId={transaction.creditCardId || ""}
                 invoiceId={transaction.invoiceId || ""}
