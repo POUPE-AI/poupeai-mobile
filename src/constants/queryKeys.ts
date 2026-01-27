@@ -12,10 +12,10 @@ export const transactionsKeys = {
 export const invoicesKeys = {
   all: ["invoices"] as const,
   lists: () => [...invoicesKeys.all, "list"] as const,
-  list: (creditCardId: number, params?: any) =>
+  list: (creditCardId: string, params?: any) =>
     [...invoicesKeys.lists(), { creditCardId }] as const,
   details: () => [...invoicesKeys.all, "detail"] as const,
-  detail: (id: number) => [...invoicesKeys.details(), id] as const,
+  detail: (id: string) => [...invoicesKeys.details(), id] as const,
 };
 
 export const bankAccountsKeys = {
@@ -33,7 +33,14 @@ export const creditCardsKeys = {
   list: (filters: Record<string, any>) =>
     [...creditCardsKeys.lists(), { filters }] as const,
   details: () => [...creditCardsKeys.all, "detail"] as const,
-  detail: (id: number) => [...creditCardsKeys.details(), id] as const,
+  detail: (id: string) => [...creditCardsKeys.details(), id] as const,
+};
+
+export const institutionsKeys = {
+  all: ["institutions"] as const,
+  lists: () => [...institutionsKeys.all, "list"] as const,
+  list: (filters: Record<string, any>) =>
+    [...institutionsKeys.lists(), { filters }] as const,
 };
 
 export const budgetsKeys = {

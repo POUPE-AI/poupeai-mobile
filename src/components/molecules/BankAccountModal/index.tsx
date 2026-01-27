@@ -8,8 +8,10 @@ import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import { Button } from "@/components/atoms/Button";
 import { Text } from "@/components/atoms/Text";
+import { DropdownSelector } from "@/components/atoms/DropdownSelector";
 import { CurrencyInput } from "@/components/atoms/CurrencyInput";
 import { colors } from "@/constants/theme";
+import { useInstitutions } from "@/hooks/useInstitutions";
 
 const bankAccountSchema = z.object({
   name: z
@@ -44,7 +46,7 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
   mode,
 }) => {
   const { theme } = useTheme();
-  const style = styles();
+  const style = styles(theme);
 
   const [formData, setFormData] = useState<BankAccountFormData>({
     name: "",
@@ -58,6 +60,10 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
     Partial<Record<keyof BankAccountFormData, string>>
   >({});
   const [isLoading, setIsLoading] = useState(false);
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+
+  const { data: institutionData, isLoading: institutionIsLoading } =
+    useInstitutions();
 
   useEffect(() => {
     if (!visible) return;
@@ -78,11 +84,12 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         description: "",
         initial_balance: 0,
         is_default: false,
-        institution_id: 1,
+        institution_id: institutionData?.[0]?.id || 1,
       });
     }
     setErrors({});
-  }, [mode, account, visible]);
+    setBrandDropdownOpen(false);
+  }, [mode, account, visible, institutionData]);
 
   const validateForm = (): boolean => {
     try {
@@ -189,6 +196,48 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
           {errors.description}
         </Text>
       )}
+
+      <View style={style.brandContainer}>
+        <Text style={style.brandLabel}>Instituição</Text>
+        <DropdownSelector
+          items={
+            institutionData?.map((inst) => ({
+              id: inst.id,
+              label: inst.name,
+            })) || []
+          }
+          selectedId={formData.institution_id}
+          onSelect={(item) =>
+            setFormData((prev) => ({
+              ...prev,
+              institution_id: item.id,
+            }))
+          }
+          placeholder="Selecione a instituição"
+          isOpen={brandDropdownOpen}
+          onToggle={() => setBrandDropdownOpen(!brandDropdownOpen)}
+          error={!!errors.institution_id}
+          disabled={institutionIsLoading}
+        />
+        {institutionIsLoading && (
+          <Text
+            style={{
+              color: colors.theme[theme].text,
+              fontSize: 12,
+              marginTop: 4,
+            }}
+          >
+            Carregando instituições...
+          </Text>
+        )}
+        {errors.institution_id && (
+          <Text
+            style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
+          >
+            {errors.institution_id}
+          </Text>
+        )}
+      </View>
 
       <CurrencyInput
         label="Saldo Inicial"

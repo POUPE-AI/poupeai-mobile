@@ -29,7 +29,7 @@ export const CreditCardDetails: React.FC = () => {
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-  const creditCardId = parseInt(id || "0");
+  const creditCardId = id || "";
 
   const {
     data: creditCardsData,
@@ -40,16 +40,11 @@ export const CreditCardDetails: React.FC = () => {
     data: invoicesData,
     isLoading: invoicesLoading,
     refetch: refetchInvoices,
-    fetchNextPage: fetchNextInvoices,
-    hasNextPage: hasNextInvoices,
-    isFetchingNextPage: isFetchingNextInvoices,
   } = useInvoices(creditCardId);
   const payInvoiceMutation = usePayInvoice();
 
-  const creditCard = creditCardsData?.results.find(
-    (card) => card.id === creditCardId
-  );
-  const invoices = invoicesData?.pages.flatMap((page) => page.results) || [];
+  const creditCard = creditCardsData?.find((card) => card.id === creditCardId);
+  const invoices = invoicesData || [];
 
   React.useEffect(() => {
     if (creditCard) {
@@ -74,8 +69,8 @@ export const CreditCardDetails: React.FC = () => {
   };
 
   const handleConfirmPayment = async (
-    paymentDate: string,
-    bankAccountId: number
+    bankAccountId: string,
+    amount: number,
   ) => {
     if (!selectedInvoice) return;
 
@@ -84,8 +79,8 @@ export const CreditCardDetails: React.FC = () => {
         creditCardId,
         invoiceId: selectedInvoice.id,
         paymentData: {
-          payment_date: paymentDate,
-          bank_account_id: bankAccountId,
+          bankAccountId: bankAccountId,
+          amount: amount,
         },
       });
       setPayModalVisible(false);
@@ -139,13 +134,7 @@ export const CreditCardDetails: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={style.listContainer}
         showsVerticalScrollIndicator={false}
-        onEndReached={hasNextInvoices ? () => fetchNextInvoices() : undefined}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextInvoices ? (
-            <ActivityIndicator size="small" color={colors.primary[500]} />
-          ) : null
-        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
