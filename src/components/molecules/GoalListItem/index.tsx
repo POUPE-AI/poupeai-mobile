@@ -24,12 +24,12 @@ export const GoalListItem = ({
   onDelete,
 }: GoalListItemProps) => {
   const { theme } = useTheme();
-  const styles = createGoalListItemStyles(theme, goal.color_hex);
+  const styles = createGoalListItemStyles(theme, goal.colorHex);
 
-  const progress = goal.percentage_completed;
-  const goalAmount = parseFloat(goal.goal_amount);
-  const remainingAmount = goalAmount - goal.current_balance;
-  const daysRemaining = differenceInDays(parseISO(goal.target_at), new Date());
+  const progress = goal.percentageCompleted || 0;
+  const goalAmount = goal.goalAmount;
+  const remainingAmount = goalAmount - goal.currentBalance;
+  const daysRemaining = differenceInDays(parseISO(goal.targetDate), new Date());
 
   return (
     <View key={goal.id} style={styles.container}>
@@ -47,7 +47,7 @@ export const GoalListItem = ({
       <View style={styles.progressSection}>
         <View style={styles.progressHeader}>
           <Text style={styles.progressText}>
-            {formatCurrency(goal.current_balance)} de{" "}
+            {formatCurrency(goal.currentBalance)} de{" "}
             {formatCurrency(goalAmount)}
           </Text>
           <Text style={styles.progressPercentage}>
@@ -61,7 +61,7 @@ export const GoalListItem = ({
               styles.progressFill,
               {
                 width: `${Math.min(progress, 100)}%`,
-                backgroundColor: goal.color_hex,
+                backgroundColor: goal.colorHex,
               },
             ]}
           />
@@ -78,7 +78,7 @@ export const GoalListItem = ({
 
         <View style={styles.actionFooter}>
           <View style={styles.leftActions}>
-            {!goal.is_completed && onDeposit && (
+            {!goal.completedAt && onDeposit && (
               <Button
                 title="Fazer Depósito"
                 onPress={() => onDeposit(goal)}
