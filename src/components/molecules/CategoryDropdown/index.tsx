@@ -11,11 +11,11 @@ import { styles } from "./styles";
 import { useCategories } from "@/hooks/useCategories";
 
 interface CategoryDropdownProps {
-  selectedCategoryId?: number;
-  onSelect: (categoryId: number) => void;
+  selectedCategoryId?: string;
+  onSelect: (categoryId: string) => void;
   isOpen: boolean;
   onToggle: () => void;
-  filterType?: "income" | "expense";
+  filterType?: "INCOME" | "EXPENSE";
   onCreateCategory?: () => void;
 }
 
@@ -47,19 +47,19 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   const filteredCategories = filterType
     ? categories?.pages
-        .flatMap((page) => page.results)
+        .flatMap((page) => page.content)
         .filter((category: Category) => category.type === filterType)
-    : categories?.pages.flatMap((page) => page.results);
+    : categories?.pages.flatMap((page) => page.content);
 
   const dropdownItems =
     filteredCategories?.map((category) => ({
       id: category.id,
       label: category.name,
-      color: category.color_hex,
+      color: category.colorHex,
     })) || [];
 
   const handleSelect = (item: { id: string | number }) => {
-    onSelect(item.id as number);
+    onSelect(String(item.id));
     onToggle(); // Fechar dropdown após seleção
   };
 

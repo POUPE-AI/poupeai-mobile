@@ -6,16 +6,16 @@ import { Text } from "@/components/atoms/Text";
 import { colors } from "@/constants/theme";
 import { styles } from "./styles";
 
-interface DropdownItem {
-  id: number;
+interface DropdownItem<T = string | number> {
+  id: T;
   label: string;
   color?: string;
 }
 
-interface DropdownSelectorProps {
-  items: DropdownItem[];
-  selectedId?: string | number;
-  onSelect: (item: DropdownItem) => void;
+interface DropdownSelectorProps<T = string | number> {
+  items: DropdownItem<T>[];
+  selectedId?: T;
+  onSelect: (item: DropdownItem<T>) => void;
   placeholder?: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -24,7 +24,7 @@ interface DropdownSelectorProps {
   disabled?: boolean;
 }
 
-export const DropdownSelector: React.FC<DropdownSelectorProps> = ({
+export const DropdownSelector = <T extends string | number = string | number>({
   items,
   selectedId,
   onSelect,
@@ -34,7 +34,7 @@ export const DropdownSelector: React.FC<DropdownSelectorProps> = ({
   error = false,
   showColorDot = false,
   disabled = false,
-}) => {
+}: DropdownSelectorProps<T>) => {
   const { theme } = useTheme();
   const style = styles(theme);
 

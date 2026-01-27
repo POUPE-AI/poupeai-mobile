@@ -45,14 +45,14 @@ export const TransactionsListItem = ({
   };
 
   const category = categories?.pages
-    .flatMap((page) => page.results)
-    .find((cat) => cat.id === transaction.category);
+    .flatMap((page) => page.content)
+    .find((cat) => cat.id === transaction.categoryId);
 
   const amountText = `${
-    category?.type === "expense" ? "- " : ""
+    category?.type === "EXPENSE" ? "- " : ""
   }${formatCurrencySimple(Math.abs(transaction.amount))}`;
   const amountColor =
-    category?.type === "expense"
+    category?.type === "EXPENSE"
       ? colors.feedback.error
       : colors.feedback.success;
 
@@ -74,7 +74,7 @@ export const TransactionsListItem = ({
     <TouchableOpacity
       style={[
         style.container,
-        { borderColor: category?.color_hex || colors.feedback.error },
+        { borderColor: category?.colorHex || colors.feedback.error },
       ]}
       onPress={handleOnPress}
       activeOpacity={0.7}
@@ -89,7 +89,7 @@ export const TransactionsListItem = ({
         <Text style={[style.amountText, { color: amountColor }]}>
           {amountText}
         </Text>
-        <Text style={style.dateText}>{formatDate(transaction.issue_date)}</Text>
+        <Text style={style.dateText}>{formatDate(transaction.transactionDate)}</Text>
       </View>
     </TouchableOpacity>
   );

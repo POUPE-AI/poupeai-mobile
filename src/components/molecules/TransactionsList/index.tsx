@@ -32,12 +32,11 @@ const groupTransactionsByDate = (
 ): TransactionSection[] => {
   const sortedTransactions = [...transactions].sort(
     (a, b) =>
-      parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
+      parseISO(b.transactionDate).getTime() - parseISO(a.transactionDate).getTime()
   );
 
   const groupedByDate = sortedTransactions.reduce((groups, transaction) => {
-    const groupKey = getGroupKey(transaction.issue_date);
-
+    const groupKey = getGroupKey(transaction.transactionDate);
     if (!groups[groupKey]) {
       groups[groupKey] = {
         title: groupKey,
@@ -67,12 +66,10 @@ export const TransactionsList = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useTransactions({
-    issue_date_end: format(new Date(), "yyyy-MM-dd"),
-  });
+  } = useTransactions();
 
   const transactions = useMemo(
-    () => data?.pages.flatMap((page) => page.results) || [],
+    () => data?.pages.flatMap((page) => page.content) || [],
     [data]
   );
 
@@ -125,7 +122,7 @@ export const TransactionsList = () => {
         <SectionList
           sections={sections}
           keyExtractor={(item, index) =>
-            `${item.id}-${item.issue_date}-${index}`
+            `${item.id}-${item.transactionDate}-${index}`
           }
           renderItem={renderTransaction}
           renderSectionHeader={renderSectionHeader}

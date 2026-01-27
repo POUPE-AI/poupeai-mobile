@@ -4,32 +4,27 @@ export type TransactionSourceType = "BANK_ACCOUNT" | "CREDIT_CARD";
 export type TransactionStatus = "OVERDUE" | "PAID" | "PENDING";
 
 export interface Transaction {
-  id: number;
+  id: string;
   description: string;
   amount: number;
-  issue_date: string;
-  source_type: TransactionSourceType;
-  category: number;
-  status: TransactionStatus;
-  is_installment?: boolean;
-  bank_account?: number;
-  credit_card?: number;
-}
-
-export interface TransactionDetail extends Transaction {
-  profile: string;
   type: CategoryType;
-  installment_number?: number;
-  total_installments?: number;
-  purchase_group_uuid?: string;
-  original_purchase_description?: string;
-  invoice?: number;
-  original_transaction_id?: number | null;
-  original_statement_description?: string | null;
-  attachment?: string | null;
-  created_at: string;
-  updated_at: string;
-  category_type: CategoryType;
+  transactionDate: string;
+  bankAccountId: string;
+  creditCardId: string;
+  categoryId: string;
+  invoiceId: string;
+  attachmentKey: string;
+  isInstallment: boolean;
+  installmentNumber: number;
+  totalInstallments: number;
+  purchaseGroupUuid: string;
+  originalStatementId: string;
+  originalStatementDescription: string;
+  createdAt: string;
+  updatedAt: string;
+
+  sourceType: TransactionSourceType;
+  status: TransactionStatus;
 }
 
 export interface TransactionSection {
@@ -39,26 +34,28 @@ export interface TransactionSection {
 }
 
 export interface TransactionsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Transaction[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  content: Transaction[];
 }
 
 export interface CreateTransactionRequest {
   description: string;
   amount: number;
-  issue_date: string;
-  source_type: TransactionSourceType;
-  category: number;
-  bank_account?: number;
-  credit_card?: number;
-  is_installment?: boolean;
-  installment_number?: number;
-  total_installments?: number;
-}
+  transactionDate: string; // backend required format 'YYYY-MM-DD'
+  bankAccountId?: string;
+  creditCardId?: string;
+  categoryId?: string;
+  attachmentKey?: string;
+  isInstallment?: boolean;
+  totalInstallments?: number;
+  originalStatementId?: string;
+  originalStatementDescription?: string;
+} 
 
 export interface UpdateTransactionRequest
   extends Partial<CreateTransactionRequest> {
-  id: number;
+  id: number | string;
 }

@@ -8,9 +8,10 @@ import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import {
   CreateTransactionRequest,
-  TransactionDetail,
+  Transaction,
 } from "@/types/transactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
+
 import { TransactionTypeSelector } from "@/components/atoms/TransactionTypeSelector";
 import { CategoryDropdown } from "../CategoryDropdown";
 import { BankAccountDropDown } from "../BankAccountDropdown";
@@ -30,9 +31,9 @@ const transactionSchema = z
         message: "Tipo de transação é obrigatório",
       })
       .default("BANK_ACCOUNT"),
-    category: z.number().int().min(1, "Categoria é obrigatória"),
+    category: z.string().nonempty("Categoria é obrigatória"),
     bank_account: z.string().optional(),
-    credit_card: z.number().int().optional(),
+    credit_card: z.string().optional(),
     is_installment: z.boolean().optional(),
     installment_number: z.number().int().optional(),
     total_installments: z.number().int().optional(),
@@ -56,7 +57,7 @@ interface TransactionModalProps {
   visible: boolean;
   onClose: () => void;
   onSave: (data: CreateTransactionRequest) => Promise<void>;
-  transaction?: TransactionDetail | null;
+  transaction?: Transaction | null;
   mode: "create" | "edit";
   onCreateCategory?: () => void;
   onCreateBankAccount?: () => void;
@@ -92,7 +93,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     amount: 0.0,
     issue_date: "",
     source_type: "BANK_ACCOUNT",
-    category: 0,
+    category: "",
     bank_account: bankDefault?.id || undefined,
     credit_card: undefined,
     is_installment: false,
@@ -107,7 +108,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   // Identifica se é edição de transação de cartão de crédito
   // Quando verdadeiro, restringe edição apenas para: descrição, valor e categoria
   const isCreditCardEditMode =
-    mode === "edit" && transaction?.source_type === "CREDIT_CARD";
+    mode === "edit" && transaction?.sourceType === "CREDIT_CARD";
 
   // Preenche o formulário quando estiver editando
   useEffect(() => {
@@ -115,14 +116,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setFormData({
         description: transaction.description,
         amount: transaction.amount,
-        issue_date: transaction.issue_date,
-        source_type: transaction.source_type,
-        category: transaction.category,
-        bank_account: transaction.bank_account ?? undefined,
-        credit_card: transaction.credit_card ?? undefined,
-        is_installment: transaction.is_installment,
-        installment_number: transaction.installment_number ?? undefined,
-        total_installments: transaction.total_installments ?? undefined,
+        issue_date: transaction.transactionDate,
+        source_type: (transaction.sourceType as any) || "BANK_ACCOUNT",
+        category: (transaction as any).categoryId || "",
+        bank_account: transaction.bankAccountId ?? undefined,
+        credit_card: transaction.creditCardId ?? undefined,
+        is_installment: transaction.isInstallment,
+        installment_number: transaction.installmentNumber ?? undefined,
+        total_installments: transaction.totalInstallments ?? undefined,
       });
       setAmmountInput(
         `R$ ${transaction.amount
@@ -136,7 +137,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         amount: 0.0,
         issue_date: "",
         source_type: "BANK_ACCOUNT",
-        category: 0,
+        category: "",
         bank_account: bankDefault?.id || undefined,
         credit_card: undefined,
         is_installment: false,
@@ -155,6 +156,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           ...prev,
           amount: "Valor deve ser diferente de zero",
         }));
+        console.log("Valor deve ser diferente de zero");
         return false;
       }
 
@@ -172,37 +174,43 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setErrors(newErrors);
       }
 
+      console.log("Erro de validação do formulário:", error);
       return false;
     }
   };
 
   const handleSave = async () => {
+    console.log(formData);
     if (!validateForm()) return;
+
+    console.log(formData);
 
     setIsLoading(true);
     try {
-      // Para edição de transações de cartão de crédito, enviar apenas campos permitidos
       if (isCreditCardEditMode) {
         const saveData: Partial<CreateTransactionRequest> = {
           description: formData.description,
           amount: formData.amount,
-          category: formData.category,
+          ...(formData.category ? { categoryId: formData.category } : {}),
         };
         await onSave(saveData as CreateTransactionRequest);
       } else {
-        // Para criação ou edição de outras transações, enviar todos os campos
         const saveData: CreateTransactionRequest = {
           description: formData.description,
           amount: formData.amount,
-          issue_date: formData.issue_date,
-          source_type: formData.source_type,
-          category: formData.category,
-          bank_account: formData.bank_account,
-          credit_card: formData.credit_card,
-          is_installment: formData.is_installment,
-          installment_number: formData.installment_number,
-          total_installments: formData.total_installments,
-        };
+          transactionDate:
+            formData.issue_date || new Date().toISOString().slice(0, 10),
+          ...(formData.bank_account ? { bankAccountId: formData.bank_account } : {}),
+          ...(formData.credit_card ? { creditCardId: formData.credit_card } : {}),
+          ...(formData.category ? { categoryId: formData.category } : {}),
+          ...(typeof formData.is_installment !== "undefined"
+            ? { isInstallment: formData.is_installment }
+            : {}),
+          ...(typeof formData.total_installments !== "undefined"
+            ? { totalInstallments: formData.total_installments }
+            : {}),
+        } as CreateTransactionRequest;
+
         await onSave(saveData);
       }
 
@@ -285,7 +293,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
         <CategoryDropdown
           selectedCategoryId={formData.category}
-          onSelect={(categoryId: number) =>
+          onSelect={(categoryId: string) =>
             setFormData((prev) => ({ ...prev, category: categoryId }))
           }
           isOpen={categoriesIsOpen}

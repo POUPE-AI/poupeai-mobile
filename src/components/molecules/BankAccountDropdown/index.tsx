@@ -10,8 +10,8 @@ import { styles } from "./styles";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 
 interface BankAccountDropdownProps {
-  selectedBankAccountId?: number;
-  onSelect: (bankAccountId: number) => void;
+  selectedBankAccountId?: string;
+  onSelect: (bankAccountId: string) => void;
   error?: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -36,12 +36,12 @@ export const BankAccountDropDown = ({
   } = useBankAccounts();
 
   const dropdownItems =
-    bankAccounts?.results.map((bank_account) => ({
+    bankAccounts?.map((bank_account) => ({
       id: bank_account.id,
       label: bank_account.name,
     })) || [];
 
-  const handleSelect = (item: { id: number }) => {
+  const handleSelect = (item: { id: string }) => {
     onSelect(item.id);
     onToggle();
   };

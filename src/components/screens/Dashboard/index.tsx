@@ -3,7 +3,6 @@ import {
   Text,
   ScrollView,
   View,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
 import { parseISO, format, startOfDay, isBefore, isEqual } from "date-fns";
@@ -26,7 +25,6 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const today = new Date();
-  const todayFormatted = format(today, "yyyy-MM-dd");
 
   const {
     data: dashboard,
@@ -37,12 +35,10 @@ export default function DashboardScreen() {
 
   const {
     data: transactions,
-    isLoading: transactionLoading,
+    isLoading: transactionsLoading,
     error: transactionsError,
     refetch: refetchTransactions,
-  } = useTransactions({
-    issue_date_end: todayFormatted,
-  });
+  } = useTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -57,21 +53,21 @@ export default function DashboardScreen() {
     }
   };
   const lastTransactions =
-    transactions?.pages[0]?.results
-      .slice()
-      .filter((transaction) => {
-        const transactionDate = parseISO(transaction.issue_date);
-        const todayStart = startOfDay(today);
-        return (
-          isBefore(transactionDate, todayStart) ||
-          isEqual(transactionDate, todayStart)
-        );
-      })
-      .sort(
-        (a, b) =>
-          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
-      )
-      .slice(0, 5) || [];
+  transactions?.pages[0]?.content
+    .slice()
+    .filter((transaction) => {
+      const transactionDate = parseISO(transaction.transactionDate);
+      const todayStart = startOfDay(today);
+      return (
+        isBefore(transactionDate, todayStart) ||
+        isEqual(transactionDate, todayStart)
+      );
+    })
+    .sort(
+      (a, b) =>
+        parseISO(b.transactionDate).getTime() - parseISO(a.transactionDate).getTime()
+    )
+    .slice(0, 5) || [];
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -153,27 +149,7 @@ export default function DashboardScreen() {
           percentage={dashboard?.expenses?.difference ?? 0}
           amount={dashboard?.expenses?.current_total ?? 0}
         />
-
-        {/*         <BalanceCard
-          data={[
-            {
-              data:
-                dashboard?.invoices?.chart_data?.map((item) =>
-                  typeof item.total_amount === "number" ? item.total_amount : 0
-                ) || [],
-            },
-          ]}
-          title="Faturas"
-          percentage={dashboard?.invoices?.difference ?? 0}
-          amount={dashboard?.invoices?.current_total ?? 0}
-        /> */}
       </ScrollView>
-
-      {/* <CategoriesCard
-        data={mockCategoriesData}
-        title="Categorias"
-        tip="Alimentação lidera seus gastos este mês"
-      /> */}
 
       <EstimatedSavingsCard
         data={
@@ -191,7 +167,7 @@ export default function DashboardScreen() {
       <View style={style.sectionContainer}>
         <Text style={style.sectionTitle}>Últimas Transações</Text>
 
-        {transactionLoading ? (
+        {transactionsLoading ? (
           <LoadingContent text="transações" />
         ) : transactionsError ? (
           <ErrorContent text="Erro ao carregar transações" />

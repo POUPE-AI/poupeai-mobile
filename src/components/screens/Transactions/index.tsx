@@ -7,11 +7,7 @@ import { Text } from "@/components/atoms/Text";
 import { Ionicons } from "@expo/vector-icons";
 import {
   useCreateTransaction,
-  useTransactions,
-  useUpdateTransaction,
 } from "@/hooks/useTransactions";
-import { LoadingContent } from "@/components/atoms/LoadingContent";
-import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useState } from "react";
 import {
   CreateTransactionRequest,

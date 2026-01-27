@@ -11,8 +11,8 @@ import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { useCreditCards } from "@/hooks/useCreditCards";
 
 interface CreditCardDropdownProps {
-  selectedCreditCardId?: number;
-  onSelect: (bankCreditCardId: number) => void;
+  selectedCreditCardId?: string;
+  onSelect: (bankCreditCardId: string) => void;
   error?: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -39,12 +39,12 @@ export const CreditCardDropDown = ({
   } = useCreditCards();
 
   const dropdownItems =
-    creditCards?.results.map((credit_card) => ({
+    creditCards?.map((credit_card) => ({
       id: credit_card.id,
       label: credit_card.name,
     })) || [];
 
-  const handleSelect = (item: { id: number }) => {
+  const handleSelect = (item: { id: string }) => {
     onSelect(item.id);
     onToggle();
   };
