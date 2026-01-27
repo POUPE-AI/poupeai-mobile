@@ -35,8 +35,7 @@ export const TransactionDetails: React.FC = () => {
   const style = styles(theme);
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const transactionId = useMemo(() => parseInt(id, 10), [id]);
-  const { data: transaction, isLoading, error } = useTransaction(transactionId);
+  const { data: transaction, isLoading, error } = useTransaction(id || "");
   const deleteTransactionMutation = useDeleteTransaction();
   const updateTransactionMutation = useUpdateTransaction();
 
@@ -130,7 +129,7 @@ export const TransactionDetails: React.FC = () => {
           <View style={style.cardHeader}>
             <Text variant="caption" color="textSecondary">
               {format(
-                parseISO(transaction.created_at),
+                parseISO(transaction.createdAt),
                 "d 'de' MMMM 'de' yyyy",
                 { locale: ptBR }
               )}
@@ -157,30 +156,30 @@ export const TransactionDetails: React.FC = () => {
             <TransactionInfoRow
               label="Valor"
               value={`${
-                transaction.type === "expense" ? "- " : ""
+                transaction.type === "EXPENSE" ? "- " : ""
               }${formatCurrencySimple(transaction.amount)}`}
             />
             <TransactionInfoRow label="Categoria">
-              <CategoryTag categoryId={transaction.category} />
+              <CategoryTag categoryId={transaction.categoryId} />
             </TransactionInfoRow>
             <TransactionInfoRow
               label="Data de emissão"
-              value={formatDate_DDMMYYYY(transaction.issue_date)}
+              value={formatDate_DDMMYYYY(transaction.transactionDate)}
             />
 
             <TransactionInfoRow label="Estado">
               {statusTag()}
             </TransactionInfoRow>
-            {transaction.source_type === "BANK_ACCOUNT" && (
+            {transaction.sourceType === "BANK_ACCOUNT" && (
               <BankTransactionInfo
-                bankAccountId={transaction.bank_account || 0}
+                bankAccountId={transaction.bankAccountId || ""}
               />
             )}
 
-            {transaction.source_type === "CREDIT_CARD" && (
+            {transaction.sourceType === "CREDIT_CARD" && (
               <CreditCardTransactionInfo
-                creditCardId={transaction.credit_card || 0}
-                invoiceId={transaction.invoice || 0}
+                creditCardId={transaction.creditCardId || ""}
+                invoiceId={transaction.invoiceId || ""}
                 transaction={transaction}
               />
             )}
@@ -188,17 +187,17 @@ export const TransactionDetails: React.FC = () => {
 
           <View style={style.cardFooter}>
             <Text variant="caption" color="textSecondary">
-              Ultima atualização: {formatDateTime(transaction.updated_at)}
+              Ultima atualização: {formatDateTime(transaction.updatedAt)}
             </Text>
             <Text variant="caption" color="textSecondary">
-              Data de criação: {formatDateTime(transaction.created_at)}
+              Data de criação: {formatDateTime(transaction.createdAt)}
             </Text>
           </View>
         </View>
 
-        {transaction?.is_installment && transaction?.purchase_group_uuid && (
+        {transaction?.isInstallment && transaction?.purchaseGroupUuid && (
           <TransactionsGroupList
-            groupId={transaction?.purchase_group_uuid || ""}
+            groupId={transaction?.purchaseGroupUuid || ""}
             ignoreId={transaction.id}
           />
         )}

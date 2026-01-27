@@ -11,7 +11,7 @@ import { useEffect } from "react";
 
 interface TransactionsGroupListProps {
   groupId: string;
-  ignoreId?: number;
+  ignoreId?: string;
 }
 
 export const TransactionsGroupList = ({
@@ -27,7 +27,7 @@ export const TransactionsGroupList = ({
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useTransactions({ purchase_group_uuid: groupId });
+  } = useTransactions({ purchaseGroupUuid: groupId });
 
   useEffect(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -49,10 +49,10 @@ export const TransactionsGroupList = ({
 
   const transactionsList = transactions.pages.flatMap((page) => {
     if (ignoreId) {
-      return page.results.filter((transaction) => transaction.id !== ignoreId);
+      return page.content.filter((transaction) => transaction.id !== ignoreId);
     }
 
-    return page.results;
+    return page.content;
   });
 
   return (

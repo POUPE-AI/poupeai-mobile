@@ -12,7 +12,6 @@ import { useState } from "react";
 import {
   CreateTransactionRequest,
   Transaction,
-  TransactionDetail,
 } from "@/types/transactions";
 import { TransactionModal } from "@/components/molecules/TransactionModal";
 import { CategoryModal } from "@/components/molecules/CategoryModal";
@@ -29,7 +28,7 @@ export const Transactions = () => {
   const style = styles(theme);
 
   const [selectedTransaction, setSelectedTransaction] =
-    useState<TransactionDetail | null>(null);
+    useState<Transaction | null>(null);
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [bankAccountModalVisible, setBankAccountModalVisible] = useState(false);
