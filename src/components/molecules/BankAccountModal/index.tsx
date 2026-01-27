@@ -22,6 +22,7 @@ const bankAccountSchema = z.object({
   initial_balance: z
     .number()
     .min(0, "Saldo inicial deve ser maior ou igual a zero"),
+  institution_id: z.number().int().min(1),
   is_default: z.boolean(),
 });
 
@@ -50,6 +51,7 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
     description: "",
     initial_balance: 0,
     is_default: false,
+    institution_id: 1,
   });
 
   const [errors, setErrors] = useState<
@@ -65,9 +67,10 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         name: account.name,
         description: account.description,
         initial_balance: parseFloat(
-          account.initial_balance.toString().replace(",", ".")
+          account.initialBalance.toString().replace(",", ".")
         ),
-        is_default: account.is_default,
+        is_default: account.isDefault,
+        institution_id: account.institutionId,
       });
     } else {
       setFormData({
@@ -75,6 +78,7 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         description: "",
         initial_balance: 0,
         is_default: false,
+        institution_id: 1,
       });
     }
     setErrors({});
@@ -110,8 +114,9 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
       const saveData: CreateBankAccountRequest = {
         name: formData.name,
         description: formData.description,
-        initial_balance: formData.initial_balance,
-        is_default: formData.is_default,
+        initialBalance: formData.initial_balance,
+        isDefault: formData.is_default,
+        institutionId: formData.institution_id,
       };
 
       await onSave(saveData);
@@ -188,12 +193,12 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
       <CurrencyInput
         label="Saldo Inicial"
         value={formData.initial_balance.toString()}
-        onChangeText={(formattedValue, numericValue) =>
+        onChangeText={(_, numericValue) =>
           setFormData((prev) => ({ ...prev, initial_balance: numericValue }))
         }
         placeholder="0,00"
         error={errors.initial_balance}
-        disabled={mode === "edit"} // Desabilita edição do saldo inicial no modo de edição
+        disabled={mode === "edit"}
       />
       {mode === "edit" && (
         <Text

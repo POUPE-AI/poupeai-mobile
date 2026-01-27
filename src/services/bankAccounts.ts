@@ -1,24 +1,20 @@
 import { api } from './api';
-import { Account, BankAccountsResponse, CreateBankAccountRequest } from '../types/accounts';
+import { Account, CreateBankAccountRequest } from '@/types/accounts';
 
 export interface UpdateBankAccountRequest extends Partial<CreateBankAccountRequest> {
-  id: number;
+  id: string;
 }
 
 export class BankAccountsService {
-  private baseUrl = 'finances/api/v1/bank-accounts/';
+  private baseUrl = 'core/api/v1/bank-accounts';
 
-  async getBankAccounts(params?: {
-    search?: string;
-    page?: number;
-    page_size?: number;
-  }): Promise<BankAccountsResponse> {
-    const response = await api.get(this.baseUrl, { params });
+  async getBankAccounts(): Promise<Account[]> {
+    const response = await api.get(this.baseUrl);
     return response.data;
   }
 
-  async getBankAccountById(id: number): Promise<Account> {
-    const response = await api.get<Account>(`${this.baseUrl}${id}/`);
+  async getBankAccountById(id: string): Promise<Account> {
+    const response = await api.get<Account>(`${this.baseUrl}/${id}`);
     return response.data;
   }
 
@@ -29,12 +25,12 @@ export class BankAccountsService {
 
   async updateBankAccount(data: UpdateBankAccountRequest): Promise<Account> {
     const { id, ...updateData } = data;
-    const response = await api.patch<Account>(`${this.baseUrl}${id}/`, updateData);
+    const response = await api.patch<Account>(`${this.baseUrl}/${id}`, updateData);
     return response.data;
   }
 
-  async deleteBankAccount(id: number): Promise<void> {
-    await api.delete(`${this.baseUrl}${id}/`);
+  async deleteBankAccount(id: string): Promise<void> {
+    await api.delete(`${this.baseUrl}/${id}`);
   }
 }
 

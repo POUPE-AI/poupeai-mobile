@@ -21,10 +21,10 @@ export const invoicesKeys = {
 export const bankAccountsKeys = {
   all: ["bank-accounts"] as const,
   lists: () => [...bankAccountsKeys.all, "list"] as const,
-  list: (filters: Record<string, any>) =>
-    [...bankAccountsKeys.lists(), { filters }] as const,
+  list: () =>
+    [...bankAccountsKeys.lists()] as const,
   details: () => [...bankAccountsKeys.all, "detail"] as const,
-  detail: (id: number) => [...bankAccountsKeys.details(), id] as const,
+  detail: (id: string) => [...bankAccountsKeys.details(), id] as const,
 };
 
 export const creditCardsKeys = {
