@@ -17,6 +17,7 @@ import { CategoryDropdown } from "../CategoryDropdown";
 import { BankAccountDropDown } from "../BankAccountDropdown";
 import { CreditCardDropDown } from "../CreditCardDropdown";
 import { DatePickerField } from "@/components/atoms/DatePickerField";
+import { set } from "date-fns";
 
 const transactionSchema = z
   .object({
@@ -112,13 +113,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         description: transaction.description,
         amount: transaction.amount,
         issue_date: transaction.transactionDate,
-        category: (transaction as any).categoryId || "",
+        category: transaction.category.id || "",
         bank_account: transaction.bankAccountId ?? undefined,
         credit_card: transaction.creditCardId ?? undefined,
         is_installment: transaction.isInstallment,
         installment_number: transaction.installmentNumber ?? undefined,
         total_installments: transaction.totalInstallments ?? undefined,
       });
+      setSourceType(
+        transaction.creditCardId ? "CREDIT_CARD" : "BANK_ACCOUNT"
+      );
       setAmmountInput(
         `R$ ${transaction.amount
           .toFixed(2)
