@@ -5,6 +5,7 @@ import { Card } from '@/types';
 import { styles } from './styles';
 import { Text } from '@/components/atoms/Text';
 import { formatCurrency } from '@/utils/currency';
+import { colors } from '@/constants/theme';
 
 interface CreditCardHeaderProps {
   card: Card;
@@ -26,48 +27,39 @@ export const CreditCardHeader: React.FC<CreditCardHeaderProps> = ({ card }) => {
   };
 
   return (
-    <View style={style.container}>
+    <View style={[style.container, { backgroundColor: card.institution.mainColorHex || colors.primary[600] }]}>
       <View style={style.header}>
         <Text style={style.cardName}>{card.name}</Text>
         <View style={style.brandBadge}>
-          <Text style={style.brandText}>{getBrandDisplayName(card.brand)}</Text>
+          <Text style={style.brandText}>{getBrandDisplayName(card.institution.name)}</Text>
         </View>
       </View>
 
       <View style={style.limitContainer}>
         <Text style={style.limitLabel}>Limite de Crédito</Text>
         <Text style={style.limitValue}>
-          {formatCurrency(parseFloat(card.credit_limit))}
+          {formatCurrency(card.creditLimit)}
         </Text>
       </View>
 
       <View style={style.detailsContainer}>
         <View style={style.detailItem}>
           <Text style={style.detailLabel}>Fechamento</Text>
-          <Text style={style.detailValue}>Dia {card.closing_day}</Text>
+          <Text style={style.detailValue}>Dia {card.closingDay}</Text>
         </View>
         
         <View style={style.detailItem}>
           <Text style={style.detailLabel}>Vencimento</Text>
-          <Text style={style.detailValue}>Dia {card.due_day}</Text>
+          <Text style={style.detailValue}>Dia {card.dueDay}</Text>
         </View>
         
         <View style={style.detailItem}>
           <Text style={style.detailLabel}>Disponível</Text>
           <Text style={style.detailValue}>
-            {formatCurrency(card.available_credit_limit)}
+            {formatCurrency(card.creditLimit - card.usedCreditLimit)}
           </Text>
         </View>
-      </View>
-
-      {card.additional_info && (
-        <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.2)' }}>
-          <Text style={style.detailLabel}>Informações Adicionais</Text>
-          <Text style={[style.detailValue, { fontSize: 14, marginTop: 4 }]}>
-            {card.additional_info}
-          </Text>
-        </View>
-      )}
+      </View> 
     </View>
   );
 };

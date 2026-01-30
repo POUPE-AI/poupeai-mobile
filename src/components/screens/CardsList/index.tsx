@@ -95,26 +95,10 @@ export const CardsList = () => {
     }
   };
 
-  const calculateProgress = (card: Card): CardProgress => {
-    const usedAmount = card.used_credit_limit;
-    const availableAmount = card.available_credit_limit;
-    const creditLimit = card.creditLimit;
-    const percentage = creditLimit > 0 ? (usedAmount / creditLimit) * 100 : 0;
-
-    return {
-      used_amount: usedAmount,
-      available_amount: availableAmount,
-      percentage: percentage,
-    };
-  };
-
   const renderCardItem = ({ item }: { item: Card }) => {
-    const progress = calculateProgress(item);
-
     return (
       <CardListItem
         card={item}
-        progress={progress}
         onPress={handleCardPress}
         onEdit={handleEditCard}
         onDelete={handleDeleteCard}

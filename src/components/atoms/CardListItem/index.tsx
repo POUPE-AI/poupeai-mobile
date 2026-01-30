@@ -10,7 +10,6 @@ import { styles } from "./styles";
 
 interface CardListItemProps {
   card: Card;
-  progress: CardProgress;
   onPress?: (card: Card) => void;
   onEdit?: (card: Card) => void;
   onDelete?: (card: Card) => void;
@@ -18,13 +17,14 @@ interface CardListItemProps {
 
 export const CardListItem = ({
   card,
-  progress,
   onPress,
   onEdit,
   onDelete,
 }: CardListItemProps) => {
   const { theme } = useTheme();
   const style = styles(theme);
+
+  const cardLimitPercentage: number = (card.usedCreditLimit / card.creditLimit) * 100;
 
   return (
     <TouchableOpacity
@@ -41,9 +41,9 @@ export const CardListItem = ({
         </View>
 
         <View style={style.brandRow}>
-          <Text style={style.brandText}>{card.institutionId}</Text>
-          <Text style={style.usedText}>
-            {formatCurrencySimple(progress.used_amount)} usado
+          <Text style={style.brandText}>{card.institution.name}</Text>
+          <Text style={[style.usedText, { color: card.institution.mainColorHex || colors.primary[500] }]}>
+            {formatCurrencySimple(card.usedCreditLimit)} usado
           </Text>
         </View>
 
@@ -53,19 +53,19 @@ export const CardListItem = ({
               style={[
                 style.progressFill,
                 {
-                  width: `${Math.min(progress.percentage, 100)}%`,
-                  backgroundColor: colors.primary[500],
+                  width: `${Math.min(cardLimitPercentage, 100)}%`,
+                  backgroundColor: card.institution.mainColorHex || colors.primary[500],
                 },
               ]}
             />
           </View>
 
           <View style={style.progressFooter}>
-            <Text style={style.availableText}>
-              {formatCurrencySimple(progress.available_amount)} disponível
+            <Text style={[style.availableText, { color: card.institution.mainColorHex || colors.primary[500] }]}>
+              {formatCurrencySimple(card.creditLimit - card.usedCreditLimit)} disponível
             </Text>
-            <Text style={style.percentageText}>
-              {progress.percentage.toFixed(0)}%
+            <Text style={[style.percentageText, { color: card.institution.mainColorHex || colors.primary[500] }]}>
+              {cardLimitPercentage.toFixed(0)}%
             </Text>
           </View>
         </View>
