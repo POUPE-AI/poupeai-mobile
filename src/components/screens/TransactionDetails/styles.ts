@@ -47,4 +47,10 @@ export const styles = (themeType: ThemeType) =>
       paddingHorizontal: 16,
       borderRadius: 8,
     },
+    receiptSection: {
+      marginTop: 8,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: colors.theme[themeType].border,
+    },
   });

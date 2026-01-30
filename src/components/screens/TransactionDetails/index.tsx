@@ -27,6 +27,9 @@ import { TransactionsGroupList } from "@/components/molecules/TransactionsGroupL
 import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
 import { CreateTransactionRequest, Transaction } from "@/types/transactions";
 import { TransactionModal } from "@/components/molecules/TransactionModal";
+import { ReceiptViewer } from "@/components/atoms/ReceiptViewer";
+import { ReceiptUploader } from "@/components/molecules/ReceiptUploader";
+import { useDeleteReceipt } from "@/hooks/useTransactionsUpload";
 
 export const TransactionDetails: React.FC = () => {
   const { theme } = useTheme();
@@ -36,6 +39,7 @@ export const TransactionDetails: React.FC = () => {
   const { data: transaction, isLoading, error } = useTransaction(id || "");
   const deleteTransactionMutation = useDeleteTransaction();
   const updateTransactionMutation = useUpdateTransaction();
+  const deleteReceiptMutation = useDeleteReceipt();
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -78,6 +82,16 @@ export const TransactionDetails: React.FC = () => {
   const handleDeleteCategory = (transaction: Transaction) => {
     setTransactionToDelete(transaction);
     setDeleteModalVisible(true);
+  };
+
+  const handleDeleteReceipt = async () => {
+    if (!transaction) return;
+    
+    try {
+      await deleteReceiptMutation.mutateAsync({ transactionId: transaction.id });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (isLoading) {
@@ -149,6 +163,29 @@ export const TransactionDetails: React.FC = () => {
                 transaction={transaction}
               />
             )}
+
+            {/* Seção de Comprovante */}
+            <View style={style.receiptSection}>
+              {transaction.attachmentUrl ? (
+                <ReceiptViewer
+                  attachmentUrl={transaction.attachmentUrl}
+                  showDelete={true}
+                  onDelete={handleDeleteReceipt}
+                />
+              ) : (
+                <ReceiptUploader 
+                  transactionId={transaction.id} 
+                  attachmentUrl={transaction.attachmentUrl} 
+                />
+              )}
+              
+              {transaction.attachmentUrl && (
+                <ReceiptUploader 
+                  transactionId={transaction.id} 
+                  attachmentUrl={transaction.attachmentUrl} 
+                />
+              )}
+            </View>
           </View>
 
           <View style={style.cardFooter}>

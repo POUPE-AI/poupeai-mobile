@@ -16,7 +16,7 @@ export interface Transaction {
   creditCardId?: string;
   category: TransactionCategory;
   invoiceId: string;
-  attachmentKey: string;
+  attachmentUrl?: string;
   isInstallment: boolean;
   installmentNumber: number;
   totalInstallments: number;
