@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Text,
-  ScrollView,
-  View,
-  ActivityIndicator,
-  RefreshControl,
-} from "react-native";
+import { Text, ScrollView, View, RefreshControl } from "react-native";
 import { parseISO, format, startOfDay, isBefore, isEqual } from "date-fns";
 import { BalanceCard } from "@/components/molecules/BalanceCard";
 import { EstimatedSavingsCard } from "@/components/molecules/EstimatedSavingsCard";
@@ -18,6 +12,7 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { colors } from "@/constants/theme";
+import { size } from "zod";
 
 export default function DashboardScreen() {
   const { isAuthenticated } = useAuth();
@@ -28,21 +23,21 @@ export default function DashboardScreen() {
   const today = new Date();
   const todayFormatted = format(today, "yyyy-MM-dd");
 
+  const currentPeriod = format(today, "yyyy-MM");
+
   const {
     data: dashboard,
     isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
-  } = useDashboard();
+  } = useDashboard({ period: currentPeriod });
 
   const {
     data: transactions,
     isLoading: transactionLoading,
     error: transactionsError,
     refetch: refetchTransactions,
-  } = useTransactions({
-    issue_date_end: todayFormatted,
-  });
+  } = useTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -69,7 +64,7 @@ export default function DashboardScreen() {
       })
       .sort(
         (a, b) =>
-          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
+          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime(),
       )
       .slice(0, 5) || [];
 
@@ -116,56 +111,55 @@ export default function DashboardScreen() {
           data={[
             {
               data:
-                dashboard?.balance?.chart_data?.map(
-                  (item) => item.balance ?? 0
+                dashboard?.balance?.chartData?.map(
+                  (item) => item.balance ?? 0,
                 ) || [],
             },
           ]}
           title="Saldo Total"
           percentage={dashboard?.balance?.difference ?? 0}
-          amount={dashboard?.balance?.current_total ?? 0}
+          amount={dashboard?.balance?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.incomes?.chart_data?.map(
-                  (item) => item.total ?? 0
-                ) || [],
+                dashboard?.incomes?.chartData?.map((item) => item.total ?? 0) ||
+                [],
             },
           ]}
           title="Receitas"
           percentage={dashboard?.incomes?.difference ?? 0}
-          amount={dashboard?.incomes?.current_total ?? 0}
+          amount={dashboard?.incomes?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.expenses?.chart_data?.map(
-                  (item) => item.total ?? 0
+                dashboard?.expenses?.chartData?.map(
+                  (item) => item.total ?? 0,
                 ) || [],
             },
           ]}
           title="Despesas"
           percentage={dashboard?.expenses?.difference ?? 0}
-          amount={dashboard?.expenses?.current_total ?? 0}
+          amount={dashboard?.expenses?.currentTotal ?? 0}
         />
 
         {/*         <BalanceCard
           data={[
             {
               data:
-                dashboard?.invoices?.chart_data?.map((item) =>
-                  typeof item.total_amount === "number" ? item.total_amount : 0
+                dashboard?.invoices?.chartData?.map((item) =>
+                  typeof item.totalAmount === "number" ? item.totalAmount : 0
                 ) || [],
             },
           ]}
           title="Faturas"
           percentage={dashboard?.invoices?.difference ?? 0}
-          amount={dashboard?.invoices?.current_total ?? 0}
+          amount={dashboard?.invoices?.currentTotal ?? 0}
         /> */}
       </ScrollView>
 
@@ -177,11 +171,11 @@ export default function DashboardScreen() {
 
       <EstimatedSavingsCard
         data={
-          dashboard?.estimated_saving ?? {
-            estimated_savings: 0,
-            savings_percentage: 0,
+          dashboard?.estimatedSaving ?? {
+            estimatedSavings: 0,
+            savingsPercentage: 0,
             message: "",
-            comparison_period: "monthly",
+            comparisonPeriod: "monthly",
           }
         }
         title="Economia Estimada"
