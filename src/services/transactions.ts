@@ -28,19 +28,19 @@ export class TransactionsService {
   }
 
   async createTransaction(
-    data: CreateTransactionRequest
+    data: CreateTransactionRequest,
   ): Promise<Transaction> {
     const response = await api.post(this.baseUrl, data);
     return response.data;
   }
 
   async updateTransaction(
-    data: UpdateTransactionRequest
+    data: UpdateTransactionRequest,
   ): Promise<Transaction> {
     const { id, ...updateData } = data;
     const response = await api.patch<Transaction>(
       `${this.baseUrl}${id}/`,
-      updateData
+      updateData,
     );
     return response.data;
   }
