@@ -82,7 +82,7 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
         credit_limit: card.creditLimit,
         closing_day: card.closingDay,
         due_day: card.dueDay,
-        institutionId: card.institutionId,
+        institutionId: card.institution.id,
       });
     } else {
       setFormData({
@@ -207,7 +207,7 @@ export const CreditCardModal: React.FC<CreditCardModalProps> = ({
           onSelect={(item) =>
             setFormData((prev) => ({
               ...prev,
-              institutionId: item.id,
+              institutionId: item.id as number,
             }))
           }
           placeholder="Selecione a instituição"

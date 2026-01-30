@@ -13,23 +13,26 @@ import {
 } from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const useInvoices = (creditCardId: string) => {
+export const useInvoices = (creditCardId: string, params?: any) => {
   const { isAuthenticated, user } = useAuth();
 
+  const mergedParams = { ...params, creditCardId };
+
   return useQuery({
-    queryKey: invoicesKeys.list(creditCardId),
-    queryFn: () => InvoicesService.getInvoicesByCreditCard(creditCardId),
+    queryKey: invoicesKeys.list(creditCardId, params),
+    queryFn: () => InvoicesService.getInvoices(mergedParams),
     enabled: isAuthenticated && !!user && !!creditCardId,
   });
 };
-export const useInvoice = (creaditCardID: string, invoiceId: string) => {
+export const useInvoice = (invoiceId: string) => {
   return useQuery({
     queryKey: invoicesKeys.detail(invoiceId),
-    queryFn: () =>
-      InvoicesService.getInvoicesByCreditCardAndId(creaditCardID, invoiceId),
-    enabled: !!creaditCardID && !!invoiceId,
+    queryFn: () => InvoicesService.getInvoiceById(invoiceId),
+    enabled: !!invoiceId,
   });
 };
+
+import type { PayInvoiceRequest } from "@/types/invoices";
 
 export const usePayInvoice = () => {
   const queryClient = useQueryClient();
@@ -42,7 +45,7 @@ export const usePayInvoice = () => {
     }: {
       creditCardId: string;
       invoiceId: string;
-      paymentData: { bankAccountId: string; amount: number };
+      paymentData: PayInvoiceRequest;
     }) => InvoicesService.payInvoice(invoiceId, paymentData),
     onSuccess: (_, { creditCardId }) => {
       queryClient.invalidateQueries({

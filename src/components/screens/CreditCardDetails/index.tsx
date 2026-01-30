@@ -16,8 +16,7 @@ import { PayInvoiceModal } from "@/components/molecules/PayInvoiceModal";
 import { CreditCardHeader } from "@/components/molecules/CreditCardHeader";
 import { InvoiceListItem } from "@/components/molecules/InvoiceListItem";
 import { EmptyInvoicesState } from "@/components/molecules/EmptyInvoicesState";
-import { Invoice } from "@/types/invoices";
-import { colors } from "@/constants/theme";
+import type { Invoice, PayInvoiceRequest } from "@/types/invoices";
 
 export const CreditCardDetails: React.FC = () => {
   const { theme } = useTheme();
@@ -44,7 +43,7 @@ export const CreditCardDetails: React.FC = () => {
   const payInvoiceMutation = usePayInvoice();
 
   const creditCard = creditCardsData?.find((card) => card.id === creditCardId);
-  const invoices = invoicesData || [];
+  const invoices = invoicesData?.content || [];
 
   React.useEffect(() => {
     if (creditCard) {
@@ -68,20 +67,14 @@ export const CreditCardDetails: React.FC = () => {
     setPayModalVisible(true);
   };
 
-  const handleConfirmPayment = async (
-    bankAccountId: string,
-    amount: number,
-  ) => {
+  const handleConfirmPayment = async (paymentData: PayInvoiceRequest) => {
     if (!selectedInvoice) return;
 
     try {
       await payInvoiceMutation.mutateAsync({
         creditCardId,
         invoiceId: selectedInvoice.id,
-        paymentData: {
-          bankAccountId: bankAccountId,
-          amount: amount,
-        },
+        paymentData,
       });
       setPayModalVisible(false);
       setSelectedInvoice(null);
@@ -92,7 +85,7 @@ export const CreditCardDetails: React.FC = () => {
   };
 
   const renderInvoiceItem: ListRenderItem<Invoice> = ({ item }) => (
-    <InvoiceListItem invoice={item} onPayInvoice={handlePayInvoice} />
+    <InvoiceListItem invoice={item} onPayInvoice={handlePayInvoice} primaryColor={creditCard?.institution.mainColorHex || ""} />
   );
 
   const renderHeader = () => {
