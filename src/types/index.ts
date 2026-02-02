@@ -37,3 +37,4 @@ export * from "./budgets";
 export * from "./cards";
 export * from "./invoices";
 export * from "./goals";
+export * from "./ingestionJobs";

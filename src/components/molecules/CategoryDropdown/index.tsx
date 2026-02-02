@@ -17,6 +17,9 @@ interface CategoryDropdownProps {
   onToggle: () => void;
   filterType?: "INCOME" | "EXPENSE";
   onCreateCategory?: () => void;
+  error?: string;
+  label?: string;
+  type?: "INCOME" | "EXPENSE";
 }
 
 export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
@@ -26,6 +29,9 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onToggle,
   filterType,
   onCreateCategory,
+  error: externalError,
+  label = "Categoria",
+  type,
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
@@ -45,10 +51,12 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     fetchNextPage();
   }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
-  const filteredCategories = filterType
+  const effectiveFilterType = type || filterType;
+
+  const filteredCategories = effectiveFilterType
     ? categories?.pages
         .flatMap((page) => page.content)
-        .filter((category: Category) => category.type === filterType)
+        .filter((category: Category) => category.type === effectiveFilterType)
     : categories?.pages.flatMap((page) => page.content);
 
   const dropdownItems =
@@ -65,7 +73,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   if (isCategoriesLoading) {
     return (
-      <FormField label="Categoria" error={error || undefined}>
+      <FormField label={label} error={externalError}>
         <View style={style.loadingContainer}>
           <ActivityIndicator size="small" color={colors.primary[500]} />
           <Text style={style.loadingText}>Carregando categorias...</Text>
@@ -75,7 +83,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   }
 
   return (
-    <FormField label="Categoria" error={error?.message || undefined}>
+    <FormField label={label} error={externalError || error?.message}>
       <View style={style.container}>
         <View style={style.dropdownContainer}>
           <DropdownSelector
