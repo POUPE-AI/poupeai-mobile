@@ -18,6 +18,8 @@ export class TransactionsService {
     purchaseGroupUuid?: string;
     sortDirection?: "ASC" | "DESC";
     sortBy?: string;
+    transactionDateEnd?: string;
+    transactionDateStart?: string;
   }): Promise<TransactionsResponse> {
     const response = await api.get(this.baseUrl, { ...params });
     return response.data;

@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Text, ScrollView, View, RefreshControl } from "react-native";
-import {
-  Text,
-  ScrollView,
-  View,
-  RefreshControl,
-} from "react-native";
 import { parseISO, format, startOfDay, isBefore, isEqual } from "date-fns";
 import { BalanceCard } from "@/components/molecules/BalanceCard";
 import { EstimatedSavingsCard } from "@/components/molecules/EstimatedSavingsCard";
@@ -18,7 +12,6 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { colors } from "@/constants/theme";
-import { size } from "zod";
 
 export default function DashboardScreen() {
   const { isAuthenticated } = useAuth();
@@ -27,6 +20,8 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const today = new Date();
+
+  const currentPeriod = format(today, "yyyy-MM");
 
   const {
     data: dashboard,
@@ -40,7 +35,6 @@ export default function DashboardScreen() {
     isLoading: transactionsLoading,
     error: transactionsError,
     refetch: refetchTransactions,
-  } = useTransactions();
   } = useTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -56,21 +50,22 @@ export default function DashboardScreen() {
     }
   };
   const lastTransactions =
-  transactions?.pages[0]?.content
-    .slice()
-    .filter((transaction) => {
-      const transactionDate = parseISO(transaction.transactionDate);
-      const todayStart = startOfDay(today);
-      return (
-        isBefore(transactionDate, todayStart) ||
-        isEqual(transactionDate, todayStart)
-      );
-    })
-    .sort(
-      (a, b) =>
-        parseISO(b.transactionDate).getTime() - parseISO(a.transactionDate).getTime()
-    )
-    .slice(0, 5) || [];
+    transactions?.pages[0]?.content
+      .slice()
+      .filter((transaction) => {
+        const transactionDate = parseISO(transaction.transactionDate);
+        const todayStart = startOfDay(today);
+        return (
+          isBefore(transactionDate, todayStart) ||
+          isEqual(transactionDate, todayStart)
+        );
+      })
+      .sort(
+        (a, b) =>
+          parseISO(b.transactionDate).getTime() -
+          parseISO(a.transactionDate).getTime(),
+      )
+      .slice(0, 5) || [];
 
   useEffect(() => {
     if (isAuthenticated) {

@@ -8,6 +8,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { ActivityIndicator, View } from "react-native";
 import { styles } from "./styles";
 import { useEffect } from "react";
+import { format } from "date-fns";
 
 interface TransactionsGroupListProps {
   groupId: string;
@@ -19,6 +20,10 @@ export const TransactionsGroupList = ({
   ignoreId,
 }: TransactionsGroupListProps) => {
   const { theme } = useTheme();
+
+  const endDate = new Date().setMonth(new Date().getMonth() + 12);
+  const formatedEndDate = format(endDate, "yyyy-MM-dd");
+
   const style = styles(theme);
   const {
     data: transactions,
@@ -27,7 +32,10 @@ export const TransactionsGroupList = ({
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useTransactions({ purchaseGroupUuid: groupId });
+  } = useTransactions({
+    purchaseGroupUuid: groupId,
+    transactionDateEnd: formatedEndDate,
+  });
 
   useEffect(() => {
     if (hasNextPage && !isFetchingNextPage) {

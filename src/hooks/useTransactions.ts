@@ -28,6 +28,8 @@ export function useTransactions(params?: {
   purchaseGroupUuid?: string;
   sortDirection?: "ASC" | "DESC";
   sortBy?: string;
+  transactionDateEnd?: string;
+  transactionDateStart?: string;
 }) {
   const { isAuthenticated, user } = useAuth();
 
