@@ -4,7 +4,7 @@ import { useBankAccount } from "@/hooks/useBankAccounts";
 export const BankTransactionInfo = ({
   bankAccountId,
 }: {
-  bankAccountId: number;
+  bankAccountId: string;
 }) => {
   const { data, isLoading, error } = useBankAccount(bankAccountId);
 

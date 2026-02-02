@@ -6,7 +6,7 @@ export const transactionsKeys = {
   list: (filters: Record<string, any>) =>
     [...transactionsKeys.lists(), { filters }] as const,
   details: () => [...transactionsKeys.all, "detail"] as const,
-  detail: (id: number) => [...transactionsKeys.details(), id] as const,
+  detail: (id: string) => [...transactionsKeys.details(), id] as const,
 };
 
 export const invoicesKeys = {

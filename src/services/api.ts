@@ -49,6 +49,7 @@ class ApiService {
     this.instance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
+
         const apiError: ApiError = {
           message: "Erro na requisição",
           status: error.response?.status,
@@ -85,9 +86,28 @@ class ApiService {
     return this.instance.get<T>(url, { params });
   }
 
-  public post<T = any>(url: string, data?: any) {
-    return this.instance.post<T>(url, data);
+  public post<T = any>(url: string, data?: any, config?: any) {
+  const isFormData =
+    data instanceof FormData || (data && typeof data.append === "function");
+
+  if (isFormData) {
+    const headers = { ...(config?.headers || {}) };
+    
+    // Remove Content-Type para deixar o axios definir automaticamente
+    delete headers["Content-Type"];
+
+    return this.instance.post<T>(url, data, {
+      ...config,
+      headers: {
+        ...headers,
+        "Content-Type": "multipart/form-data", // ✅ Define explicitamente
+      },
+      transformRequest: [(d) => d],
+    });
   }
+
+  return this.instance.post<T>(url, data, config);
+}
 
   public put<T = any>(url: string, data?: any) {
     return this.instance.put<T>(url, data);

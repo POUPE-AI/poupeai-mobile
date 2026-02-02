@@ -12,7 +12,6 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { colors } from "@/constants/theme";
-import { size } from "zod";
 
 export default function DashboardScreen() {
   const { isAuthenticated } = useAuth();
@@ -21,7 +20,6 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const today = new Date();
-  const todayFormatted = format(today, "yyyy-MM-dd");
 
   const currentPeriod = format(today, "yyyy-MM");
 
@@ -34,7 +32,7 @@ export default function DashboardScreen() {
 
   const {
     data: transactions,
-    isLoading: transactionLoading,
+    isLoading: transactionsLoading,
     error: transactionsError,
     refetch: refetchTransactions,
   } = useTransactions();
@@ -52,10 +50,10 @@ export default function DashboardScreen() {
     }
   };
   const lastTransactions =
-    transactions?.pages[0]?.results
+    transactions?.pages[0]?.content
       .slice()
       .filter((transaction) => {
-        const transactionDate = parseISO(transaction.issue_date);
+        const transactionDate = parseISO(transaction.transactionDate);
         const todayStart = startOfDay(today);
         return (
           isBefore(transactionDate, todayStart) ||
@@ -64,7 +62,8 @@ export default function DashboardScreen() {
       })
       .sort(
         (a, b) =>
-          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime(),
+          parseISO(b.transactionDate).getTime() -
+          parseISO(a.transactionDate).getTime(),
       )
       .slice(0, 5) || [];
 
@@ -147,27 +146,7 @@ export default function DashboardScreen() {
           percentage={dashboard?.expenses?.difference ?? 0}
           amount={dashboard?.expenses?.currentTotal ?? 0}
         />
-
-        {/*         <BalanceCard
-          data={[
-            {
-              data:
-                dashboard?.invoices?.chartData?.map((item) =>
-                  typeof item.totalAmount === "number" ? item.totalAmount : 0
-                ) || [],
-            },
-          ]}
-          title="Faturas"
-          percentage={dashboard?.invoices?.difference ?? 0}
-          amount={dashboard?.invoices?.currentTotal ?? 0}
-        /> */}
       </ScrollView>
-
-      {/* <CategoriesCard
-        data={mockCategoriesData}
-        title="Categorias"
-        tip="Alimentação lidera seus gastos este mês"
-      /> */}
 
       <EstimatedSavingsCard
         data={
@@ -185,7 +164,7 @@ export default function DashboardScreen() {
       <View style={style.sectionContainer}>
         <Text style={style.sectionTitle}>Últimas Transações</Text>
 
-        {transactionLoading ? (
+        {transactionsLoading ? (
           <LoadingContent text="transações" />
         ) : transactionsError ? (
           <ErrorContent text="Erro ao carregar transações" />
