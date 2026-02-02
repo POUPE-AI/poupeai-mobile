@@ -21,8 +21,7 @@ export const invoicesKeys = {
 export const bankAccountsKeys = {
   all: ["bank-accounts"] as const,
   lists: () => [...bankAccountsKeys.all, "list"] as const,
-  list: () =>
-    [...bankAccountsKeys.lists()] as const,
+  list: () => [...bankAccountsKeys.lists()] as const,
   details: () => [...bankAccountsKeys.all, "detail"] as const,
   detail: (id: string) => [...bankAccountsKeys.details(), id] as const,
 };
@@ -79,4 +78,9 @@ export const reportsKeys = {
     [...reportsKeys.all, "income", params] as const,
   category: (params?: Record<string, any>) =>
     [...reportsKeys.all, "category", params] as const,
+};
+
+export const profileKeys = {
+  all: ["profile"] as const,
+  detail: () => [...profileKeys.all, "detail"] as const,
 };

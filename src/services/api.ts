@@ -25,7 +25,6 @@ class ApiService {
   }
 
   private setupInterceptors() {
-    // Request interceptor para adicionar o token
     this.instance.interceptors.request.use(
       async (config) => {
         try {
@@ -45,11 +44,9 @@ class ApiService {
       },
     );
 
-    // Response interceptor para tratar erros globais
     this.instance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-
         const apiError: ApiError = {
           message: "Erro na requisição",
           status: error.response?.status,
@@ -81,33 +78,31 @@ class ApiService {
     );
   }
 
-  // Métodos públicos para uso nos hooks
   public get<T = any>(url: string, params?: any) {
     return this.instance.get<T>(url, { params });
   }
 
   public post<T = any>(url: string, data?: any, config?: any) {
-  const isFormData =
-    data instanceof FormData || (data && typeof data.append === "function");
+    const isFormData =
+      data instanceof FormData || (data && typeof data.append === "function");
 
-  if (isFormData) {
-    const headers = { ...(config?.headers || {}) };
-    
-    // Remove Content-Type para deixar o axios definir automaticamente
-    delete headers["Content-Type"];
+    if (isFormData) {
+      const headers = { ...(config?.headers || {}) };
 
-    return this.instance.post<T>(url, data, {
-      ...config,
-      headers: {
-        ...headers,
-        "Content-Type": "multipart/form-data", // ✅ Define explicitamente
-      },
-      transformRequest: [(d) => d],
-    });
+      delete headers["Content-Type"];
+
+      return this.instance.post<T>(url, data, {
+        ...config,
+        headers: {
+          ...headers,
+          "Content-Type": "multipart/form-data",
+        },
+        transformRequest: [(d) => d],
+      });
+    }
+
+    return this.instance.post<T>(url, data, config);
   }
-
-  return this.instance.post<T>(url, data, config);
-}
 
   public put<T = any>(url: string, data?: any) {
     return this.instance.put<T>(url, data);
@@ -121,16 +116,13 @@ class ApiService {
     return this.instance.delete<T>(url);
   }
 
-  // Método para atualizar o token manualmente se necessário
   public updateToken(token: string) {
     this.instance.defaults.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Método para remover o token
   public removeToken() {
     delete this.instance.defaults.headers.Authorization;
   }
 }
 
-// Exportar instância única
 export const api = new ApiService();
