@@ -3,14 +3,19 @@ export interface Card {
   name: string;
   creditLimit: number;
 
-  used_credit_limit: number;
-  available_credit_limit: number;
+  usedCreditLimit: number;
 
   closingDay: number;
   dueDay: number;
-  institutionId: number;
+  institution: CardInstitution;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CardInstitution {
+  id: number;
+  name: string;
+  mainColorHex?: string;
 }
 
 export interface CardProgress {

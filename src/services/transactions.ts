@@ -40,7 +40,8 @@ export class TransactionsService {
         "X-Debug-Upload": "true",
       };
       if (options.debugInfo) {
-        const { name, size, mimeType, uri, uploadPath, fallback } = options.debugInfo;
+        const { name, size, mimeType, uri, uploadPath, fallback } =
+          options.debugInfo;
         if (name) debugHeaders["X-File-Name"] = String(name);
         if (size !== undefined) debugHeaders["X-File-Size"] = String(size);
         if (mimeType) debugHeaders["X-File-Mime"] = String(mimeType);
@@ -52,7 +53,11 @@ export class TransactionsService {
     }
 
     try {
-      const response = await api.post(`${this.baseUrl}/${transactionId}/receipt`, formData, config);
+      const response = await api.post(
+        `${this.baseUrl}/${transactionId}/receipt`,
+        formData,
+        config,
+      );
       return response.data;
     } catch (err: any) {
       console.error("[transactionsService] Upload failed", {
@@ -70,14 +75,14 @@ export class TransactionsService {
   }
 
   async createTransaction(
-    data: CreateTransactionRequest
+    data: CreateTransactionRequest,
   ): Promise<Transaction> {
     const response = await api.post(this.baseUrl, data);
     return response.data;
   }
 
   async updateTransaction(
-    data: UpdateTransactionRequest
+    data: UpdateTransactionRequest,
   ): Promise<Transaction> {
     const { id, ...updateData } = data;
     const response = await api.patch(`${this.baseUrl}/${id}`, updateData);

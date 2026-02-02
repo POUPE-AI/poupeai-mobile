@@ -6,8 +6,13 @@ import { Text } from "@/components/atoms/Text";
 import { colors } from "@/constants/theme";
 import { styles } from "./styles";
 
+<<<<<<< HEAD
 interface DropdownItem<T = string | number> {
   id: T;
+=======
+interface DropdownItem {
+  id: string | number;
+>>>>>>> b8609b78e704edea4eb3d23f5b9218c2820ea00e
   label: string;
   color?: string;
 }

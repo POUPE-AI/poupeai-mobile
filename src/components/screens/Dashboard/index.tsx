@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Text, ScrollView, View, RefreshControl } from "react-native";
 import {
   Text,
   ScrollView,
@@ -17,6 +18,7 @@ import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
 import { colors } from "@/constants/theme";
+import { size } from "zod";
 
 export default function DashboardScreen() {
   const { isAuthenticated } = useAuth();
@@ -31,13 +33,14 @@ export default function DashboardScreen() {
     isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
-  } = useDashboard();
+  } = useDashboard({ period: currentPeriod });
 
   const {
     data: transactions,
     isLoading: transactionsLoading,
     error: transactionsError,
     refetch: refetchTransactions,
+  } = useTransactions();
   } = useTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -112,52 +115,51 @@ export default function DashboardScreen() {
           data={[
             {
               data:
-                dashboard?.balance?.chart_data?.map(
-                  (item) => item.balance ?? 0
+                dashboard?.balance?.chartData?.map(
+                  (item) => item.balance ?? 0,
                 ) || [],
             },
           ]}
           title="Saldo Total"
           percentage={dashboard?.balance?.difference ?? 0}
-          amount={dashboard?.balance?.current_total ?? 0}
+          amount={dashboard?.balance?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.incomes?.chart_data?.map(
-                  (item) => item.total ?? 0
-                ) || [],
+                dashboard?.incomes?.chartData?.map((item) => item.total ?? 0) ||
+                [],
             },
           ]}
           title="Receitas"
           percentage={dashboard?.incomes?.difference ?? 0}
-          amount={dashboard?.incomes?.current_total ?? 0}
+          amount={dashboard?.incomes?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.expenses?.chart_data?.map(
-                  (item) => item.total ?? 0
+                dashboard?.expenses?.chartData?.map(
+                  (item) => item.total ?? 0,
                 ) || [],
             },
           ]}
           title="Despesas"
           percentage={dashboard?.expenses?.difference ?? 0}
-          amount={dashboard?.expenses?.current_total ?? 0}
+          amount={dashboard?.expenses?.currentTotal ?? 0}
         />
       </ScrollView>
 
       <EstimatedSavingsCard
         data={
-          dashboard?.estimated_saving ?? {
-            estimated_savings: 0,
-            savings_percentage: 0,
+          dashboard?.estimatedSaving ?? {
+            estimatedSavings: 0,
+            savingsPercentage: 0,
             message: "",
-            comparison_period: "monthly",
+            comparisonPeriod: "monthly",
           }
         }
         title="Economia Estimada"

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { FormField } from "@/components/atoms/FormField";
 
 interface NumberInputProps {
-  label: string;
+  label?: string;
   value: number;
   onChangeNumber: (numericValue: number) => void;
   placeholder?: string;

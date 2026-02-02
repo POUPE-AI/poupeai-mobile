@@ -42,7 +42,7 @@ export const styles = (theme: ThemeType) => {
       color: '#FFFFFF',
     },
     limitContainer: {
-      marginBottom: 16,
+      marginBottom: 8,
     },
     limitLabel: {
       fontSize: 14,
@@ -50,7 +50,7 @@ export const styles = (theme: ThemeType) => {
       marginBottom: 4,
     },
     limitValue: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
       color: '#FFFFFF',
     },

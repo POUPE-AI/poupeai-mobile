@@ -26,7 +26,7 @@ export const CreditCardTransactionInfo = ({
     data: invoiceData,
     isLoading: invoiceLoading,
     error: invoiceError,
-  } = useInvoice(creditCardId, invoiceId);
+  } = useInvoice(String(invoiceId));
 
   const cardText = cardLoading
     ? "Carregando..."
@@ -38,7 +38,7 @@ export const CreditCardTransactionInfo = ({
     ? "Carregando..."
     : invoiceError
     ? "Erro ao carregar fatura"
-    : formatDate_DDMMYYYY(invoiceData?.due_date || "") || "N/A";
+    : formatDate_DDMMYYYY(invoiceData?.dueDate || "") || "N/A";
 
   const installmentsText =
     transaction.isInstallment &&
