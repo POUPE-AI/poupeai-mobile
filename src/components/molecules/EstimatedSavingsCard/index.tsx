@@ -19,31 +19,31 @@ export const EstimatedSavingsCard = ({
   const style = styles(theme);
 
   const formatValue = () => {
-    const formattedValue = Math.abs(data.estimated_savings)
+    const formattedValue = Math.abs(data.estimatedSavings)
       .toFixed(2)
       .replace(".", ",");
-    const prefix = data.estimated_savings >= 0 ? "+R$ " : "R$ ";
+    const prefix = data.estimatedSavings >= 0 ? "+R$ " : "R$ ";
     return `${prefix}${formattedValue}`;
   };
 
   const formatPercentage = () => {
-    const percentage = Math.abs(data.savings_percentage);
-    const sign = data.savings_percentage >= 0 ? "+" : "-";
+    const percentage = Math.abs(data.savingsPercentage);
+    const sign = data.savingsPercentage >= 0 ? "+" : "-";
     return `${sign}${percentage.toFixed(1).replace(".", ",")}%`;
   };
 
   const getValueColor = () => {
-    return data.estimated_savings >= 0
+    return data.estimatedSavings >= 0
       ? colors.feedback.success
       : colors.feedback.error;
   };
 
   const getIcon = () => {
-    return data.estimated_savings >= 0 ? "trending-up" : "trending-down";
+    return data.estimatedSavings >= 0 ? "trending-up" : "trending-down";
   };
 
   const getComparisonText = () => {
-    switch (data.comparison_period) {
+    switch (data.comparisonPeriod) {
       case "monthly":
         return "vs mês anterior";
       case "weekly":

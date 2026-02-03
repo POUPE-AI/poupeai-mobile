@@ -35,7 +35,7 @@ export const GoalsList = () => {
   const createGoalMutation = useCreateGoal();
   const updateGoalMutation = useUpdateGoal();
   const deleteGoalMutation = useDeleteGoal();
-  const goals = goalsData?.results || [];
+  const goals = goalsData || [];
 
   // Modal states
   const [depositModalVisible, setDepositModalVisible] = useState(false);
@@ -55,19 +55,17 @@ export const GoalsList = () => {
   };
 
   const handleConfirmDeposit = async (
-    depositAmount: string,
+    depositAmount: number,
     depositDate: string,
-    note?: string
   ) => {
     if (!selectedGoal) return;
 
-    const amount = parseFloat(depositAmount.replace(",", "."));
+    const amount = depositAmount;
 
     await createGoalDepositMutation.mutateAsync({
       goalId: selectedGoal.id,
-      deposit_amount: amount.toString(),
-      deposit_at: depositDate,
-      note,
+      depositAmount: amount,
+      depositDate: depositDate,
     });
 
     setDepositModalVisible(false);

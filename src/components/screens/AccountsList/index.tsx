@@ -193,7 +193,7 @@ export const AccountsList = () => {
         </View>
 
         <FlatList
-          data={bankAccountsData?.results || []}
+          data={bankAccountsData || []}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderAccountItem}
           showsVerticalScrollIndicator={false}

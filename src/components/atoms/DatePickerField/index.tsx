@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity } from "react-native";
-import DatePicker from "react-native-date-picker";
+import { View, TouchableOpacity, Platform } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { parseISO, format, isValid } from "date-fns";
-import { FormField } from "@/components/atoms/FormField";
 import { useTheme } from "@/contexts/ThemeContext";
 import { styles } from "./styles";
 import { Text } from "../Text";
+import { colors } from "@/constants/theme";
 
 interface DatePickerFieldProps {
   label: string;
-  value: string; // ISO date string (YYYY-MM-DD)
+  value: string;
   onDateChange: (isoDate: string) => void;
   placeholder?: string;
   error?: string;
@@ -32,19 +32,16 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   const style = styles(theme);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Converte ISO date (YYYY-MM-DD) para Date object
   const getDateFromISO = (isoDate: string): Date => {
     if (!isoDate) return new Date();
     const date = parseISO(isoDate);
     return isValid(date) ? date : new Date();
   };
 
-  // Converte Date object para ISO date (YYYY-MM-DD)
   const getISOFromDate = (date: Date): string => {
     return format(date, "yyyy-MM-dd");
   };
 
-  // Formata data para exibição (DD/MM/AAAA)
   const formatDisplayDate = (isoDate: string): string => {
     if (!isoDate) return "";
     const date = getDateFromISO(isoDate);
@@ -54,10 +51,21 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
   const currentDate = getDateFromISO(value);
   const displayValue = formatDisplayDate(value);
 
-  const handleDateConfirm = (selectedDate: Date) => {
-    const isoDate = getISOFromDate(selectedDate);
-    onDateChange(isoDate);
-    setIsOpen(false);
+  const handleDateChange = (_event: any, selectedDate?: Date) => {
+    // No Android, o picker fecha automaticamente
+    if (Platform.OS === "android") {
+      setIsOpen(false);
+    }
+
+    if (selectedDate) {
+      const isoDate = getISOFromDate(selectedDate);
+      onDateChange(isoDate);
+
+      // No iOS, fechar após seleção
+      if (Platform.OS === "ios") {
+        setIsOpen(false);
+      }
+    }
   };
 
   return (
@@ -65,11 +73,7 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
       <Text style={style.label}>{label}</Text>
 
       <TouchableOpacity
-        onPress={() => {
-          if (!disabled) {
-            setIsOpen(true);
-          }
-        }}
+        onPress={() => !disabled && setIsOpen(true)}
         activeOpacity={0.7}
         style={[
           style.dateInput,
@@ -90,25 +94,20 @@ export const DatePickerField: React.FC<DatePickerFieldProps> = ({
 
       {error && <Text style={style.errorText}>{error}</Text>}
 
-      <DatePicker
-        modal
-        open={isOpen}
-        date={currentDate}
-        mode="date"
-        locale="pt-BR"
-        title="Selecionar data"
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        minimumDate={minimumDate}
-        maximumDate={maximumDate}
-        onConfirm={(selectedDate) => {
-          handleDateConfirm(selectedDate);
-        }}
-        onCancel={() => {
-          setIsOpen(false);
-        }}
-        theme={theme === "dark" ? "dark" : "light"}
-      />
+      {isOpen && (
+        <DateTimePicker
+          value={currentDate}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleDateChange}
+          minimumDate={minimumDate}
+          maximumDate={maximumDate}
+          locale="pt-BR"
+          textColor={colors.theme[theme].text}
+          themeVariant={theme}
+          accentColor={colors.primary[500]}
+        />
+      )}
     </View>
   );
 };

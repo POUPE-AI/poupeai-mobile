@@ -7,7 +7,7 @@ import { styles } from "./styles";
 import MaskInput, { Mask } from "react-native-mask-input";
 
 interface FormFieldProps extends Omit<TextInputProps, "style"> {
-  label: string;
+  label?: string;
   error?: string;
   children?: React.ReactNode;
   mask?: Mask;
@@ -28,7 +28,7 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <View style={[style.fieldContainer, !editable && { opacity: 0.7 }]}>
-      <Text style={style.label}>{label}</Text>
+      {label && <Text style={style.label}>{label}</Text>}
 
       {children ? (
         children

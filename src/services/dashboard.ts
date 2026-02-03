@@ -2,12 +2,9 @@ import { api } from "./api";
 import { DashboardResponse } from "@/types/dashboard";
 
 export class DashboardService {
-  private baseUrl = "finances/api/v1/dashboard/";
+  private baseUrl = "core/api/v1/dashboard";
 
-  async getDashboard(params?: {
-    start_date?: string;
-    end_date?: string;
-  }): Promise<DashboardResponse> {
+  async getDashboard(params?: { period?: string }): Promise<DashboardResponse> {
     const response = await api.get<DashboardResponse>(this.baseUrl, { params });
     return response.data;
   }

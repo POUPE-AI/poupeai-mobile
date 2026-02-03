@@ -6,25 +6,24 @@ export const transactionsKeys = {
   list: (filters: Record<string, any>) =>
     [...transactionsKeys.lists(), { filters }] as const,
   details: () => [...transactionsKeys.all, "detail"] as const,
-  detail: (id: number) => [...transactionsKeys.details(), id] as const,
+  detail: (id: string) => [...transactionsKeys.details(), id] as const,
 };
 
 export const invoicesKeys = {
   all: ["invoices"] as const,
   lists: () => [...invoicesKeys.all, "list"] as const,
-  list: (creditCardId: number, params?: any) =>
-    [...invoicesKeys.lists(), { creditCardId }] as const,
+  list: (creditCardId: string, params?: any) =>
+    [...invoicesKeys.lists(), { creditCardId, params }] as const,
   details: () => [...invoicesKeys.all, "detail"] as const,
-  detail: (id: number) => [...invoicesKeys.details(), id] as const,
+  detail: (id: string) => [...invoicesKeys.details(), id] as const,
 };
 
 export const bankAccountsKeys = {
   all: ["bank-accounts"] as const,
   lists: () => [...bankAccountsKeys.all, "list"] as const,
-  list: (filters: Record<string, any>) =>
-    [...bankAccountsKeys.lists(), { filters }] as const,
+  list: () => [...bankAccountsKeys.lists()] as const,
   details: () => [...bankAccountsKeys.all, "detail"] as const,
-  detail: (id: number) => [...bankAccountsKeys.details(), id] as const,
+  detail: (id: string) => [...bankAccountsKeys.details(), id] as const,
 };
 
 export const creditCardsKeys = {
@@ -33,7 +32,14 @@ export const creditCardsKeys = {
   list: (filters: Record<string, any>) =>
     [...creditCardsKeys.lists(), { filters }] as const,
   details: () => [...creditCardsKeys.all, "detail"] as const,
-  detail: (id: number) => [...creditCardsKeys.details(), id] as const,
+  detail: (id: string) => [...creditCardsKeys.details(), id] as const,
+};
+
+export const institutionsKeys = {
+  all: ["institutions"] as const,
+  lists: () => [...institutionsKeys.all, "list"] as const,
+  list: (filters: Record<string, any>) =>
+    [...institutionsKeys.lists(), { filters }] as const,
 };
 
 export const budgetsKeys = {
@@ -72,4 +78,10 @@ export const reportsKeys = {
     [...reportsKeys.all, "income", params] as const,
   category: (params?: Record<string, any>) =>
     [...reportsKeys.all, "category", params] as const,
+};
+
+export const ingestionJobsKeys = {
+  all: ["ingestion-jobs"] as const,
+  lists: () => [...ingestionJobsKeys.all, "list"] as const,
+  list: () => [...ingestionJobsKeys.lists()] as const,
 };

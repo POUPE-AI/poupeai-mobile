@@ -16,8 +16,7 @@ import { PayInvoiceModal } from "@/components/molecules/PayInvoiceModal";
 import { CreditCardHeader } from "@/components/molecules/CreditCardHeader";
 import { InvoiceListItem } from "@/components/molecules/InvoiceListItem";
 import { EmptyInvoicesState } from "@/components/molecules/EmptyInvoicesState";
-import { Invoice } from "@/types/invoices";
-import { colors } from "@/constants/theme";
+import type { Invoice, PayInvoiceRequest } from "@/types/invoices";
 
 export const CreditCardDetails: React.FC = () => {
   const { theme } = useTheme();
@@ -29,7 +28,7 @@ export const CreditCardDetails: React.FC = () => {
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-  const creditCardId = parseInt(id || "0");
+  const creditCardId = id || "";
 
   const {
     data: creditCardsData,
@@ -40,16 +39,11 @@ export const CreditCardDetails: React.FC = () => {
     data: invoicesData,
     isLoading: invoicesLoading,
     refetch: refetchInvoices,
-    fetchNextPage: fetchNextInvoices,
-    hasNextPage: hasNextInvoices,
-    isFetchingNextPage: isFetchingNextInvoices,
   } = useInvoices(creditCardId);
   const payInvoiceMutation = usePayInvoice();
 
-  const creditCard = creditCardsData?.results.find(
-    (card) => card.id === creditCardId
-  );
-  const invoices = invoicesData?.pages.flatMap((page) => page.results) || [];
+  const creditCard = creditCardsData?.find((card) => card.id === creditCardId);
+  const invoices = invoicesData?.content || [];
 
   React.useEffect(() => {
     if (creditCard) {
@@ -73,20 +67,14 @@ export const CreditCardDetails: React.FC = () => {
     setPayModalVisible(true);
   };
 
-  const handleConfirmPayment = async (
-    paymentDate: string,
-    bankAccountId: number
-  ) => {
+  const handleConfirmPayment = async (paymentData: PayInvoiceRequest) => {
     if (!selectedInvoice) return;
 
     try {
       await payInvoiceMutation.mutateAsync({
         creditCardId,
         invoiceId: selectedInvoice.id,
-        paymentData: {
-          payment_date: paymentDate,
-          bank_account_id: bankAccountId,
-        },
+        paymentData,
       });
       setPayModalVisible(false);
       setSelectedInvoice(null);
@@ -97,7 +85,7 @@ export const CreditCardDetails: React.FC = () => {
   };
 
   const renderInvoiceItem: ListRenderItem<Invoice> = ({ item }) => (
-    <InvoiceListItem invoice={item} onPayInvoice={handlePayInvoice} />
+    <InvoiceListItem invoice={item} onPayInvoice={handlePayInvoice} primaryColor={creditCard?.institution.mainColorHex || ""} />
   );
 
   const renderHeader = () => {
@@ -139,13 +127,7 @@ export const CreditCardDetails: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={style.listContainer}
         showsVerticalScrollIndicator={false}
-        onEndReached={hasNextInvoices ? () => fetchNextInvoices() : undefined}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isFetchingNextInvoices ? (
-            <ActivityIndicator size="small" color={colors.primary[500]} />
-          ) : null
-        }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }

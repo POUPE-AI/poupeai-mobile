@@ -8,6 +8,7 @@ import { styles } from "./styles";
 import { Text } from "@/components/atoms/Text";
 import { Button } from "@/components/atoms/Button";
 import { formatCurrency } from "@/utils/currency";
+import { colors } from "@/constants/theme";
 
 const MONTHS = [
   "Janeiro",
@@ -27,11 +28,13 @@ const MONTHS = [
 interface InvoiceListItemProps {
   invoice: Invoice;
   onPayInvoice: (invoice: Invoice) => void;
+  primaryColor?: string;
 }
 
 export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({
   invoice,
   onPayInvoice,
+  primaryColor,
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
@@ -55,22 +58,22 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({
 
         <View style={style.amountContainer}>
           <Text style={style.amountText}>
-            {formatCurrency(invoice.total_amount)}
+            {formatCurrency(invoice.totalAmount)}
           </Text>
           <View style={style.statusContainer}>
             <View
               style={[
                 style.statusDot,
-                invoice.is_paid ? style.paidDot : style.unpaidDot,
+                invoice.status === "PAID" ? style.paidDot : style.unpaidDot,
               ]}
             />
             <Text
               style={[
                 style.statusText,
-                invoice.is_paid ? style.paidText : style.unpaidText,
+                invoice.status === "PAID" ? style.paidText : style.unpaidText,
               ]}
             >
-              {invoice.is_paid ? "Paga" : "Pendente"}
+              {invoice.status === "PAID" ? "Paga" : "Pendente"}
             </Text>
           </View>
         </View>
@@ -79,26 +82,26 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({
       <View style={style.detailsContainer}>
         <View style={style.detailRow}>
           <Text style={style.detailLabel}>Vencimento</Text>
-          <Text style={style.detailValue}>{formatDate(invoice.due_date)}</Text>
+          <Text style={style.detailValue}>{formatDate(invoice.dueDate)}</Text>
         </View>
 
-        {invoice.payment_date && (
+        {invoice.paidAmount && (
           <View style={style.detailRow}>
-            <Text style={style.detailLabel}>Data de Pagamento</Text>
+            <Text style={style.detailLabel}>Valor Pago</Text>
             <Text style={style.detailValue}>
-              {formatDate(invoice.payment_date)}
+              {formatCurrency(invoice.paidAmount)}
             </Text>
           </View>
         )}
       </View>
 
-      {!invoice.is_paid && (
+      {invoice.status !== "PAID" && (
         <View style={style.actionContainer}>
           <Button
             title="Marcar como Paga"
             onPress={() => onPayInvoice(invoice)}
             size="small"
-            style={style.payButton}
+            style={[style.payButton, { backgroundColor: primaryColor || colors.primary[500] }]}
           />
         </View>
       )}

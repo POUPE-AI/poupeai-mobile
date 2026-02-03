@@ -1,15 +1,14 @@
 import React from "react";
 import { TransactionInfoRow } from "@/components/atoms/TransactionInfoRow";
-import { Text } from "@/components/atoms/Text";
 import { useCreditCard } from "@/hooks/useCreditCards";
 import { useInvoice } from "@/hooks/useInvoices";
 import { formatDate_DDMMYYYY } from "@/utils/date";
-import { TransactionDetail } from "@/types/transactions";
+import { Transaction } from "@/types/transactions";
 
 interface CreditCardTransactionInfoProps {
-  creditCardId: number;
-  invoiceId: number;
-  transaction: TransactionDetail;
+  creditCardId: string;
+  invoiceId: string;
+  transaction: Transaction;
 }
 
 export const CreditCardTransactionInfo = ({
@@ -27,7 +26,7 @@ export const CreditCardTransactionInfo = ({
     data: invoiceData,
     isLoading: invoiceLoading,
     error: invoiceError,
-  } = useInvoice(creditCardId, invoiceId);
+  } = useInvoice(String(invoiceId));
 
   const cardText = cardLoading
     ? "Carregando..."
@@ -39,13 +38,13 @@ export const CreditCardTransactionInfo = ({
     ? "Carregando..."
     : invoiceError
     ? "Erro ao carregar fatura"
-    : formatDate_DDMMYYYY(invoiceData?.due_date || "") || "N/A";
+    : formatDate_DDMMYYYY(invoiceData?.dueDate || "") || "N/A";
 
   const installmentsText =
-    transaction.is_installment &&
-    transaction.total_installments &&
-    transaction.installment_number
-      ? `${transaction.installment_number} de ${transaction.total_installments}`
+    transaction.isInstallment &&
+    transaction.totalInstallments &&
+    transaction.installmentNumber
+      ? `${transaction.installmentNumber} de ${transaction.totalInstallments}`
       : "A vista";
 
   return (

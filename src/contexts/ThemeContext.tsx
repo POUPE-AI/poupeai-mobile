@@ -12,7 +12,6 @@ interface ThemeContextData {
   colors: typeof colors.theme.light;
   isDark: boolean;
   setThemeMode: (mode: ThemeMode) => void;
-  toggleTheme: () => void; // Mantido para compatibilidade
 }
 
 interface ThemeProviderProps {
@@ -28,7 +27,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
   const [theme, setTheme] = useState<ThemeType>(systemTheme || 'light');
 
-  // Carrega o tema salvo no AsyncStorage
   useEffect(() => {
     const loadTheme = async () => {
       try {
@@ -43,7 +41,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     loadTheme();
   }, []);
 
-  // Atualiza o tema baseado no modo selecionado
   useEffect(() => {
     if (themeMode === 'system') {
       setTheme(systemTheme || 'light');
@@ -61,12 +58,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     }
   };
 
-  // Mantido para compatibilidade (apenas alterna entre light/dark)
-  const toggleTheme = () => {
-    const newMode = theme === 'light' ? 'dark' : 'light';
-    setThemeMode(newMode);
-  };
-
   const currentColors = colors.theme[theme];
 
   return (
@@ -77,7 +68,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
         colors: currentColors,
         isDark: theme === 'dark',
         setThemeMode,
-        toggleTheme,
       }}
     >
       {children}

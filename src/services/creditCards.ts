@@ -1,24 +1,20 @@
-import { api } from './api';
-import { Card, CreditCardsResponse, CreateCreditCardRequest } from '../types/cards';
+import { api } from "./api";
+import { Card, CreateCreditCardRequest } from "../types/cards";
 
 export interface UpdateCreditCardRequest extends Partial<CreateCreditCardRequest> {
-  id: number;
+  id: string;
 }
 
 export class CreditCardsService {
-  private baseUrl = 'finances/api/v1/credit-cards/';
+  private baseUrl = "core/api/v1/credit-cards";
 
-  async getCreditCards(params?: {
-    search?: string;
-    page?: number;
-    page_size?: number;
-  }): Promise<CreditCardsResponse> {
-    const response = await api.get(this.baseUrl, { params });
+  async getCreditCards(): Promise<Card[]> {
+    const response = await api.get(this.baseUrl);
     return response.data;
   }
 
-  async getCreditCardById(id: number): Promise<Card> {
-    const response = await api.get<Card>(`${this.baseUrl}${id}/`);
+  async getCreditCardById(id: string): Promise<Card> {
+    const response = await api.get<Card>(`${this.baseUrl}/${id}`);
     return response.data;
   }
 
@@ -29,12 +25,12 @@ export class CreditCardsService {
 
   async updateCreditCard(data: UpdateCreditCardRequest): Promise<Card> {
     const { id, ...updateData } = data;
-    const response = await api.patch<Card>(`${this.baseUrl}${id}/`, updateData);
+    const response = await api.patch<Card>(`${this.baseUrl}/${id}`, updateData);
     return response.data;
   }
 
-  async deleteCreditCard(id: number): Promise<void> {
-    await api.delete(`${this.baseUrl}${id}/`);
+  async deleteCreditCard(id: string): Promise<void> {
+    await api.delete(`${this.baseUrl}/${id}`);
   }
 }
 

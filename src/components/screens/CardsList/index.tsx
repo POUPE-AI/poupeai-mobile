@@ -33,7 +33,7 @@ export const CardsList = () => {
   const updateCreditCardMutation = useUpdateCreditCard();
   const deleteCreditCardMutation = useDeleteCreditCard();
 
-  const cards = creditCardsData?.results || [];
+  const cards = creditCardsData || [];
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
@@ -89,35 +89,16 @@ export const CardsList = () => {
     } catch (error) {
       Alert.alert(
         "Erro",
-        "Não foi possível excluir o cartão. Tente novamente."
+        "Não foi possível excluir o cartão. Tente novamente.",
       );
       console.error("Erro ao excluir cartão:", error);
     }
   };
 
-  const calculateProgress = (card: Card): CardProgress => {
-    const usedAmount = card.used_credit_limit;
-    const availableAmount = card.available_credit_limit;
-    const creditLimit =
-      typeof card.credit_limit === "string"
-        ? parseFloat(card.credit_limit)
-        : card.credit_limit;
-    const percentage = creditLimit > 0 ? (usedAmount / creditLimit) * 100 : 0;
-
-    return {
-      used_amount: usedAmount,
-      available_amount: availableAmount,
-      percentage: percentage,
-    };
-  };
-
   const renderCardItem = ({ item }: { item: Card }) => {
-    const progress = calculateProgress(item);
-
     return (
       <CardListItem
         card={item}
-        progress={progress}
         onPress={handleCardPress}
         onEdit={handleEditCard}
         onDelete={handleDeleteCard}
@@ -196,7 +177,7 @@ export const CardsList = () => {
 
         <FlatList
           data={cards}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id}
           renderItem={renderCardItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.listContent}

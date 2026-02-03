@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { parseISO, format } from "date-fns";
@@ -10,8 +10,6 @@ import { Text } from "@/components/atoms/Text";
 import { ActionButton } from "@/components/atoms/ActionButton";
 import { TransactionInfoRow } from "@/components/atoms/TransactionInfoRow";
 
-import { colors } from "@/constants/theme";
-import { getContrastColor } from "@/utils/color";
 import { formatCurrencySimple } from "@/utils/currency";
 import { formatDate_DDMMYYYY, formatDateTime } from "@/utils/date";
 
@@ -29,16 +27,19 @@ import { TransactionsGroupList } from "@/components/molecules/TransactionsGroupL
 import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
 import { CreateTransactionRequest, Transaction } from "@/types/transactions";
 import { TransactionModal } from "@/components/molecules/TransactionModal";
+import { ReceiptViewer } from "@/components/atoms/ReceiptViewer";
+import { ReceiptUploader } from "@/components/molecules/ReceiptUploader";
+import { useDeleteReceipt } from "@/hooks/useTransactionsUpload";
 
 export const TransactionDetails: React.FC = () => {
   const { theme } = useTheme();
   const style = styles(theme);
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const transactionId = useMemo(() => parseInt(id, 10), [id]);
-  const { data: transaction, isLoading, error } = useTransaction(transactionId);
+  const { data: transaction, isLoading, error } = useTransaction(id || "");
   const deleteTransactionMutation = useDeleteTransaction();
   const updateTransactionMutation = useUpdateTransaction();
+  const deleteReceiptMutation = useDeleteReceipt();
 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -83,6 +84,16 @@ export const TransactionDetails: React.FC = () => {
     setDeleteModalVisible(true);
   };
 
+  const handleDeleteReceipt = async () => {
+    if (!transaction) return;
+    
+    try {
+      await deleteReceiptMutation.mutateAsync({ transactionId: transaction.id });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (isLoading) {
     return <LoadingContent text="transação" />;
   }
@@ -90,35 +101,6 @@ export const TransactionDetails: React.FC = () => {
   if (error || !transaction) {
     return <ErrorContent text="Não foi possível carregar a transação." />;
   }
-
-  const statusTag = () => {
-    const statusText =
-      transaction.status === "PAID"
-        ? "Pago"
-        : transaction.status === "PENDING"
-        ? "Pendente"
-        : transaction.status === "OVERDUE"
-        ? "Vencido"
-        : "Cancelado";
-
-    const color =
-      transaction.status === "PAID"
-        ? colors.feedback.success
-        : transaction.status === "PENDING"
-        ? colors.feedback.warning
-        : colors.feedback.error;
-
-    const textColor = getContrastColor(color);
-
-    return (
-      <Text
-        variant="body"
-        style={[style.statusTag, { backgroundColor: color, color: textColor }]}
-      >
-        {statusText}
-      </Text>
-    );
-  };
 
   return (
     <>
@@ -130,7 +112,7 @@ export const TransactionDetails: React.FC = () => {
           <View style={style.cardHeader}>
             <Text variant="caption" color="textSecondary">
               {format(
-                parseISO(transaction.created_at),
+                parseISO(transaction.createdAt),
                 "d 'de' MMMM 'de' yyyy",
                 { locale: ptBR }
               )}
@@ -157,48 +139,68 @@ export const TransactionDetails: React.FC = () => {
             <TransactionInfoRow
               label="Valor"
               value={`${
-                transaction.type === "expense" ? "- " : ""
+                transaction.type === "EXPENSE" ? "- " : ""
               }${formatCurrencySimple(transaction.amount)}`}
             />
             <TransactionInfoRow label="Categoria">
-              <CategoryTag categoryId={transaction.category} />
+              <CategoryTag name={transaction.category.name} colorHex={transaction.category.colorHex} />
             </TransactionInfoRow>
             <TransactionInfoRow
               label="Data de emissão"
-              value={formatDate_DDMMYYYY(transaction.issue_date)}
+              value={formatDate_DDMMYYYY(transaction.transactionDate)}
             />
 
-            <TransactionInfoRow label="Estado">
-              {statusTag()}
-            </TransactionInfoRow>
-            {transaction.source_type === "BANK_ACCOUNT" && (
+            {transaction.bankAccountId && (
               <BankTransactionInfo
-                bankAccountId={transaction.bank_account || 0}
+                bankAccountId={transaction.bankAccountId || ""}
               />
             )}
 
-            {transaction.source_type === "CREDIT_CARD" && (
+            {transaction.creditCardId && (
               <CreditCardTransactionInfo
-                creditCardId={transaction.credit_card || 0}
-                invoiceId={transaction.invoice || 0}
+                creditCardId={transaction.creditCardId || ""}
+                invoiceId={transaction.invoiceId || ""}
                 transaction={transaction}
               />
             )}
+
+            {/* Seção de Comprovante */}
+            <View style={style.receiptSection}>
+              {transaction.attachmentUrl ? (
+                <ReceiptViewer
+                  attachmentUrl={transaction.attachmentUrl}
+                  showDelete={true}
+                  onDelete={handleDeleteReceipt}
+                />
+              ) : (
+                <ReceiptUploader 
+                  transactionId={transaction.id} 
+                  attachmentUrl={transaction.attachmentUrl} 
+                />
+              )}
+              
+              {transaction.attachmentUrl && (
+                <ReceiptUploader 
+                  transactionId={transaction.id} 
+                  attachmentUrl={transaction.attachmentUrl} 
+                />
+              )}
+            </View>
           </View>
 
           <View style={style.cardFooter}>
             <Text variant="caption" color="textSecondary">
-              Ultima atualização: {formatDateTime(transaction.updated_at)}
+              Ultima atualização: {formatDateTime(transaction.updatedAt)}
             </Text>
             <Text variant="caption" color="textSecondary">
-              Data de criação: {formatDateTime(transaction.created_at)}
+              Data de criação: {formatDateTime(transaction.createdAt)}
             </Text>
           </View>
         </View>
 
-        {transaction?.is_installment && transaction?.purchase_group_uuid && (
+        {transaction?.isInstallment && transaction?.purchaseGroupUuid && (
           <TransactionsGroupList
-            groupId={transaction?.purchase_group_uuid || ""}
+            groupId={transaction?.purchaseGroupUuid || ""}
             ignoreId={transaction.id}
           />
         )}

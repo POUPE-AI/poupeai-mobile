@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Invoice } from "@/types/invoices";
+import type { Invoice, PayInvoiceRequest } from "@/types/invoices";
 import { Account } from "@/types/accounts";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { styles } from "./styles";
@@ -32,9 +32,9 @@ const MONTHS = [
 interface PayInvoiceModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (paymentDate: string, bankAccountId: number) => Promise<void>;
+  onConfirm: (payload: PayInvoiceRequest) => Promise<void>;
   invoice: Invoice | null;
-}
+} 
 
 export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   visible,
@@ -45,9 +45,10 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   const { theme } = useTheme();
   const style = styles(theme);
 
-  const [paymentDate, setPaymentDate] = useState("");
-  const [selectedBankAccount, setSelectedBankAccount] = useState<number | null>(
-    null
+  const [amount, setAmount] = useState<number>(0);
+  const [ammountInput, setAmmountInput] = useState<string>("");
+  const [selectedBankAccount, setSelectedBankAccount] = useState<string | null>(
+    null,
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isBankAccountDropdownOpen, setIsBankAccountDropdownOpen] =
@@ -57,11 +58,19 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   const { data: bankAccountsData, isLoading: bankAccountsLoading } =
     useBankAccounts();
 
+
   useEffect(() => {
     if (visible && invoice) {
-      // Set today's date as default
-      const todayString = format(new Date(), "yyyy-MM-dd"); // YYYY-MM-DD format
-      setPaymentDate(todayString);
+      // Default to invoice total amount and reset selection
+      const initialAmount = invoice.totalAmount || 0;
+      setAmount(initialAmount);
+      // Format initial amount as R$ 1.234,56
+      const formatted = initialAmount
+        .toFixed(2)
+        .replace(".", ",")
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+      setAmmountInput(`R$ ${formatted}`);
+
       setSelectedBankAccount(null); // Reset bank account selection
       setIsBankAccountDropdownOpen(false); // Close dropdown
       setErrorMessage(null); // Clear any previous errors
@@ -69,26 +78,38 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
   }, [visible, invoice]);
 
   const handleConfirm = async () => {
-    if (!invoice || !paymentDate || !selectedBankAccount) return;
+    if (!invoice || !selectedBankAccount) return;
 
     // Check if selected account has enough balance
-    const selectedAccount = bankAccountsData?.results.find(
-      (acc) => acc.id === selectedBankAccount
+    const selectedAccount = (bankAccountsData || []).find(
+      (acc) => acc.id === selectedBankAccount,
     );
-    if (
-      selectedAccount &&
-      selectedAccount.current_balance < invoice.total_amount
-    ) {
+
+    if (!selectedAccount) {
+      setErrorMessage("Selecione uma conta bancária para efetuar o pagamento.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (amount <= 0) {
+      setErrorMessage("O valor deve ser maior que zero.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (selectedAccount && selectedAccount.currentBalance < amount) {
       setErrorMessage(
-        "A conta selecionada não possui saldo suficiente para esta fatura."
+        "A conta selecionada não possui saldo suficiente para este valor.",
       );
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     setErrorMessage(null); // Clear previous errors
     try {
-      await onConfirm(paymentDate, selectedBankAccount);
+        // Pass bankAccountId and amount to parent as object
+      await onConfirm({ bankAccountId: selectedBankAccount!, amount });
       onClose();
     } catch (error: any) {
       console.error("Erro ao confirmar pagamento:", error);
@@ -97,7 +118,17 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
       if (error?.response?.data) {
         const errorData = error.response.data;
         if (errorData.bank_account_id) {
-          setErrorMessage(errorData.bank_account_id[0]);
+          setErrorMessage(
+            Array.isArray(errorData.bank_account_id)
+              ? errorData.bank_account_id[0]
+              : String(errorData.bank_account_id),
+          );
+        } else if (errorData.bankAccountId) {
+          setErrorMessage(
+            Array.isArray(errorData.bankAccountId)
+              ? errorData.bankAccountId[0]
+              : String(errorData.bankAccountId),
+          );
         } else if (errorData.detail) {
           setErrorMessage(errorData.detail);
         } else {
@@ -127,64 +158,21 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
     return `${MONTHS[invoice.month - 1]} ${invoice.year}`;
   };
 
-  const bankAccountItems = (bankAccountsData?.results || []).map(
+  const bankAccountItems = (bankAccountsData || []).map(
     (account: Account) => {
       const hasEnoughBalance = invoice
-        ? account.current_balance >= invoice.total_amount
+        ? account.currentBalance >= (invoice.totalAmount || 0)
         : true;
       const balanceIndicator = hasEnoughBalance ? "✓" : "⚠️";
 
       return {
         id: account.id,
         label: `${balanceIndicator} ${account.name} - ${formatCurrency(
-          account.current_balance
+          account.currentBalance,
         )}`,
       };
-    }
+    },
   );
-
-  const formatDateInput = (value: string) => {
-    // Remove non-numeric characters
-    const cleaned = value.replace(/\D/g, "");
-
-    // Format as DD/MM/YYYY
-    if (cleaned.length >= 8) {
-      const day = cleaned.slice(0, 2);
-      const month = cleaned.slice(2, 4);
-      const year = cleaned.slice(4, 8);
-      return `${day}/${month}/${year}`;
-    } else if (cleaned.length >= 4) {
-      const day = cleaned.slice(0, 2);
-      const month = cleaned.slice(2, 4);
-      const year = cleaned.slice(4);
-      return `${day}/${month}/${year}`;
-    } else if (cleaned.length >= 2) {
-      const day = cleaned.slice(0, 2);
-      const month = cleaned.slice(2);
-      return `${day}/${month}`;
-    }
-    return cleaned;
-  };
-
-  const convertToISO = (dateString: string): string => {
-    // Convert DD/MM/YYYY to YYYY-MM-DD
-    const parts = dateString.split("/");
-    if (parts.length === 3) {
-      const [day, month, year] = parts;
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    }
-    return dateString;
-  };
-
-  const convertFromISO = (isoString: string): string => {
-    // Convert YYYY-MM-DD to DD/MM/YYYY
-    const parts = isoString.split("-");
-    if (parts.length === 3) {
-      const [year, month, day] = parts;
-      return `${day}/${month}/${year}`;
-    }
-    return isoString;
-  };
 
   if (!invoice) return null;
 
@@ -216,18 +204,14 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
         <Text style={style.invoiceTitle}>Fatura de {getMonthYear()}</Text>
 
         <View style={style.invoiceDetail}>
-          <Text style={style.invoiceLabel}>Valor:</Text>
-          <Text style={style.invoiceValue}>
-            {formatCurrency(invoice.total_amount)}
-          </Text>
+          <Text style={style.invoiceLabel}>Valor da fatura:</Text>
+          <Text style={style.invoiceValue}>{formatCurrency(invoice.totalAmount)}</Text>
         </View>
 
         <View style={style.invoiceDetail}>
           <Text style={style.invoiceLabel}>Vencimento:</Text>
-          <Text style={style.invoiceValue}>
-            {formatDateForDisplay(invoice.due_date)}
-          </Text>
-        </View>
+          <Text style={style.invoiceValue}>{formatDateForDisplay(invoice.dueDate)}</Text>
+        </View> 
       </View>
 
       <View style={style.fieldContainer}>
@@ -236,8 +220,8 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
           items={bankAccountItems}
           selectedId={selectedBankAccount || undefined}
           onSelect={(item) => {
-            setSelectedBankAccount(item.id as number);
-            setErrorMessage(null); // Clear error when changing account
+            setSelectedBankAccount(String(item.id));
+            setErrorMessage(null);
           }}
           placeholder="Selecione uma conta bancária"
           isOpen={isBankAccountDropdownOpen}
@@ -250,17 +234,31 @@ export const PayInvoiceModal: React.FC<PayInvoiceModalProps> = ({
         </Text>
       </View>
 
-      <FormField
-        label="Data do Pagamento"
-        value={convertFromISO(paymentDate)}
-        onChangeText={(text) => {
-          const formatted = formatDateInput(text);
-          const iso = convertToISO(formatted);
-          setPaymentDate(iso);
-        }}
-        placeholder="DD/MM/AAAA"
-        keyboardType="numeric"
-      />
+      <View style={style.fieldContainer}>
+        <Text style={style.fieldLabel}>Valor a pagar</Text>
+        <FormField
+          placeholder="R$ 0,00"
+          value={ammountInput}
+          keyboardType="numeric"
+          onChangeText={(text: string) => {
+            const onlyDigits = text.replace(/\D/g, "");
+            const numeric = onlyDigits.padStart(3, "0");
+
+            // Remove leading zeros from integer part, but keep 0 if all zeros
+            const integerPart = numeric.slice(0, -2).replace(/^0+/, "") || "0";
+            const decimalPart = numeric.slice(-2);
+
+            const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            const formatted = `${formattedInteger},${decimalPart}`;
+
+            const value = parseFloat(`${integerPart}.${decimalPart}`);
+
+            setAmmountInput(`R$ ${formatted}`);
+            setAmount(isNaN(value) ? 0 : value);
+            setErrorMessage(null);
+          }}
+        />
+      </View>
 
       {errorMessage && (
         <View style={style.errorContainer}>
