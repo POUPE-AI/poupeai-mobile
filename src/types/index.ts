@@ -38,3 +38,4 @@ export * from "./cards";
 export * from "./invoices";
 export * from "./goals";
 export * from "./ingestionJobs";
+export * from "./profile";

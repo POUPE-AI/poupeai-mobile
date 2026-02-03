@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   TouchableOpacity,
   Text,
   Modal,
   Animated,
   Dimensions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/constants/theme';
-import { styles } from './styles';
-import { useTheme } from '@/contexts/ThemeContext';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/constants/theme";
+import { styles } from "./styles";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface AddButtonMenuProps {
   onNewTransaction: () => void;
@@ -17,7 +17,11 @@ interface AddButtonMenuProps {
   onNewBudget: () => void;
 }
 
-export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddButtonMenuProps) => {
+export const AddButtonMenu = ({
+  onNewTransaction,
+  onNewGoal,
+  onNewBudget,
+}: AddButtonMenuProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [animation] = useState(new Animated.Value(0));
   const { theme } = useTheme();
@@ -31,33 +35,33 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
   };
 
   const closeMenu = () => {
-      setIsVisible(false);
+    setIsVisible(false);
   };
 
   const handleMenuOption = (callback: () => void) => {
     closeMenu();
-    setTimeout(callback, 100); 
+    setTimeout(callback, 100);
   };
 
   const menuItems = [
     {
-      title: 'Nova Transação',
-      icon: 'card-outline',
+      title: "Nova Transação",
+      icon: "card-outline",
       onPress: () => handleMenuOption(onNewTransaction),
       color: colors.primary[500],
     },
     {
-      title: 'Nova Meta',
-      icon: 'trophy-outline',
+      title: "Nova Meta",
+      icon: "trophy-outline",
       onPress: () => handleMenuOption(onNewGoal),
-      color: '#10B981',
+      color: "#10B981",
     },
-    {
-      title: 'Novo Orçamento',
-      icon: 'wallet-outline',
-      onPress: () => handleMenuOption(onNewBudget),
-      color: '#F59E0B',
-    },
+    // {
+    //   title: 'Novo Orçamento',
+    //   icon: 'wallet-outline',
+    //   onPress: () => handleMenuOption(onNewBudget),
+    //   color: '#F59E0B',
+    // },
   ];
 
   const style = styles(theme);
@@ -132,4 +136,4 @@ export const AddButtonMenu = ({ onNewTransaction, onNewGoal, onNewBudget }: AddB
       </Modal>
     </>
   );
-}
+};

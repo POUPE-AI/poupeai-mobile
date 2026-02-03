@@ -80,6 +80,11 @@ export const reportsKeys = {
     [...reportsKeys.all, "category", params] as const,
 };
 
+export const profileKeys = {
+  all: ["profile"] as const,
+  detail: () => [...profileKeys.all, "detail"] as const,
+};
+
 export const ingestionJobsKeys = {
   all: ["ingestion-jobs"] as const,
   lists: () => [...ingestionJobsKeys.all, "list"] as const,

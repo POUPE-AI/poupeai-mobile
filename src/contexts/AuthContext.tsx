@@ -26,6 +26,7 @@ import type {
   KeycloakUserInfo,
 } from "../types";
 import { api } from "@/services/api";
+import { profileService } from "@/services/profile";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -301,22 +302,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isNavigationReady || isLoading || !hasInitialized.current) return;
 
-    const navigationTimeout = setTimeout(() => {
-      const inAuthGroup = segments[0] === "(drawer)";
-      const isLoginScreen = segments[0] === "login";
-      const isOAuthCallback = segments[0] === "oauth";
+    const checkProfileAndNavigate = async () => {
+      const navigationTimeout = setTimeout(async () => {
+        const inAuthGroup = segments[0] === "(drawer)";
+        const isLoginScreen = segments[0] === "login";
+        const isOAuthCallback = segments[0] === "oauth";
+        const isProfileDeactivatedScreen =
+          segments[0] === "profile-deactivated";
 
-      if (!user && inAuthGroup) {
-        router.replace("/login");
-      } else if (
-        user &&
-        (isLoginScreen || (!inAuthGroup && !isOAuthCallback))
-      ) {
-        router.replace("/(drawer)/(tabs)/");
-      }
-    }, 100);
+        // Se o usuário está autenticado, verificar se o perfil está desativado
+        if (user && !isProfileDeactivatedScreen) {
+          try {
+            const profile = await profileService.getProfile();
 
-    return () => clearTimeout(navigationTimeout);
+            if (profile.deactivated) {
+              router.replace("/profile-deactivated");
+              return;
+            }
+          } catch (error) {
+            console.log("Erro ao verificar perfil:", error);
+          }
+        }
+
+        if (!user && inAuthGroup) {
+          router.replace("/login");
+        } else if (
+          user &&
+          (isLoginScreen ||
+            (!inAuthGroup && !isOAuthCallback && !isProfileDeactivatedScreen))
+        ) {
+          router.replace("/(drawer)/(tabs)/");
+        }
+      }, 100);
+
+      return () => clearTimeout(navigationTimeout);
+    };
+
+    checkProfileAndNavigate();
   }, [user, isLoading, segments, router, isNavigationReady, hasInitialized]);
 
   useLayoutEffect(() => {
