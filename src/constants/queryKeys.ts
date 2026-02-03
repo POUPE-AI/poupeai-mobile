@@ -84,3 +84,9 @@ export const profileKeys = {
   all: ["profile"] as const,
   detail: () => [...profileKeys.all, "detail"] as const,
 };
+
+export const ingestionJobsKeys = {
+  all: ["ingestion-jobs"] as const,
+  lists: () => [...ingestionJobsKeys.all, "list"] as const,
+  list: () => [...ingestionJobsKeys.lists()] as const,
+};
