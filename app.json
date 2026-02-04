@@ -2,7 +2,7 @@
   "expo": {
     "name": "Poupe.AI",
     "slug": "poupeai-mobile",
-    "version": "1.0.0-preview.5",
+    "version": "1.0.0-preview.6",
     "orientation": "portrait",
     "icon": "./assets/icons/adaptive-icon.png",
     "userInterfaceStyle": "light",
@@ -86,6 +86,6 @@
     "updates": {
       "url": "https://u.expo.dev/b5778dad-1362-4faa-b0e9-03881ccee202"
     },
-    "newArchEnabled": true
+    "newArchEnabled": false
   }
 }

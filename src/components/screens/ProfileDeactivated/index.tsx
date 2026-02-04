@@ -7,6 +7,7 @@ import { styles } from "./styles";
 import { useReactivateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { MessageModal } from "@/components/molecules/MessageModal";
+import { router } from "expo-router";
 
 export const ProfileDeactivated = () => {
   const { theme } = useTheme();
@@ -44,6 +45,13 @@ export const ProfileDeactivated = () => {
         message: "Não foi possível reativar o perfil. Tente novamente.",
         type: "error",
       });
+    }
+  };
+
+  const handleModalClose = () => {
+    setMessageModal((prev) => ({ ...prev, visible: false }));
+    if (messageModal.type === "success") {
+      router.replace("/(drawer)/(tabs)/");
     }
   };
 
@@ -105,7 +113,7 @@ export const ProfileDeactivated = () => {
         title={messageModal.title}
         message={messageModal.message}
         type={messageModal.type}
-        onClose={() => setMessageModal({ ...messageModal, visible: false })}
+        onClose={handleModalClose}
       />
     </View>
   );

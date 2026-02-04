@@ -85,7 +85,7 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({
           <Text style={style.detailValue}>{formatDate(invoice.dueDate)}</Text>
         </View>
 
-        {invoice.paidAmount && (
+        {invoice.paidAmount != null && (
           <View style={style.detailRow}>
             <Text style={style.detailLabel}>Valor Pago</Text>
             <Text style={style.detailValue}>
@@ -101,7 +101,10 @@ export const InvoiceListItem: React.FC<InvoiceListItemProps> = ({
             title="Marcar como Paga"
             onPress={() => onPayInvoice(invoice)}
             size="small"
-            style={[style.payButton, { backgroundColor: primaryColor || colors.primary[500] }]}
+            style={[
+              style.payButton,
+              { backgroundColor: primaryColor || colors.primary[500] },
+            ]}
           />
         </View>
       )}
