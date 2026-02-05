@@ -9,6 +9,7 @@ import { Transaction } from "@/types/transactions";
 import { useCategories } from "@/hooks/useCategories";
 import { formatCurrencySimple } from "@/utils/currency";
 import { router, useSegments } from "expo-router";
+import { useEffect } from "react";
 
 interface TransactionsListItemProps {
   transaction: Transaction;
@@ -25,10 +26,18 @@ export const TransactionsListItem = ({
       ? `${transaction.description.substring(0, 20)}...`
       : transaction.description;
 
-  const { data: categories } = useCategories();
-  const category = categories?.results.find(
-    (cat) => cat.id === transaction.category
-  );
+  const {
+    data: categories,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useCategories();
+
+  useEffect(() => {
+    if (isFetchingNextPage || !hasNextPage) return;
+
+    fetchNextPage();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
@@ -36,10 +45,10 @@ export const TransactionsListItem = ({
   };
 
   const amountText = `${
-    category?.type === "expense" ? "- " : ""
+    transaction?.type === "EXPENSE" ? "- " : ""
   }${formatCurrencySimple(Math.abs(transaction.amount))}`;
   const amountColor =
-    category?.type === "expense"
+    transaction?.type === "EXPENSE"
       ? colors.feedback.error
       : colors.feedback.success;
 
@@ -61,7 +70,7 @@ export const TransactionsListItem = ({
     <TouchableOpacity
       style={[
         style.container,
-        { borderColor: category?.color_hex || colors.feedback.error },
+        { borderColor: transaction?.category.colorHex || colors.feedback.error },
       ]}
       onPress={handleOnPress}
       activeOpacity={0.7}
@@ -69,14 +78,14 @@ export const TransactionsListItem = ({
       <View style={style.leftContainer}>
         <Text style={style.descriptionText}>{descriptionText}</Text>
         <Text style={style.categoryText}>
-          {category?.name || "Desconhecido"}
+          {transaction.category?.name || "Desconhecido"}
         </Text>
       </View>
       <View style={style.rightContainer}>
         <Text style={[style.amountText, { color: amountColor }]}>
           {amountText}
         </Text>
-        <Text style={style.dateText}>{formatDate(transaction.issue_date)}</Text>
+        <Text style={style.dateText}>{formatDate(transaction.transactionDate)}</Text>
       </View>
     </TouchableOpacity>
   );

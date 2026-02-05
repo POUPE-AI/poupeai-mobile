@@ -11,21 +11,17 @@ import {
 } from "@/constants/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function useBankAccounts(params?: {
-  search?: string;
-  page?: number;
-  page_size?: number;
-}) {
+export function useBankAccounts() {
   const { isAuthenticated, user } = useAuth();
 
   return useQuery({
-    queryKey: bankAccountsKeys.list(params || {}),
-    queryFn: () => bankAccountsService.getBankAccounts(params),
-    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
+    queryKey: bankAccountsKeys.list(),
+    queryFn: () => bankAccountsService.getBankAccounts(),
+    enabled: isAuthenticated && !!user,
   });
 }
 
-export function useBankAccount(id: number, enabled = true) {
+export function useBankAccount(id: string, enabled = true) {
   if (!id) {
     return {
       data: null,
@@ -79,7 +75,7 @@ export function useDeleteBankAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => bankAccountsService.deleteBankAccount(id),
+    mutationFn: (id: string) => bankAccountsService.deleteBankAccount(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: bankAccountsKeys.lists(),

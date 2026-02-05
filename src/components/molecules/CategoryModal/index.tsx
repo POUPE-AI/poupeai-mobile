@@ -10,6 +10,7 @@ import { TypeSelector } from "@/components/atoms/TypeSelector";
 import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import { ColorSelector } from "@/components/atoms/ColorSelector";
+import { IconSelector } from "@/components/atoms/IconSelector";
 import { DEFAULT_COLOR } from "@/constants/colors";
 
 const categorySchema = z.object({
@@ -17,10 +18,11 @@ const categorySchema = z.object({
     .string()
     .min(1, "Nome é obrigatório")
     .max(50, "Nome deve ter no máximo 50 caracteres"),
-  color_hex: z
+  colorHex: z
     .string()
     .regex(/^#[0-9A-F]{6}$/i, "Cor deve estar no formato hexadecimal válido"),
-  type: z.enum(["income", "expense"], {
+  iconName: z.string().min(1, "Ícone é obrigatório"),
+  type: z.enum(["INCOME", "EXPENSE"], {
     message: "Tipo deve ser receita ou despesa",
   }),
 });
@@ -47,8 +49,9 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
 
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
-    color_hex: DEFAULT_COLOR,
-    type: "expense",
+    colorHex: DEFAULT_COLOR,
+    iconName: "pricetag-outline",
+    type: "EXPENSE",
   });
 
   const [errors, setErrors] = useState<
@@ -61,14 +64,16 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     if (mode === "edit" && category) {
       setFormData({
         name: category.name,
-        color_hex: category.color_hex,
-        type: category.type,
+        colorHex: category.colorHex,
+        iconName: category.iconName || "pricetag-outline",
+        type: category.type === "INCOME" ? "INCOME" : "EXPENSE",
       });
     } else {
       setFormData({
         name: "",
-        color_hex: DEFAULT_COLOR,
-        type: "expense",
+        colorHex: DEFAULT_COLOR,
+        iconName: "pricetag-outline",
+        type: "EXPENSE",
       });
     }
     setErrors({});
@@ -105,7 +110,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         "Erro",
         mode === "create"
           ? "Erro ao criar categoria. Tente novamente."
-          : "Erro ao editar categoria. Tente novamente."
+          : "Erro ao editar categoria. Tente novamente.",
       );
     } finally {
       setIsLoading(false);
@@ -113,13 +118,22 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   };
 
   const handleColorSelect = (color: string) => {
-    setFormData((prev) => ({ ...prev, color_hex: color }));
+    setFormData((prev) => ({ ...prev, colorHex: color }));
+  };
+
+  const handleIconSelect = (icon: string) => {
+    setFormData((prev) => ({ ...prev, iconName: icon }));
   };
 
   const renderTypeSelector = () => (
     <TypeSelector
-      selectedType={formData.type}
-      onTypeSelect={(type) => setFormData((prev) => ({ ...prev, type }))}
+      selectedType={formData.type === "INCOME" ? "income" : "expense"}
+      onTypeSelect={(type) =>
+        setFormData((prev) => ({
+          ...prev,
+          type: type === "income" ? "INCOME" : "EXPENSE",
+        }))
+      }
       error={errors.type}
     />
   );
@@ -127,9 +141,18 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
   const renderColorSelector = () => (
     <ColorSelector
       label="Cor"
-      selectedColor={formData.color_hex}
+      selectedColor={formData.colorHex}
       onColorSelect={handleColorSelect}
-      error={errors.color_hex}
+      error={errors.colorHex}
+    />
+  );
+
+  const renderIconSelector = () => (
+    <IconSelector
+      label="Ícone"
+      selectedIcon={formData.iconName}
+      onIconSelect={handleIconSelect}
+      error={errors.iconName}
     />
   );
 
@@ -168,6 +191,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
         />
 
         {renderTypeSelector()}
+
+        {renderIconSelector()}
 
         {renderColorSelector()}
       </ModalContainer>

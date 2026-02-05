@@ -1,26 +1,26 @@
+export type InvoiceStatus = "OPEN" | "CLOSED" | "PAID" | "PARTIALLY_PAID" | "OVERDUE";
+
 export interface Invoice {
-  id: number;
-  credit_card: number;
+  id: string;
+  creditCardId: string;
   month: number;
   year: number;
-  due_date: string;
-  payment_date: string | null;
-  bank_account: number | null;
-  is_paid: boolean;
-  total_amount: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface InvoicesResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Invoice[];
+  closingDate: string;
+  dueDate: string;
+  totalAmount: number;
+  paidAmount?: number;
+  status: InvoiceStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateInvoiceRequest {
-  payment_date?: string | null;
-  bank_account?: number | null;
-  is_paid?: boolean;
+  paymentDate?: string | null;
+  bankAccountId?: string | null;
+  isPaid?: boolean;
+}
+
+export interface PayInvoiceRequest {
+  bankAccountId: string;
+  amount: number;
 }

@@ -1,11 +1,11 @@
-export type CategoryType = 'income' | 'expense';
+export type CategoryType = "INCOME" | "EXPENSE";
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
-  color_hex: string;
+  colorHex: string;
+  iconName: string;
   type: CategoryType;
-  profile: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }

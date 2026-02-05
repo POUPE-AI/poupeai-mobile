@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/constants/theme";
 import { Goal, CreateGoalRequest } from "@/types/goals";
@@ -8,7 +15,13 @@ import { GoalModal } from "@/components/molecules/GoalModal";
 import { ConfirmDeleteModal } from "@/components/molecules/ConfirmDeleteModal";
 import { useTheme } from "@/contexts/ThemeContext";
 import { createGoalsListStyles } from "./styles";
-import { useGoals, useCreateGoalDeposit, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/hooks/useGoals";
+import {
+  useGoals,
+  useCreateGoalDeposit,
+  useCreateGoal,
+  useUpdateGoal,
+  useDeleteGoal,
+} from "@/hooks/useGoals";
 import { useState } from "react";
 import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
@@ -16,50 +29,52 @@ import { ErrorContent } from "@/components/atoms/ErrorContent";
 export const GoalsList = () => {
   const { theme } = useTheme();
   const styles = createGoalsListStyles(theme);
-  
-  const { data: goalsData, isLoading, error } = useGoals();
+
+  const { data: goalsData, isLoading, error, refetch } = useGoals();
   const createGoalDepositMutation = useCreateGoalDeposit();
   const createGoalMutation = useCreateGoal();
   const updateGoalMutation = useUpdateGoal();
   const deleteGoalMutation = useDeleteGoal();
-  const goals = goalsData?.results || [];
+  const goals = goalsData || [];
 
   // Modal states
   const [depositModalVisible, setDepositModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  
+
   // Selected items
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
-  
+
   // Modal mode
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
   const handleDeposit = (goal: Goal) => {
     setSelectedGoal(goal);
     setDepositModalVisible(true);
   };
 
-  const handleConfirmDeposit = async (depositAmount: string, depositDate: string, note?: string) => {
+  const handleConfirmDeposit = async (
+    depositAmount: number,
+    depositDate: string,
+  ) => {
     if (!selectedGoal) return;
 
-    const amount = parseFloat(depositAmount.replace(',', '.'));
-    
+    const amount = depositAmount;
+
     await createGoalDepositMutation.mutateAsync({
       goalId: selectedGoal.id,
-      deposit_amount: amount.toString(),
-      deposit_at: depositDate,
-      note,
+      depositAmount: amount,
+      depositDate: depositDate,
     });
-    
+
     setDepositModalVisible(false);
     setSelectedGoal(null);
   };
 
   const handleEdit = (goal: Goal) => {
     setSelectedGoal(goal);
-    setModalMode('edit');
+    setModalMode("edit");
     setGoalModalVisible(true);
   };
 
@@ -70,13 +85,13 @@ export const GoalsList = () => {
 
   const handleAddGoal = () => {
     setSelectedGoal(null);
-    setModalMode('create');
+    setModalMode("create");
     setGoalModalVisible(true);
   };
 
   const handleSaveGoal = async (data: CreateGoalRequest) => {
     try {
-      if (modalMode === 'edit' && selectedGoal) {
+      if (modalMode === "edit" && selectedGoal) {
         await updateGoalMutation.mutateAsync({
           id: selectedGoal.id,
           ...data,
@@ -87,27 +102,27 @@ export const GoalsList = () => {
       setGoalModalVisible(false);
       setSelectedGoal(null);
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro. Tente novamente.');
-      console.error('Erro ao salvar meta:', error);
+      Alert.alert("Erro", "Ocorreu um erro. Tente novamente.");
+      console.error("Erro ao salvar meta:", error);
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!goalToDelete) return;
-    
+
     try {
       await deleteGoalMutation.mutateAsync(goalToDelete.id);
       setDeleteModalVisible(false);
       setGoalToDelete(null);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível excluir a meta. Tente novamente.');
-      console.error('Erro ao excluir meta:', error);
+      Alert.alert("Erro", "Não foi possível excluir a meta. Tente novamente.");
+      console.error("Erro ao excluir meta:", error);
     }
   };
 
   const renderGoalItem = ({ item }: { item: Goal }) => (
-    <GoalListItem 
-      goal={item} 
+    <GoalListItem
+      goal={item}
       onDeposit={handleDeposit}
       onEdit={handleEdit}
       onDelete={handleDelete}
@@ -146,6 +161,17 @@ export const GoalsList = () => {
           renderItem={renderGoalItem}
           ListEmptyComponent={renderEmptyState}
           showsVerticalScrollIndicator={false}
+          refreshing={isLoading}
+          onRefresh={refetch}
+          ListFooterComponent={
+            isLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.primary[500]}
+                style={{ marginVertical: 16 }}
+              />
+            ) : null
+          }
         />
       )}
 

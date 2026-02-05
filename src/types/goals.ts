@@ -1,47 +1,38 @@
 export interface Goal {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  color_hex: string;
-  initial_balance: string;
-  goal_amount: string;
-  current_balance: number;
-  percentage_completed: number;
-  target_at: string;
-  is_completed: boolean;
-  completed_at: string | null;
-}
-
-export interface GoalsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Goal[];
+  colorHex: string;
+  initialBalance: number;
+  goalAmount: number;
+  currentBalance: number;
+  percentageCompleted: number;
+  targetDate: string;
+  completedAt: string | null;
 }
 
 export interface CreateGoalRequest {
   name: string;
   description?: string;
-  color_hex: string;
-  initial_balance: string;
-  goal_amount: string;
-  target_at: string;
+  colorHex: string;
+  initialBalance: string;
+  goalAmount: string;
+  targetDate: string;
 }
 
 export interface UpdateGoalRequest extends Partial<CreateGoalRequest> {
-  id: number;
+  id: string;
 }
 
 export interface GoalDeposit {
-  id: number;
-  deposit_amount: string;
-  deposit_at: string;
-  note?: string;
-  created_at: string;
+  id: string;
+  depositAmount: number;
+  depositDate: string;
+  goalId: string;
+  createdAt: string;
 }
 
 export interface CreateGoalDepositRequest {
-  deposit_amount: string;
-  deposit_at: string;
-  note?: string;
+  depositAmount: number;
+  depositDate: string;
 }

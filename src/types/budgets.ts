@@ -1,6 +1,6 @@
 export interface Budget {
   id: number;
-  category: number;
+  category: string;
   profile: string;
   name: string;
   amount: number;
@@ -17,7 +17,7 @@ export interface BudgetsResponse {
 }
 
 export interface CreateBudgetRequest {
-  category: number;
+  category: string;
   name: string;
   amount: string;
 }

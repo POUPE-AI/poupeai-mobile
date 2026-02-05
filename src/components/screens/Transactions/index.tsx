@@ -1,23 +1,14 @@
 import React from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { TransactionsList } from "../../molecules/TransactionsList";
 import { styles } from "./styles";
 import { Text } from "@/components/atoms/Text";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  useCreateTransaction,
-  useTransactions,
-  useUpdateTransaction,
-} from "@/hooks/useTransactions";
-import { LoadingContent } from "@/components/atoms/LoadingContent";
-import { ErrorContent } from "@/components/atoms/ErrorContent";
+import { useCreateTransaction } from "@/hooks/useTransactions";
 import { useState } from "react";
-import {
-  CreateTransactionRequest,
-  Transaction,
-  TransactionDetail,
-} from "@/types/transactions";
+import { CreateTransactionRequest, Transaction } from "@/types/transactions";
 import { TransactionModal } from "@/components/molecules/TransactionModal";
 import { CategoryModal } from "@/components/molecules/CategoryModal";
 import { useCreateCategory } from "@/hooks/useCategories";
@@ -30,10 +21,11 @@ import { CreateCategoryRequest } from "@/services/categories";
 
 export const Transactions = () => {
   const { theme } = useTheme();
+  const router = useRouter();
   const style = styles(theme);
 
   const [selectedTransaction, setSelectedTransaction] =
-    useState<TransactionDetail | null>(null);
+    useState<Transaction | null>(null);
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [bankAccountModalVisible, setBankAccountModalVisible] = useState(false);
@@ -42,6 +34,10 @@ export const Transactions = () => {
   const handleAddTransaction = () => {
     setSelectedTransaction(null);
     setTransactionModalVisible(true);
+  };
+
+  const handleImport = () => {
+    router.push("/transactions/import");
   };
 
   const createTransactionMutation = useCreateTransaction();
@@ -64,7 +60,7 @@ export const Transactions = () => {
     } catch (error) {
       Alert.alert(
         "Erro",
-        "Não foi possível criar a categoria. Tente novamente."
+        "Não foi possível criar a categoria. Tente novamente.",
       );
       throw error;
     }
@@ -72,7 +68,7 @@ export const Transactions = () => {
 
   const createBankAccountMutation = useCreateBankAccount();
   const handleSaveBankAccount = async (
-    bankAccountData: CreateBankAccountRequest
+    bankAccountData: CreateBankAccountRequest,
   ) => {
     try {
       await createBankAccountMutation.mutateAsync(bankAccountData);
@@ -80,7 +76,7 @@ export const Transactions = () => {
     } catch (error) {
       Alert.alert(
         "Erro",
-        "Não foi possível salvar a conta bancária. Tente novamente."
+        "Não foi possível salvar a conta bancária. Tente novamente.",
       );
       throw error;
     }
@@ -88,7 +84,7 @@ export const Transactions = () => {
 
   const createCreditCardMutation = useCreateCreditCard();
   const handleSaveCreditCard = async (
-    creditCardData: CreateCreditCardRequest
+    creditCardData: CreateCreditCardRequest,
   ) => {
     try {
       await createCreditCardMutation.mutateAsync(creditCardData);
@@ -96,7 +92,7 @@ export const Transactions = () => {
     } catch (error) {
       Alert.alert(
         "Erro",
-        "Não foi possível salvar o cartão de crédito. Tente novamente."
+        "Não foi possível salvar o cartão de crédito. Tente novamente.",
       );
       throw error;
     }
@@ -106,12 +102,17 @@ export const Transactions = () => {
     <View style={style.container}>
       <View style={style.listHeader}>
         <Text style={style.listTitle}>Transações</Text>
-        <TouchableOpacity
-          style={style.addButton}
-          onPress={handleAddTransaction}
-        >
-          <Ionicons name="add" size={20} color="#fff" />
-        </TouchableOpacity>
+        <View style={style.buttonsContainer}>
+          <TouchableOpacity style={style.importButton} onPress={handleImport}>
+            <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={style.addButton}
+            onPress={handleAddTransaction}
+          >
+            <Ionicons name="add" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TransactionsList />

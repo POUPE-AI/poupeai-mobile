@@ -19,7 +19,7 @@ const budgetSchema = z.object({
     .string()
     .min(1, "Nome é obrigatório")
     .max(100, "Nome deve ter no máximo 100 caracteres"),
-  category: z.number().min(1, "Categoria é obrigatória"),
+  category: z.string().nonempty("Categoria é obrigatória"),
 });
 
 type BudgetFormData = z.infer<typeof budgetSchema>;
@@ -43,7 +43,6 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
 }) => {
   const { theme } = useTheme();
   const style = styles(theme);
-  const { data: categoriesResponse } = useCategories();
 
   const [formData, setFormData] = useState<BudgetFormData>({
     amount: 0,
@@ -64,13 +63,13 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
       setFormData({
         amount: budget.amount,
         name: budget.name,
-        category: budget.category,
+        category: String(budget.category),
       });
     } else {
       setFormData({
         amount: 0,
         name: "",
-        category: 0,
+        category: "",
       });
     }
     setErrors({});
@@ -173,12 +172,10 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
       />
 
       <CategoryDropdown
-        categories={categoriesResponse?.results || []}
         selectedCategoryId={formData.category}
-        onSelect={(categoryId) =>
+        onSelect={(categoryId: string) =>
           setFormData((prev) => ({ ...prev, category: categoryId }))
         }
-        error={errors.category}
         isOpen={categoryDropdownOpen}
         onToggle={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
         filterType="expense"

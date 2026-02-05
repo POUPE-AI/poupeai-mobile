@@ -6,7 +6,6 @@ import { Text } from "@/components/atoms/Text";
 import { ColorPickerModal } from "@/components/molecules/ColorPickerModal";
 import { PREDEFINED_COLORS } from "@/constants/colors";
 import { styles } from "./styles";
-import { colors } from "@/constants/theme";
 import { getContrastColor } from "@/utils/color";
 
 interface ColorSelectorProps {
@@ -27,7 +26,6 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
 
   const [showColorPicker, setShowColorPicker] = useState(false);
 
-  // Verifica se a cor selecionada está nas cores predefinidas
   const isCustomColor = !PREDEFINED_COLORS.includes(selectedColor);
 
   const handleColorSelect = (color: string) => {
@@ -44,7 +42,6 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
       <View style={style.colorContainer}>
         <Text style={style.label}>{label}</Text>
 
-        {/* Cores predefinidas */}
         <View style={style.predefinedColorsContainer}>
           {PREDEFINED_COLORS.map((color) => (
             <TouchableOpacity
@@ -58,7 +55,6 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
             />
           ))}
 
-          {/* Botão para abrir color picker personalizado */}
           <TouchableOpacity
             style={[
               style.colorSwatch,

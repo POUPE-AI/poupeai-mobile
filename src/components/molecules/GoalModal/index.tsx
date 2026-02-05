@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { View } from "react-native";
 import { parseISO, isAfter, isToday, addDays, format } from "date-fns";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Goal, CreateGoalRequest } from "@/types/goals";
@@ -86,16 +85,16 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       setFormData({
         name: goal.name,
         description: goal.description || "",
-        color_hex: goal.color_hex,
+        color_hex: goal.colorHex,
         initial_balance:
-          typeof goal.initial_balance === "string"
-            ? parseFloat(goal.initial_balance.replace(",", "."))
-            : goal.initial_balance,
+          typeof goal.initialBalance === "string"
+            ? goal.initialBalance
+            : goal.initialBalance,
         goal_amount:
-          typeof goal.goal_amount === "string"
-            ? parseFloat(goal.goal_amount.replace(",", "."))
-            : goal.goal_amount,
-        target_at: goal.target_at,
+          typeof goal.goalAmount === "string"
+            ? goal.goalAmount
+            : goal.goalAmount,
+        target_at: goal.targetDate,
       });
     } else {
       // Set tomorrow as default target date
@@ -143,10 +142,10 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       const saveData: CreateGoalRequest = {
         name: formData.name,
         description: formData.description || undefined,
-        color_hex: formData.color_hex,
-        initial_balance: formData.initial_balance.toString(),
-        goal_amount: formData.goal_amount.toString(),
-        target_at: formData.target_at,
+        colorHex: formData.color_hex,
+        initialBalance: formData.initial_balance.toString(),
+        goalAmount: formData.goal_amount.toString(),
+        targetDate: formData.target_at,
       };
 
       await onSave(saveData);

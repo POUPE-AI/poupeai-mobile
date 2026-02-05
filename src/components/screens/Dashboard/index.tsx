@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Text, ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, ScrollView, View, RefreshControl } from "react-native";
 import { parseISO, format, startOfDay, isBefore, isEqual } from "date-fns";
 import { BalanceCard } from "@/components/molecules/BalanceCard";
 import { EstimatedSavingsCard } from "@/components/molecules/EstimatedSavingsCard";
@@ -11,6 +11,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { LoadingContent } from "@/components/atoms/LoadingContent";
 import { ErrorContent } from "@/components/atoms/ErrorContent";
 import { useDashboard } from "@/hooks/useDashboard";
+import { colors } from "@/constants/theme";
 
 export default function DashboardScreen() {
   const { isAuthenticated } = useAuth();
@@ -19,27 +20,40 @@ export default function DashboardScreen() {
   const { user } = useAuth();
 
   const today = new Date();
-  const todayFormatted = format(today, "yyyy-MM-dd");
+
+  const currentPeriod = format(today, "yyyy-MM");
 
   const {
     data: dashboard,
     isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
-  } = useDashboard();
+  } = useDashboard({ period: currentPeriod });
 
   const {
     data: transactions,
-    isLoading: transactionLoading,
+    isLoading: transactionsLoading,
     error: transactionsError,
-  } = useTransactions({
-    issue_date_end: todayFormatted,
-  });
+    refetch: refetchTransactions,
+  } = useTransactions();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refetchDashboard(), refetchTransactions()]);
+    } catch (error) {
+      console.error("Error refreshing dashboard:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
   const lastTransactions =
-    transactions?.pages[0]?.results
+    transactions?.pages[0]?.content
       .slice()
       .filter((transaction) => {
-        const transactionDate = parseISO(transaction.issue_date);
+        const transactionDate = parseISO(transaction.transactionDate);
         const todayStart = startOfDay(today);
         return (
           isBefore(transactionDate, todayStart) ||
@@ -48,7 +62,8 @@ export default function DashboardScreen() {
       })
       .sort(
         (a, b) =>
-          parseISO(b.issue_date).getTime() - parseISO(a.issue_date).getTime()
+          parseISO(b.transactionDate).getTime() -
+          parseISO(a.transactionDate).getTime(),
       )
       .slice(0, 5) || [];
 
@@ -71,6 +86,14 @@ export default function DashboardScreen() {
     <ScrollView
       style={style.container}
       contentContainerStyle={style.containerContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[colors.primary[500]]}
+          tintColor={colors.primary[500]}
+        />
+      }
     >
       <View>
         <Text style={style.greeting}>Olá, {user?.name || "Desconhecido"}</Text>
@@ -87,72 +110,51 @@ export default function DashboardScreen() {
           data={[
             {
               data:
-                dashboard?.balance?.chart_data?.map(
-                  (item) => item.balance ?? 0
+                dashboard?.balance?.chartData?.map(
+                  (item) => item.balance ?? 0,
                 ) || [],
             },
           ]}
           title="Saldo Total"
           percentage={dashboard?.balance?.difference ?? 0}
-          amount={dashboard?.balance?.current_total ?? 0}
+          amount={dashboard?.balance?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.incomes?.chart_data?.map(
-                  (item) => item.total ?? 0
-                ) || [],
+                dashboard?.incomes?.chartData?.map((item) => item.total ?? 0) ||
+                [],
             },
           ]}
           title="Receitas"
           percentage={dashboard?.incomes?.difference ?? 0}
-          amount={dashboard?.incomes?.current_total ?? 0}
+          amount={dashboard?.incomes?.currentTotal ?? 0}
         />
 
         <BalanceCard
           data={[
             {
               data:
-                dashboard?.expenses?.chart_data?.map(
-                  (item) => item.total ?? 0
+                dashboard?.expenses?.chartData?.map(
+                  (item) => item.total ?? 0,
                 ) || [],
             },
           ]}
           title="Despesas"
           percentage={dashboard?.expenses?.difference ?? 0}
-          amount={dashboard?.expenses?.current_total ?? 0}
+          amount={dashboard?.expenses?.currentTotal ?? 0}
         />
-
-        {/*         <BalanceCard
-          data={[
-            {
-              data:
-                dashboard?.invoices?.chart_data?.map((item) =>
-                  typeof item.total_amount === "number" ? item.total_amount : 0
-                ) || [],
-            },
-          ]}
-          title="Faturas"
-          percentage={dashboard?.invoices?.difference ?? 0}
-          amount={dashboard?.invoices?.current_total ?? 0}
-        /> */}
       </ScrollView>
-
-      {/* <CategoriesCard
-        data={mockCategoriesData}
-        title="Categorias"
-        tip="Alimentação lidera seus gastos este mês"
-      /> */}
 
       <EstimatedSavingsCard
         data={
-          dashboard?.estimated_saving ?? {
-            estimated_savings: 0,
-            savings_percentage: 0,
+          dashboard?.estimatedSaving ?? {
+            estimatedSavings: 0,
+            savingsPercentage: 0,
             message: "",
-            comparison_period: "monthly",
+            comparisonPeriod: "monthly",
           }
         }
         title="Economia Estimada"
@@ -162,7 +164,7 @@ export default function DashboardScreen() {
       <View style={style.sectionContainer}>
         <Text style={style.sectionTitle}>Últimas Transações</Text>
 
-        {transactionLoading ? (
+        {transactionsLoading ? (
           <LoadingContent text="transações" />
         ) : transactionsError ? (
           <ErrorContent text="Erro ao carregar transações" />

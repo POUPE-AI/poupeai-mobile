@@ -1,44 +1,41 @@
-export interface DashboardChartData {
+export interface BalanceChartPoint {
   date: string;
-  balance?: number;
-  total?: number;
+  balance: number;
 }
 
-export interface DashboardSection {
-  current_total: number;
+export interface TotalsChartPoint {
+  date: string;
+  total: number;
+}
+
+export interface Section<T> {
+  currentTotal: number;
   difference: number;
-  chart_data: DashboardChartData[];
+  chartData: T[];
 }
 
 export interface CreditCardInvoice {
-  credit_card: string;
-  total_amount: number;
-  paid: boolean;
+  creditCardName: string;
   month: string;
-  due_date: string;
-}
-
-export interface CreditCardSection {
-  current_total: number;
-  difference: number;
-  chart_data: CreditCardInvoice[];
+  totalAmount: number;
+  paid: boolean;
+  dueDate: string;
 }
 
 export interface EstimatedSavingSection {
-  estimated_savings: number;
-  savings_percentage: number;
+  estimatedSavings: number;
+  savingsPercentage: number;
   message: string;
-  comparison_period?: string;
+  comparisonPeriod?: string;
 }
 
 export interface DashboardResponse {
   message: string;
-  start_date: string;
-  end_date: string;
-  balance: DashboardSection;
-  incomes: DashboardSection;
-  expenses: DashboardSection;
-  invoices: CreditCardSection;
-  spending_by_category: Record<string, number>;
-  estimated_saving: EstimatedSavingSection;
-}
+  startDate: string;
+  endDate: string;
+  balance: Section<BalanceChartPoint>;
+  incomes: Section<TotalsChartPoint>;
+  expenses: Section<TotalsChartPoint>;
+  invoices: Section<CreditCardInvoice>;
+  estimatedSaving: EstimatedSavingSection;
+} 

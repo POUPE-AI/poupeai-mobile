@@ -28,7 +28,7 @@ const ITEMS = [
   {
     section: [
       { label: "Metas", route: "(tabs)/goals", icon: "trending-up" },
-      { label: "Orçamentos", route: "(tabs)/budgets", icon: "wallet" },
+      //{ label: "Orçamentos", route: "(tabs)/budgets", icon: "wallet" },
     ],
   },
   {
@@ -44,7 +44,7 @@ export const CustomDrawer = (props: DrawerContentComponentProps) => {
   const { user, signOut } = useAuth();
   const { theme, colors: themeColors } = useTheme();
 
-  const style = styles(theme)
+  const style = styles(theme);
 
   const action = (item: (typeof ITEMS)[number]["section"][number]) => {
     if (item.label === "Sair") {
@@ -82,9 +82,7 @@ export const CustomDrawer = (props: DrawerContentComponentProps) => {
             <DrawerItem
               style={style.drawerItem}
               inactiveTintColor={
-                item.label === "Sair"
-                  ? colors.feedback.error
-                  : themeColors.text
+                item.label === "Sair" ? colors.feedback.error : themeColors.text
               }
               activeTintColor={colors.primary[500]}
               focused={routeName === item.route}

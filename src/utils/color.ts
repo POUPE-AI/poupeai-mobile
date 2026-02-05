@@ -1,6 +1,10 @@
 import { colors } from "@/constants/theme";
 
 export function getContrastColor(selectedColor: string): string {
+  if (!selectedColor || typeof selectedColor !== "string") {
+    return colors.theme["light"].text;
+  }
+
   let color = selectedColor.replace("#", "");
   if (color.length === 3) {
     color = color

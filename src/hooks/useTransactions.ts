@@ -21,28 +21,33 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function useTransactions(params?: {
   search?: string;
-  page_size?: number;
-  issue_date_end?: string;
-  purchase_group_uuid?: string;
+  page?: number;
+  size?: number;
+  type?: "INCOME" | "EXPENSE";
+  categoryId?: string;
+  purchaseGroupUuid?: string;
+  sortDirection?: "ASC" | "DESC";
+  sortBy?: string;
+  transactionDateEnd?: string;
+  transactionDateStart?: string;
 }) {
   const { isAuthenticated, user } = useAuth();
 
   return useInfiniteQuery({
     queryKey: transactionsKeys.list(params || {}),
-    queryFn: ({ pageParam = 1 }) =>
+    queryFn: ({ pageParam = params?.page ?? 0 }) =>
       transactionsService.getTransactions({ ...params, page: pageParam }),
-    getNextPageParam: (lastPage, allPages) => {
-      const totalPages = Math.ceil(lastPage.count / (params?.page_size || 10));
-      const nextPage = allPages.length + 1;
-      return nextPage <= totalPages ? nextPage : undefined;
+    getNextPageParam: (lastPage) => {
+      const next = lastPage.page + 1;
+      return next < lastPage.totalPages ? next : undefined;
     },
-    initialPageParam: 1,
-    enabled: isAuthenticated && !!user, // Só executa se o usuário estiver autenticado
+    initialPageParam: params?.page ?? 0,
+    enabled: isAuthenticated && !!user,
   });
 }
 
-export function useTransaction(transactionId: number) {
-  if (transactionId <= 0) {
+export function useTransaction(transactionId: string) {
+  if (!transactionId) {
     return {
       data: null,
       isLoading: false,
@@ -102,7 +107,7 @@ export function useUpdateTransaction() {
 export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => transactionsService.deleteTransaction(id),
+    mutationFn: (id: string) => transactionsService.deleteTransaction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: transactionsKeys.details() });

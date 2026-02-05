@@ -8,8 +8,10 @@ import { ModalContainer } from "@/components/atoms/ModalContainer";
 import { FormField } from "@/components/atoms/FormField";
 import { Button } from "@/components/atoms/Button";
 import { Text } from "@/components/atoms/Text";
+import { DropdownSelector } from "@/components/atoms/DropdownSelector";
 import { CurrencyInput } from "@/components/atoms/CurrencyInput";
 import { colors } from "@/constants/theme";
+import { useInstitutions } from "@/hooks/useInstitutions";
 
 const bankAccountSchema = z.object({
   name: z
@@ -22,6 +24,7 @@ const bankAccountSchema = z.object({
   initial_balance: z
     .number()
     .min(0, "Saldo inicial deve ser maior ou igual a zero"),
+  institution_id: z.number().int().min(1),
   is_default: z.boolean(),
 });
 
@@ -43,19 +46,24 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
   mode,
 }) => {
   const { theme } = useTheme();
-  const style = styles();
+  const style = styles(theme);
 
   const [formData, setFormData] = useState<BankAccountFormData>({
     name: "",
     description: "",
     initial_balance: 0,
     is_default: false,
+    institution_id: 1,
   });
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof BankAccountFormData, string>>
   >({});
   const [isLoading, setIsLoading] = useState(false);
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+
+  const { data: institutionData, isLoading: institutionIsLoading } =
+    useInstitutions();
 
   useEffect(() => {
     if (!visible) return;
@@ -65,9 +73,10 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         name: account.name,
         description: account.description,
         initial_balance: parseFloat(
-          account.initial_balance.toString().replace(",", ".")
+          account.initialBalance.toString().replace(",", ".")
         ),
-        is_default: account.is_default,
+        is_default: account.isDefault,
+        institution_id: account.institutionId,
       });
     } else {
       setFormData({
@@ -75,10 +84,12 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         description: "",
         initial_balance: 0,
         is_default: false,
+        institution_id: institutionData?.[0]?.id || 1,
       });
     }
     setErrors({});
-  }, [mode, account, visible]);
+    setBrandDropdownOpen(false);
+  }, [mode, account, visible, institutionData]);
 
   const validateForm = (): boolean => {
     try {
@@ -110,8 +121,9 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
       const saveData: CreateBankAccountRequest = {
         name: formData.name,
         description: formData.description,
-        initial_balance: formData.initial_balance,
-        is_default: formData.is_default,
+        initialBalance: formData.initial_balance,
+        isDefault: formData.is_default,
+        institutionId: formData.institution_id,
       };
 
       await onSave(saveData);
@@ -185,15 +197,57 @@ export const BankAccountModal: React.FC<BankAccountModalProps> = ({
         </Text>
       )}
 
+      <View style={style.brandContainer}>
+        <Text style={style.brandLabel}>Instituição</Text>
+        <DropdownSelector
+          items={
+            institutionData?.map((inst) => ({
+              id: inst.id,
+              label: inst.name,
+            })) || []
+          }
+          selectedId={formData.institution_id}
+          onSelect={(item) =>
+            setFormData((prev) => ({
+              ...prev,
+              institution_id: item.id,
+            }))
+          }
+          placeholder="Selecione a instituição"
+          isOpen={brandDropdownOpen}
+          onToggle={() => setBrandDropdownOpen(!brandDropdownOpen)}
+          error={!!errors.institution_id}
+          disabled={institutionIsLoading}
+        />
+        {institutionIsLoading && (
+          <Text
+            style={{
+              color: colors.theme[theme].text,
+              fontSize: 12,
+              marginTop: 4,
+            }}
+          >
+            Carregando instituições...
+          </Text>
+        )}
+        {errors.institution_id && (
+          <Text
+            style={{ color: colors.feedback.error, fontSize: 12, marginTop: 4 }}
+          >
+            {errors.institution_id}
+          </Text>
+        )}
+      </View>
+
       <CurrencyInput
         label="Saldo Inicial"
         value={formData.initial_balance.toString()}
-        onChangeText={(formattedValue, numericValue) =>
+        onChangeText={(_, numericValue) =>
           setFormData((prev) => ({ ...prev, initial_balance: numericValue }))
         }
         placeholder="0,00"
         error={errors.initial_balance}
-        disabled={mode === "edit"} // Desabilita edição do saldo inicial no modo de edição
+        disabled={mode === "edit"}
       />
       {mode === "edit" && (
         <Text
